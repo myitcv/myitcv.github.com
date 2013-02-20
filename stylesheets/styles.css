@@ -16,6 +16,54 @@ p, ul, ol, table, pre, dl {
   margin:0 0 20px;
 }
 
+
+/* Sprites */
+.github:hover, .github, .behance:hover, .behance, .delicious:hover, .delicious, .deviantart:hover, .deviantart, .digg:hover, .digg, .dribbble:hover, .dribbble, .facebook:hover, .facebook, .flickr:hover, .flickr, .forrst:hover, .forrst, .google:hover, .google, .grooveshark:hover, .grooveshark, .lastfm:hover, .lastfm, .linkedin:hover, .linkedin, .myspace:hover, .myspace, .pinterest:hover, .pinterest, .rss:hover, .rss, .skype:hover, .skype, .tumblr:hover, .tumblr, .twitter:hover, .twitter, .vimeo:hover, .vimeo, .youtube:hover, .youtube { background: url(/images/sprites.png) no-repeat; float: left; -webkit-transition: background-position 0.2s ease; -moz-transition: background-position 0.2s ease; -o-transition: background-position 0.2s ease; text-indent: -9999px; margin-right:3px }
+
+.github:hover{background-position:-519px -26px;width:24px;height:24px}
+.github{background-position:-519px 0;width:24px;height:24px}
+.behance:hover{background-position:-494px -26px;width:24px;height:24px}
+.behance{background-position:-494px 0;width:24px;height:24px}
+.delicious:hover{background-position:-468px -26px;width:24px;height:24px}
+.delicious{background-position:-468px 0;width:24px;height:24px}
+.deviantart:hover{background-position:-442px -26px;width:24px;height:24px}
+.deviantart{background-position:-442px 0;width:24px;height:24px}
+.digg:hover{background-position:-416px -26px;width:24px;height:24px}
+.digg{background-position:-416px 0;width:24px;height:24px}
+.dribbble:hover{background-position:-390px -26px;width:24px;height:24px}
+.dribbble{background-position:-390px 0;width:24px;height:24px}
+.facebook:hover{background-position:-364px -26px;width:24px;height:24px}
+.facebook{background-position:-364px 0;width:24px;height:24px}
+.flickr:hover{background-position:-338px -26px;width:24px;height:24px}
+.flickr{background-position:-338px 0;width:24px;height:24px}
+.forrst:hover{background-position:-312px -26px;width:24px;height:24px}
+.forrst{background-position:-312px 0;width:24px;height:24px}
+.google:hover{background-position:-286px -26px;width:24px;height:24px}
+.google{background-position:-286px 0;width:24px;height:24px}
+.grooveshark:hover{background-position:-260px -26px;width:24px;height:24px}
+.grooveshark{background-position:-260px 0;width:24px;height:24px}
+.lastfm:hover{background-position:-234px -26px;width:24px;height:24px}
+.lastfm{background-position:-234px 0;width:24px;height:24px}
+.linkedin:hover{background-position:-208px -26px;width:24px;height:24px}
+.linkedin{background-position:-208px 0;width:24px;height:24px}
+.myspace:hover{background-position:-182px -26px;width:24px;height:24px}
+.myspace{background-position:-182px 0;width:24px;height:24px}
+.pinterest:hover{background-position:-156px -26px;width:24px;height:24px}
+.pinterest{background-position:-156px 0;width:24px;height:24px}
+.rss:hover{background-position:-130px -26px;width:24px;height:24px}
+.rss{background-position:-130px 0;width:24px;height:24px}
+.skype:hover{background-position:-104px -26px;width:24px;height:24px}
+.skype{background-position:-104px 0;width:24px;height:24px}
+.tumblr:hover{background-position:-78px -26px;width:24px;height:24px}
+.tumblr{background-position:-78px 0;width:24px;height:24px}
+.twitter:hover{background-position:-52px -26px;width:24px;height:24px}
+.twitter{background-position:-52px 0;width:24px;height:24px}
+.vimeo:hover{background-position:-26px -26px;width:24px;height:24px}
+.vimeo{background-position:-26px 0;width:24px;height:24px}
+.youtube:hover{background-position:0 -26px;width:24px;height:24px}
+.youtube{background-position:0 0;width:24px;height:24px}
+/* End sprites */
+
 span.tag {
   display: inline-block;
   margin-right: 3px;
