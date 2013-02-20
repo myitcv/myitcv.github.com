@@ -1,9 +1,13 @@
 ---
 layout: post
 title: Introducing people to coding the Vagrant and Puppet way
+tags:
+- San Francisco
 ---
 
-{{ page.date | date_to_string }} - San Francisco
+{{ page.date | date_to_string }} 
+
+
 
 h2. Some Context
 
