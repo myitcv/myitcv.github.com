@@ -16,7 +16,6 @@ p, ul, ol, table, pre, dl {
   margin:0 0 20px;
 }
 
-
 /* Sprites */
 .github:hover, .github, .behance:hover, .behance, .delicious:hover, .delicious, .deviantart:hover, .deviantart, .digg:hover, .digg, .dribbble:hover, .dribbble, .facebook:hover, .facebook, .flickr:hover, .flickr, .forrst:hover, .forrst, .google:hover, .google, .grooveshark:hover, .grooveshark, .lastfm:hover, .lastfm, .linkedin:hover, .linkedin, .myspace:hover, .myspace, .pinterest:hover, .pinterest, .rss:hover, .rss, .skype:hover, .skype, .tumblr:hover, .tumblr, .twitter:hover, .twitter, .vimeo:hover, .vimeo, .youtube:hover, .youtube { background: url(/images/sprites.png) no-repeat; float: left; -webkit-transition: background-position 0.2s ease; -moz-transition: background-position 0.2s ease; -o-transition: background-position 0.2s ease; text-indent: -9999px; margin-right:3px }
 
