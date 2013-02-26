@@ -186,7 +186,10 @@ You should now be presented with a page that includes a *Client ID* and *Client 
 [omniauth-google-oauth2-example]
 login_auth_client_id=<Client ID here>
 login_auth_client_secret=<Client secret here>
+Application.config.secret_token=make_this_very_random
 {% endhighlight %}
+
+(In the commited files I have also include a 'secret' for the application's secret token. Check out "config/initializers/secret_token.rb":https://github.com/myitcv/omniauth-google-oauth2-example/blob/master/config/initializers/secret_token.rb for the code)
 
 Now create the following file:
 
