@@ -32,11 +32,44 @@ Let's now ensure the requisite gems are installed:
 bundle install
 {% endhighlight %}
 
-Time to tidy up a couple of files that we no longer need. Back to the terminal:
+Time to tidy up a couple of files that we no longer need (for this simple example at least). Back to the terminal:
 
 {% highlight bash %}
 rm app/views/layouts/application.html.erb
 rm public/index.html
+{% endhighlight %}
+
+First we setup where we will source of secrets (this will become clear later):
+
+{% highlight ruby %}
+# /config/application.rb
+module OmniauthGoogleOauth2Example
+  class Application < Rails::Application
+
+    # ...
+    # Secrets for our web app - override in each environment
+    config.secrets = nil
+    # ...
+
+  end
+end
+{% endhighlight %}
+
+Let's configure the development environment to pull these secrets from a file called @.web_app_secrets@:
+
+{% highlight ruby %}
+# /config/environments/development.rb
+
+require 'parseconfig' # *********** DON'T FORGET THIS ************
+
+OmniauthGoogleOauth2Example::Application.configure do
+
+  # ...
+  # Override the secrets
+  config.secrets = ParseConfig.new(ENV['HOME']+"/.web_app_secrets")
+  # ...
+
+end
 {% endhighlight %}
 
 Now to generate our first controller:
@@ -147,16 +180,22 @@ The settings for this basic test are:
 |*Application type:*|Web Application|
 |*Your site or hostname:*|<code>http://localhost:3000/auth/google_login/callback</code>|
 
-You should now be presented with a page that includes a *Client ID* and *Client secret*. 
+You should now be presented with a page that includes a *Client ID* and *Client secret*. We need to populate these in our @$HOME/.web_app_secrets@ file:
+
+{% highlight ini %}
+[omniauth-google-oauth2-example]
+login_auth_client_id=<Client ID here>
+login_auth_client_secret=<Client secret here>
+{% endhighlight %}
 
 Now create the following file:
 
 {% highlight ruby %}
 # /config/initializers/omniauth.rb
 Rails.application.config.middleware.use OmniAuth::Builder do
-  provider :google_oauth2, \
-    '<Client ID here>', \
-    '<Client secret here>', \
+  provider :google_oauth2, 
+    Rails.configuration.secrets['omniauth-google-oauth2-example']['login_auth_client_id'],
+    Rails.configuration.secrets['omniauth-google-oauth2-example']['login_auth_client_secret'],
     {name: "google_login", approval_prompt: ''}
 end
 {% endhighlight %}
