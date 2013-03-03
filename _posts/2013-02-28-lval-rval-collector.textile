@@ -18,7 +18,7 @@ lvals = %w(Fruit: Size: Quantity:)
 rvals = %w(orange large 5 Apple)
 {% endhighlight %}
 
-The further complication is that each lval is optional in any given string. 
+The further complication is that each lval is optional in any given string and the order is undefined. 
 
 So under the lval superset of:
 
