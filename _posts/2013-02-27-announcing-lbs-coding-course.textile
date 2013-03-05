@@ -22,6 +22,8 @@ So what will students 'touch' in the process:
 * Ruby on Rails via RVM
 * git and GitHub
 
-This page is a simple placeholder for that course but if you have any questions please "get in touch":mailto:paul@myitcv.org.uk
+The more technical aspects of setting up development environments for teaching are covered in the "following post":/2013/02/18/introducing-people-to-coding-the-vagrant-and-puppet-way.html
+
+So for now this page is a simple placeholder for the course but if you have any questions please "get in touch":mailto:paul@myitcv.org.uk
 
 
