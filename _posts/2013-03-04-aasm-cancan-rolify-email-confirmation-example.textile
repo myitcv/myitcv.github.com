@@ -16,3 +16,5 @@ rails generate cancan:ability
 rails generate rolify:role
 rake db:migrate
 
+rails generate migration AddAASMStateToUser aasm_state:string
+rake db:migrate
