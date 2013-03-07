@@ -1,2 +1,10 @@
 markdown: rdiscount
 pygments: true
+authors:
+  paul:
+    display_name: Paul Jolly
+    email: paul@myitcv.org.uk
+    web: http://www.myitcv.org.uk
+    twitter: P__A__J
+    github: myitcv
+    blog: http://blog.myitcv.org.uk

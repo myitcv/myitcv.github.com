@@ -1,13 +1,9 @@
 ---
 layout: post
 title: Introducing people to coding the Vagrant and Puppet way
-tags:
-- San Francisco
+location: San Francisco
+author: paul
 ---
-
-{{ page.date | date_to_string }} 
-
-
 
 h2. Some Context
 

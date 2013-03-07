@@ -1,8 +1,8 @@
 ---
 layout: post
 title: omniauth + Google OAuth2 on Rails
-tags: 
-- San Francisco
+location: San Francisco
+author: paul
 ---
 
 All of the code for the following example is "on GitHub":https://github.com/myitcv/omniauth-google-oauth2-example. However for the sake of readability I have left out the init of a git repository in the description that follows... clearly this is an important step

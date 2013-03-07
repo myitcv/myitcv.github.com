@@ -1,8 +1,8 @@
 ---
 layout: post
 title: A simple User email confirmation model
-tags:
-- San Francisco
+location: San Francisco
+author: paul
 ---
 
 cd dev/state_machine-email-confirm/
