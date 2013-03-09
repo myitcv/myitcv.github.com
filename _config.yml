@@ -1,6 +1,6 @@
 markdown: rdiscount
 pygments: true
-future: false
+future: true
 authors:
   paul:
     display_name: Paul Jolly
