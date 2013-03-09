@@ -1,0 +1,84 @@
+---
+date: 2013-03-08
+layout: post
+title: Coding ruby more efficiently with terminal vim
+location: San Francisco
+author: paul
+---
+
+Thanks to a "great post by Chris Jones":http://www.mentby.com/Group/vim-discuss/vim-orgmode.html (look for his post dated Mon, 06 Feb 2012), I managed to configure my Xsession and terminal vim, running within xterm to be precise, to properly handle @Shift-CR@. 
+
+So my @~/.bashrc@ now reads:
+
+{% highlight bash %}
+# $HOME/.bashrc
+# ...
+
+if [ "$DISPLAY" ]; then # X-based environment
+  # this allows us to map <S-CR> in Vim
+  xmodmap -e "keysym Return = Return currency"
+fi
+
+# ...
+{% endhighlight %}
+
+My @~/.vimrc@ now reads:
+
+{% highlight vim %}
+" $HOME/.vimrc
+" ...
+
+" Map the special currency symbol (see ~/.bashrc) to <S-CR>
+imap ¤ <S-CR>
+
+" ...
+{% endhighlight %}
+
+Now vim will correctly handle and process @<S-CR>@, e.g.:
+
+{% highlight vim %}
+" $HOME/.vim/after/ftplugin/ruby.vim
+
+" Missing credits here... I can' recall where I picked this up
+if !exists( "*EndToken" )
+  function EndToken()
+    let current_line = getline( '.' )
+    let braces_at_end = '{\s*|\(,\|\s\|\w*|\s*\)\?$'
+    if match( current_line, braces_at_end ) >= 0
+      return '}'
+    else
+      return 'end'
+    endif
+  endfunction
+endif
+
+imap <S-CR> <ESC>:execute 'normal o' . EndToken()<CR>O
+{% endhighlight %}
+
+In insert mode, this allows us to type:
+
+{% highlight ruby %}
+if a == b # <- cursor here
+{% endhighlight %}
+
+hit @<S-CR>@ (shift+enter) and have this completed to:
+
+{% highlight ruby %}
+if a == b 
+  # <- cursor here
+end
+{% endhighlight %}
+
+Or alternatively:
+
+{% highlight ruby %}
+[1,2,3].each { |x| # <- cursor here
+{% endhighlight %}
+
+followed by @<S-CR>@ would get translated to:
+
+{% highlight ruby %}
+[1,2,3].each { |x|
+   # <- cursor here
+}
+{% endhighlight %}
