@@ -6,6 +6,6 @@ end
 
 task :run do
   Rake::Task["build"].invoke
-  system("jekyll --pygments --no-lsi --safe --server")
+  system("jekyll --pygments --no-lsi --safe --server --future")
 end
 
