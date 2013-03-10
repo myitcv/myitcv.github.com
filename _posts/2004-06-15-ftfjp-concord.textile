@@ -3,6 +3,9 @@ layout: post
 title: Simple Dependent Types - Concord
 location: San Francisco
 author: paul
+tags:
+- Imperial College
+- study
 ---
 
 My final year thesis at the "Department of Computing":http://www3.imperial.ac.uk/computing/, "Imperial College":http://www.ic.ac.uk was focused on object oriented programming languages. My supervisor was the brilliant "Sophia Drossopoulou":http://www.doc.ic.ac.uk/~scd/. Along with "Christopher Anderson":http://www.lyonanderson.org/ and "Klaus Ostermann":http://www.informatik.uni-marburg.de/~kos/ we used my thesis as the basis of a paper that was presented at "6th Workshop on Formal Techniques for Java-like Programs - FTfJP'2004":http://www.cs.ru.nl/ftfjp/2004.html on 15 June 2004.  

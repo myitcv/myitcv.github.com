@@ -8,14 +8,19 @@ comments: true
   %h1{:itemprop => "name"} {{ page.title }}
   %div{:itemprop => "description articleBody"}
     .page_details
-      %abbr{:itemprop => "datePublished", :title => "{{ page.date | date_to_xmlschema }}"} {{ page.date | date_to_string }}
-      by
-      %span{:itemprop => "author", :itemscope => "itemscope", :itemtype => "http://schema.org/Person"}
+      %hr.page_details/
+      %abbr.pagedate{:itemprop => "datePublished", :title => "{{ page.date | date_to_xmlschema }}"} {{ page.date | date_to_string | upcase }}
+      %span.author{:itemprop => "author", :itemscope => "itemscope", :itemtype => "http://schema.org/Person"}
         %meta{:content => "{{ author.web }}", :itemprop => "url"}/
         %a{:href => "{{ author.web }}", :rel => "author", :title => "author profile"}
           %span{:itemprop => "name"} {{ author.display_name }}
-      in {{ page.location }}
-    %hr/
+      %span.location {{ page.location | upcase }}
+      %span.tags
+        %ul.tags
+          {% for tag in page.tags %}
+          %li.tags &lt;{{ tag | upcase }}&gt;
+          {% endfor %}
+      %hr.page_details/
     {{ content }}
 %hr/
 %h4 Related Posts

@@ -3,6 +3,8 @@ layout: post
 title: Upgrading old MacBook Pro hard drives... what you need to know
 location: San Francisco
 author: paul
+tags:
+- hardware
 ---
 __*Edit*: I previously upgraded my machine using a "Crucial SSD":http://www.crucial.com/store/partspecs.aspx?imodule=CT256V4SSD2. This was quite simply the worst piece of hardware I have ever bought.... Switched to the Samsung 830 (see below) and so far things are about 100 times better...__
 

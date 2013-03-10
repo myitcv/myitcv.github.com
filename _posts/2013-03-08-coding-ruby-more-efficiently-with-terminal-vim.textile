@@ -4,9 +4,13 @@ layout: post
 title: Coding ruby more efficiently with terminal vim
 location: San Francisco
 author: paul
+tags:
+- vim
+- coding
+- ruby
 ---
 
-Thanks to a "great post by Chris Jones":http://www.mentby.com/Group/vim-discuss/vim-orgmode.html (look for his post dated Mon, 06 Feb 2012), I managed to configure my Xsession and terminal vim, running within xterm to be precise, to properly handle @Shift-CR@. 
+Thanks to a "great post by Chris Jones":http://www.mentby.com/Group/vim-discuss/vim-orgmode.html (look for his post dated Mon, 06 Feb 2012), I managed to configure my Xsession and terminal vim, running within xterm to be precise, to properly handle @Shift-CR@, my preferred key-sequence for code completions.
 
 So my @~/.bashrc@ now reads:
 

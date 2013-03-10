@@ -3,6 +3,9 @@ layout: post
 title: "Introduction to Coding for Business Students"
 location: San Francisco
 author: paul
+tags:
+- teaching
+- coding
 ---
 
 In March/April/May 2013 I am planning to run a course at "London Business School":http://www.london.edu that perhaps best falls under the title of "Introduction to Coding for Business Students."

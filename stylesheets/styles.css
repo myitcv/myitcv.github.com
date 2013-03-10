@@ -17,10 +17,58 @@ p, ul, ol, table, pre, dl {
 }
 
 div.page_details {
-  font-style: italic;
+  /*font-style: italic;*/
   padding-bottom: 6px;
+  margin: 0px 0px 20px 0px;
 }
 
+hr.page_details {
+  margin: 0px;
+}
+
+abbr.pagedate {
+  padding-right: 10px;
+  font-size: 80%;
+}
+
+span.author {
+  display: none;
+  border-left-color: #e5e5e5;
+  border-left-width: 1px;
+  border-left-style: solid;
+  padding-left: 10px;
+  font-size: 80%;
+}
+
+span.location {
+  border-left-color: #e5e5e5;
+  border-left-width: 1px;
+  border-left-style: solid;
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: 80%;
+}
+
+span.tags {
+  border-left-color: #e5e5e5;
+  border-left-width: 1px;
+  border-left-style: solid;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+ul.tags {
+  padding: 0px;
+  list-style-type: disc;
+  display: inline;
+  font-size: 80%;
+}
+
+li.tags {
+  margin: 0px;
+  display: inline;
+  padding-right: 5px;
+}
 
 /* Sprites */
 .github:hover, .github, .behance:hover, .behance, .delicious:hover, .delicious, .deviantart:hover, .deviantart, .digg:hover, .digg, .dribbble:hover, .dribbble, .facebook:hover, .facebook, .flickr:hover, .flickr, .forrst:hover, .forrst, .google:hover, .google, .grooveshark:hover, .grooveshark, .lastfm:hover, .lastfm, .linkedin:hover, .linkedin, .myspace:hover, .myspace, .pinterest:hover, .pinterest, .rss:hover, .rss, .skype:hover, .skype, .tumblr:hover, .tumblr, .twitter:hover, .twitter, .vimeo:hover, .vimeo, .youtube:hover, .youtube { background: url(/images/sprites.png) no-repeat; float: left; -webkit-transition: background-position 0.2s ease; -moz-transition: background-position 0.2s ease; -o-transition: background-position 0.2s ease; text-indent: -9999px; margin-right:3px }

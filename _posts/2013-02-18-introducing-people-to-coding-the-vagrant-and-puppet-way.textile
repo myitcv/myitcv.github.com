@@ -3,6 +3,11 @@ layout: post
 title: Introducing people to coding the Vagrant and Puppet way
 location: San Francisco
 author: paul
+tags:
+- teaching
+- coding
+- puppet
+- vagrant
 ---
 
 h2. Some Context

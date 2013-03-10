@@ -3,6 +3,9 @@ layout: post
 title: Processing semi-unstructured strings
 location: San Francisco
 author: paul
+tags:
+- coding
+- ruby
 ---
 
 I found myself dealing with a number of strings that contained colon delimited @lval:rval@ pairs. For example:
