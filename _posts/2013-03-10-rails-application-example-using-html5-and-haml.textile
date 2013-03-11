@@ -110,7 +110,7 @@ body { padding-top: 60px; }
 @import "bootstrap-responsive";
 {% endhighlight %}
 
-The padding override allows us to accommodate the "Bootstrap black nav bar":http://twitter.github.com/bootstrap/examples/hero.html (which is by default grey and not black in my default installation of @bootstrap-sass@).
+The padding override allows us to accommodate the "Bootstrap black nav bar":http://twitter.github.com/bootstrap/examples/hero.html (which is grey and not black in my default installation of @bootstrap-sass@).
 
 Daniel then goes on to give a neat example of how to provide an override that gives your content a nice grey surround:
 
