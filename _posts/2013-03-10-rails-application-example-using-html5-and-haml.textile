@@ -21,7 +21,7 @@ rails new haml-html5-example
 cd haml-html5-example
 {% endhighlight %}
 
-Add @haml@, @haml-rails@ and @bootstrap-saas@ (explained later) to your Gemfile:
+Add required gems to your Gemfile:
 
 {% highlight ruby %}
 # Gemfile
@@ -29,6 +29,8 @@ Add @haml@, @haml-rails@ and @bootstrap-saas@ (explained later) to your Gemfile:
 
 gem 'haml'
 gem 'haml-rails'
+gem 'haml-contrib'
+gem 'RedCloth'
 gem 'bootstrap-sass'
 
 # ...
@@ -89,7 +91,7 @@ Now define a messages partial for the rendering of "flash messages":http://guide
       = content_tag :div, msg, :id => "flash_#{name}"
 {% endhighlight %}
 
-Include the Twitter Bootstrap Javascript files:
+Include the Twitter Bootstrap Javascript files (this is incidentally why we need the @bootstrap-sass@ gem):
 
 {% highlight javascript %}
 /* app/assets/javascripts/application.js */
@@ -163,5 +165,31 @@ rails server
 The results should look something like this:
 
 !/images/2013-03-10-html5-haml-example.png!
+
+Now let's get a bit more creative and override the default content in our @home#index@ view (this is where we need the @haml-contrib@ and @RedCloth@ gem files):
+
+{% highlight haml %}
+# app/views/home/index.html.haml
+
+%h1 Heading 1
+%p A paragraph
+
+- if true
+  %p True
+
+%ul
+  - [1,2,3].each do |element|
+    %li=element
+
+:javascript
+  $(document).ready(function() {
+    alert("#{flash[:notice]}");
+  });
+
+:textile
+  I prefer to write my documents using **textile**
+{% endhighlight %}
+
+Much better.
 
 All the code for this example "can be found on GitHub":https://github.com/myitcv/haml-html5-example
