@@ -10,6 +10,8 @@ tags:
 - oauth2
 ---
 
+*Update 2013-03-10:* modified post to use "figaro":https://github.com/laserlemon/figaro instead of rather half-baked @parseconfig@ approach.
+
 All of the code for the following example is "on GitHub":https://github.com/myitcv/omniauth-google-oauth2-example. However for the sake of readability I have left out the init of a git repository in the description that follows... clearly this is an important step
 
 First fire up a terminal and change to your development directory:
@@ -21,13 +23,16 @@ cd omniauth-google-oauth2-example
 
 You will at this point be in the directory Rails just created.
 
-Now edit the @Gemfile@ to include the following two lines for Haml support:
+Now edit the @Gemfile@ to include the following "Haml":http://haml.info/ and "figaro":https://github.com/laserlemon/figaro support:
 
 {% highlight ruby %}
 # /Gemfile
 # ...
+
 gem 'haml'
 gem 'haml-rails'
+gem 'figaro'
+
 # ...
 {% endhighlight %}
 
@@ -37,44 +42,17 @@ Let's now ensure the requisite gems are installed:
 bundle install
 {% endhighlight %}
 
+Now let's ensure the figaro setup is in place:
+
+{% highlight bash %}
+rails generate figaro:install
+{% endhighlight %}
+
 Time to tidy up a couple of files that we no longer need (for this simple example at least). Back to the terminal:
 
 {% highlight bash %}
 rm app/views/layouts/application.html.erb
 rm public/index.html
-{% endhighlight %}
-
-First we setup where we will source of secrets (this will become clear later):
-
-{% highlight ruby %}
-# /config/application.rb
-module OmniauthGoogleOauth2Example
-  class Application < Rails::Application
-
-    # ...
-    # Secrets for our web app - override in each environment
-    config.secrets = nil
-    # ...
-
-  end
-end
-{% endhighlight %}
-
-Let's configure the development environment to pull these secrets from a file called @.web_app_secrets@:
-
-{% highlight ruby %}
-# /config/environments/development.rb
-
-require 'parseconfig' # *********** DON'T FORGET THIS ************
-
-OmniauthGoogleOauth2Example::Application.configure do
-
-  # ...
-  # Override the secrets
-  config.secrets = ParseConfig.new(ENV['HOME']+"/.web_app_secrets")
-  # ...
-
-end
 {% endhighlight %}
 
 Now to generate our first controller:
@@ -87,6 +65,7 @@ Now edit the routes to set the root path:
 
 {% highlight ruby %}
 # /config/routes.rb
+
 OmniauthGoogleOauth2Example::Application.routes.draw do
   get "home/index"
   root :to => 'home#index'
@@ -122,6 +101,7 @@ We will add the routes to the session handling later (it will actually be a call
 
 {% highlight ruby %}
 # /app/controllers/sessions_controller.rb
+
 class SessionsController < ApplicationController
   def create
     auth = request.env["omniauth.auth"]
@@ -139,6 +119,7 @@ end
 
 {% highlight ruby %}
 # /app/models/user.rb
+
 class User < ActiveRecord::Base
   attr_accessible :name, :provider, :uid, :refresh_token, :access_token, :expires
 
@@ -163,7 +144,9 @@ OK, let's include the Google omniauth piece now. First, back to edit the @Gemfil
 {% highlight ruby %}
 # /Gemfile
 # ...
+
 gem 'omniauth-google-oauth2'
+
 # ...
 {% endhighlight %}
 
@@ -185,13 +168,14 @@ The settings for this basic test are:
 |*Application type:*|Web Application|
 |*Your site or hostname:*|<code>http://localhost:3000/auth/google_login/callback</code>|
 
-You should now be presented with a page that includes a *Client ID* and *Client secret*. We need to populate these in our @$HOME/.web_app_secrets@ file:
+You should now be presented with a page that includes a *Client ID* and *Client secret*. We need to populate these in our @config/application.yml@ file:
 
-{% highlight ini %}
-[omniauth-google-oauth2-example]
-login_auth_client_id=<Client ID here>
-login_auth_client_secret=<Client secret here>
-Application.config.secret_token=make_this_very_random
+{% highlight yaml %}
+# config/application.yml
+
+OAUTH_CLIENT_ID: "<CLIENT_ID>"
+OAUTH_CLIENT_SECRET: "<CLIENT_SECRET>"
+APPLICATION_CONFIG_SECRET_TOKEN: "<A LONG SECRET>"
 {% endhighlight %}
 
 (In the commited files I have also include a 'secret' for the application's secret token. Check out "config/initializers/secret_token.rb":https://github.com/myitcv/omniauth-google-oauth2-example/blob/master/config/initializers/secret_token.rb for the code)
@@ -200,10 +184,11 @@ Now create the following file:
 
 {% highlight ruby %}
 # /config/initializers/omniauth.rb
+
 Rails.application.config.middleware.use OmniAuth::Builder do
   provider :google_oauth2, 
-    Rails.configuration.secrets['omniauth-google-oauth2-example']['login_auth_client_id'],
-    Rails.configuration.secrets['omniauth-google-oauth2-example']['login_auth_client_secret'],
+    ENV['OAUTH_CLIENT_ID'],
+    ENV['OAUTH_CLIENT_SECRET'],
     {name: "google_login", approval_prompt: ''}
 end
 {% endhighlight %}
@@ -216,6 +201,7 @@ Now lets setup the routes for omniauth:
 
 {% highlight ruby %}
 # /config/routes.rb
+
 OmniauthGoogleOauth2Example::Application.routes.draw do
   get "home/index"
   root :to => 'home#index'
@@ -228,6 +214,7 @@ Getting there. Now let's put in place an improved front page that presents some 
 
 {% highlight ruby %}
 # /app/views/home/index.html.haml
+
 %h1 Home
 - if flash[:notice]
   %h2 *** #{flash[:notice]} ***
@@ -245,6 +232,7 @@ You will see we are referencing a helper function here that we need to define:
 
 {% highlight ruby %}
 # /app/controllers/application_controller.rb
+
 class ApplicationController < ActionController::Base
   protect_from_forgery
 
