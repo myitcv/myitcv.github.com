@@ -154,7 +154,13 @@ HamlHtml5Example::Application.routes.draw do
 end
 {% endhighlight %}
 
-We should now be ready to fire up our application and see the results, which should look something like this:
+We should now be ready to fire up our application and see the results:
+
+{% highlight bash %}
+rails server
+{% endhighlight %}
+
+The results should look something like this:
 
 !/images/2013-03-10-html5-haml-example.png!
 
