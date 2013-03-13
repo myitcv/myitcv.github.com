@@ -50,7 +50,7 @@ VAR_2=again
 # spacing around the '=' is optional
 VAR_1  =  test
 # it's the first none whitespace character that counts
-VAR_2 = the first
+VAR_2 = first
 
 [project-3-name]
 VAR_1=test
@@ -110,7 +110,7 @@ _cd_special ()
   if [ -e "$PWD/config/application.yml" ] # we are using figaro
   then
     selector=`basename $PWD`
-    $($HOME/bin/config_select $HOME/.web_app_secrets $selector)
+    eval $($HOME/bin/config_select $HOME/.web_app_secrets $selector)
   fi
 }
 
