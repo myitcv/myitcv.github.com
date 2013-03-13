@@ -6,28 +6,26 @@ comments: true
 <div itemprop='blogPost' itemscope='itemscope' itemtype='http://schema.org/BlogPosting'>
   <meta content='blog.myitcv.org.uk{{ page.id }}' itemprop='url'>
   <h1 itemprop='name'>{{ page.title }}</h1>
-  <div itemprop='description articleBody'>
-    <div class='page_details'>
-      <hr class='page_details'>
-      <abbr class='pagedate' itemprop='datePublished' title='{{ page.date | date_to_xmlschema }}'>{{ page.date | date_to_string | upcase }}</abbr>
-      <span class='author' itemprop='author' itemscope='itemscope' itemtype='http://schema.org/Person'>
-        <meta content='{{ author.web }}' itemprop='url'>
-        <a href='{{ author.web }}' rel='author' title='author profile'>
-          <span itemprop='name'>{{ author.display_name }}</span>
-        </a>
-      </span>
-      <span class='location'>{{ page.location | upcase }}</span>
-      <span class='tags'>
-        <ul class='tags'>
-          {% for tag in page.tags %}
-          <li class='tags'>&lt;{{ tag | upcase }}&gt;</li>
-          {% endfor %}
-        </ul>
-      </span>
-      <hr class='page_details'>
-    </div>
-    {{ content }}
+  <div class='page_details'>
+    <hr class='page_details'>
+    <abbr class='pagedate' itemprop='datePublished' title='{{ page.date | date_to_xmlschema }}'>{{ page.date | date_to_string | upcase }}</abbr>
+    <span class='author' itemprop='author' itemscope='itemscope' itemtype='http://schema.org/Person'>
+      <meta content='{{ author.web }}' itemprop='url'>
+      <a href='{{ author.web }}' rel='author' title='author profile'>
+        <span itemprop='name'>{{ author.display_name }}</span>
+      </a>
+    </span>
+    <span class='location'>{{ page.location | upcase }}</span>
+    <span class='tags'>
+      <ul class='tags'>
+        {% for tag in page.tags %}
+        <li class='tags'>&lt;{{ tag | upcase }}&gt;</li>
+        {% endfor %}
+      </ul>
+    </span>
+    <hr class='page_details'>
   </div>
+  {{ content }}
 </div>
 <hr>
 <h4>Related Posts</h4>

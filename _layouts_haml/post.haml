@@ -6,22 +6,21 @@ comments: true
 %div{:itemprop => "blogPost", :itemscope => "itemscope", :itemtype => "http://schema.org/BlogPosting"}
   %meta{:content => "blog.myitcv.org.uk{{ page.id }}", :itemprop => "url"}/
   %h1{:itemprop => "name"} {{ page.title }}
-  %div{:itemprop => "description articleBody"}
-    .page_details
-      %hr.page_details/
-      %abbr.pagedate{:itemprop => "datePublished", :title => "{{ page.date | date_to_xmlschema }}"} {{ page.date | date_to_string | upcase }}
-      %span.author{:itemprop => "author", :itemscope => "itemscope", :itemtype => "http://schema.org/Person"}
-        %meta{:content => "{{ author.web }}", :itemprop => "url"}/
-        %a{:href => "{{ author.web }}", :rel => "author", :title => "author profile"}
-          %span{:itemprop => "name"} {{ author.display_name }}
-      %span.location {{ page.location | upcase }}
-      %span.tags
-        %ul.tags
-          {% for tag in page.tags %}
-          %li.tags &lt;{{ tag | upcase }}&gt;
-          {% endfor %}
-      %hr.page_details/
-    {{ content }}
+  .page_details
+    %hr.page_details/
+    %abbr.pagedate{:itemprop => "datePublished", :title => "{{ page.date | date_to_xmlschema }}"} {{ page.date | date_to_string | upcase }}
+    %span.author{:itemprop => "author", :itemscope => "itemscope", :itemtype => "http://schema.org/Person"}
+      %meta{:content => "{{ author.web }}", :itemprop => "url"}/
+      %a{:href => "{{ author.web }}", :rel => "author", :title => "author profile"}
+        %span{:itemprop => "name"} {{ author.display_name }}
+    %span.location {{ page.location | upcase }}
+    %span.tags
+      %ul.tags
+        {% for tag in page.tags %}
+        %li.tags &lt;{{ tag | upcase }}&gt;
+        {% endfor %}
+    %hr.page_details/
+  {{ content }}
 %hr/
 %h4 Related Posts
 %ul.posts
