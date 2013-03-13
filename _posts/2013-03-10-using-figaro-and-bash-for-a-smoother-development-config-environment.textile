@@ -49,12 +49,13 @@ VAR_2=again
 [project-2-name]
 # spacing around the '=' is optional
 VAR_1  =  test
-# it's the first none whitespace character that counts
+# it's the first non-whitespace character that counts
 VAR_2 = first
 
 [project-3-name]
 VAR_1=test
-VAR_2=again
+# indeed it's everything that's after the first non-whitespace character that counts
+VAR_2 = we want everything from this line
 
 {% endhighlight %}
 
@@ -79,17 +80,17 @@ LINE
 end
 {% endhighlight %}
 
-If we run this on our @$HOME/.web_app_secrets@ file to pull out the @project-2-name@ config:
+If we run this on our @$HOME/.web_app_secrets@ file to pull out the @project-3-name@ config:
 
 {% highlight bash %}
-$HOME/bin/config_select $HOME/.web_app_secrets project-2-name
+$HOME/bin/config_select $HOME/.web_app_secrets project-3-name
 {% endhighlight %}
 
 we get the following output as expected:
 
 {% highlight bash %}
 export VAR_1="test"
-export VAR_2="the first"
+export VAR_2="we want everything from this line"
 {% endhighlight %}
 
 Now we need to hook up Bash so that whenever we @cd@ to a directory that contains a figaro-enabled project it sources the appropriate environment variables. 
