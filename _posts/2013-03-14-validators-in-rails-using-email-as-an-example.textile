@@ -222,4 +222,4 @@ Loading development environment (Rails 3.2.12)
 
 h2. Is this code available anywhere?
 
-As always, there is a repository on GitHub.
+As always, there is "a repository on GitHub":https://github.com/myitcv/email_validator_example.
