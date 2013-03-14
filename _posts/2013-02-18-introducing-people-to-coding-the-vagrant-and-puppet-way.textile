@@ -29,7 +29,7 @@ So, again, at a high level (the finer details to be worked out) this is the scen
 
 * "VirtualBox":https://www.virtualbox.org/ for the virtualisation environment
 * "Ubuntu":http://www.ubuntu.com/ 12.10 for the operating system
-* "Gnome":http://www.gnome.org/ for the window manager - Ubuntu 12.10 uses "Unity":http://unity.ubuntu.com/ by default but the concern here is that expecting everyone to have hardware capable of supporting 3D acceleration through the VM is perhaps a step too far
+* "Gnome":http://www.gnome.org/ for the window manager - Ubuntu 12.10 uses "Unity":http://unity.ubuntu.com/ by default but my concern here is that expecting everyone to have hardware capable of supporting 3D acceleration through the VM is perhaps a step too far
 * "RVM":https://rvm.io/ for Ruby management
 
 Creating a VM via VirtualBox is easy. Installing Ubuntu on that VM is also easy. Setting up the development environment is also easy. Configuring various settings is as easy as pointing, clicking and choosing a theme, background colour etc. But all of this takes time and if for some reason I need to repeat the exercise it would be tedious at best.
@@ -54,7 +54,7 @@ A short list of requirements (I have no experience of whether this works on Wind
 * "VirtualBox":https://www.virtualbox.org/
 * "git":http://git-scm.com/
 
-Then head over to "the repository on GitHub":https://github.com/myitcv/lbscoding to follow the README which will likely be more up-to-date than this article. 
+Then head over to "my repository on GitHub":https://github.com/myitcv/lbscoding to follow the README which will likely be more up-to-date than this article. 
 
 h2. The results?
 

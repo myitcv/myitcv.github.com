@@ -10,7 +10,7 @@ tags:
 - oauth2
 ---
 
-*Update 2013-03-10:* modified post to use "figaro":https://github.com/laserlemon/figaro instead of rather half-baked @parseconfig@ approach.
+_*Update 2013-03-10:* modified post to use "figaro":https://github.com/laserlemon/figaro instead of rather half-baked @parseconfig@ approach._
 
 All of the code for the following example is "on GitHub":https://github.com/myitcv/omniauth-google-oauth2-example. However for the sake of readability I have left out the init of a git repository in the description that follows... clearly this is an important step
 

@@ -66,7 +66,7 @@ Edit the default layout, replacing the contents (which will be left over from th
     = csrf_meta_tags
     = yield(:head)
   %body
-    %header.navbar.navbar-fixed-top
+    %header.navbar.navbar-fixed-top.navbar-inverse
       %nav.navbar-inner
         .container
 	  %a.brand{:href => "/"} Our First HTML5 haml example

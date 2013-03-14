@@ -10,7 +10,7 @@ tags:
 - rails
 ---
 
-*Update 2013-03-12:* replaced the rather fragile piping of commands with a simple ruby script to extracting the config
+_*Update 2013-03-12:* replaced the rather fragile piping of commands with a simple ruby script to extracting the config_
 
 Environment variables have for a long time been the source of configuration data for (many) Unix-based applications.
 

@@ -1,5 +1,0 @@
-[project-3-name]
-VAR_1=test
-# indeed it's everything that's after the first non-whitespace character that counts
-VAR_2 = we want everything from this line
-

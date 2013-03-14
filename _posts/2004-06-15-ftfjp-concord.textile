@@ -8,7 +8,7 @@ tags:
 - study
 ---
 
-My final year thesis at the "Department of Computing":http://www3.imperial.ac.uk/computing/, "Imperial College":http://www.ic.ac.uk was focused on object oriented programming languages. My supervisor was the brilliant "Sophia Drossopoulou":http://www.doc.ic.ac.uk/~scd/. Along with "Christopher Anderson":http://www.lyonanderson.org/ and "Klaus Ostermann":http://www.informatik.uni-marburg.de/~kos/ we used my thesis as the basis of a paper that was presented at "6th Workshop on Formal Techniques for Java-like Programs - FTfJP'2004":http://www.cs.ru.nl/ftfjp/2004.html on 15 June 2004.  
+My final year thesis at the "Department of Computing":http://www3.imperial.ac.uk/computing/, "Imperial College":http://www.ic.ac.uk focused on object oriented programming languages. My supervisor was the brilliant "Sophia Drossopoulou":http://www.doc.ic.ac.uk/~scd/. Along with "Christopher Anderson":http://www.lyonanderson.org/ and "Klaus Ostermann":http://www.informatik.uni-marburg.de/~kos/ we used my thesis as the basis of a paper that was presented at "6th Workshop on Formal Techniques for Java-like Programs - FTfJP'2004":http://www.cs.ru.nl/ftfjp/2004.html on 15 June 2004:  
 
 bq. We suggest a simple model for a restricted form of dependent types in object oriented languages, whereby classes belong to groups and dependency is introduced via intra-group references using the MyGrp keyword. We show how our approach can code well-known examples from the literature, present the formal model and outline soundness of the type system.
 
