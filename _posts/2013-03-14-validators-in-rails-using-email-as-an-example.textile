@@ -1,7 +1,7 @@
 ---
 date: 2013-03-14
 layout: post
-title: Validators in Rails using email as an example
+title: Email validation against RFC2822 using Rails ActiveModel::EachValidator
 location: San Francisco
 author: paul
 tags:
