@@ -112,7 +112,7 @@ We need to ensure this directory is autoloaded when our Rails application starts
 # config/application.rb
 
 # ...
-module EmailTest
+module EmailValidatorExample
   class Application < Rails::Application
 
     #...
