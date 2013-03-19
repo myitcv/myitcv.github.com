@@ -17,7 +17,7 @@ comments: true
     %span.tags
       %ul.tags
         {% for tag in page.tags %}
-        %li.tags &lt;{{ tag | upcase }}&gt;
+        %li.tags {{ tag | upcase }}
         {% endfor %}
     %hr.page_details/
   {{ content }}

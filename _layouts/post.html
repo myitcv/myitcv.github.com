@@ -19,7 +19,7 @@ comments: true
     <span class='tags'>
       <ul class='tags'>
         {% for tag in page.tags %}
-        <li class='tags'>&lt;{{ tag | upcase }}&gt;</li>
+        <li class='tags'>{{ tag | upcase }}</li>
         {% endfor %}
       </ul>
     </span>
