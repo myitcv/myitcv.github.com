@@ -10,7 +10,8 @@ tags:
 - oauth2
 ---
 
-_*Update 2013-03-10:* modified post to use "figaro":https://github.com/laserlemon/figaro instead of rather half-baked @parseconfig@ approach._
+_*Update 2013-03-10:* modified to use "figaro":https://github.com/laserlemon/figaro instead of rather half-baked @parseconfig@ approach._
+_*Update 2013-03-24:* modified to use @ActiveRecord@ sessions and @first_or_initialize@ for user creation (moving the logic from the model to the controller)_
 
 All of the code for the following example is "on GitHub":https://github.com/myitcv/omniauth-google-oauth2-example. However for the sake of readability I have left out the init of a git repository in the description that follows... clearly this is an important step
 
@@ -87,6 +88,7 @@ If your configure is like mine, head to "http://localhost:3000":http://localhost
 So now we have a working Rails setup that uses Haml as the template language. Before we go too far, let's setup the session handling and user model:
 
 {% highlight bash %}
+rails generate session_migration
 rails generate controller sessions
 rails generate model user provider:string \
   uid:string \
@@ -97,6 +99,15 @@ rails generate model user provider:string \
 rake db:migrate
 {% endhighlight %}
 
+Let's configure rails to use the ActiveRecord session handling:
+
+{% highlight ruby %}
+# config/initializers/session_store.rb
+
+# replace the contents of the entire file
+OmniauthGoogleOauth2Example::Application.config.session_store :active_record_store
+{% endhighlight %}
+
 We will add the routes to the session handling later (it will actually be a callback from our Google auth provider). So for now let's fill out the session controller and the user model:
 
 {% highlight ruby %}
@@ -105,9 +116,24 @@ We will add the routes to the session handling later (it will actually be a call
 class SessionsController < ApplicationController
   def create
     auth = request.env["omniauth.auth"]
-    user = User.create_or_ensure_omniauth(auth)
-    session[:user_id] = user.id
-    redirect_to root_url, :notice => "Signed in!"
+    user = User.where(:provider => auth["provider"], :uid => auth["uid"]).first_or_initialize(
+      :refresh_token => auth["credentials"]["refresh_token"],
+      :access_token => auth["credentials"]["token"],
+      :expires => auth["credentials"]["expires_at"],
+      :name => auth["info"]["name"],
+    )
+    url = session[:return_to] || root_path
+    session[:return_to] = nil
+    url = root_path if url.eql?('/logout')
+
+    if user.save
+      session[:user_id] = user.id
+      notice = "Signed in!"
+      logger.debug "URL to redirect to: #{url}"
+      redirect_to url, :notice => notice
+    else
+      raise "Failed to login"
+    end
   end
 
   def destroy
@@ -124,18 +150,6 @@ class User < ActiveRecord::Base
   attr_accessible :name, :provider, :uid, :refresh_token, :access_token, :expires
 
   validates_uniqueness_of :uid, :scope => :provider
-
-  def self.create_or_ensure_omniauth(auth)
-    user = User.find_by_provider_and_uid(auth["provider"], auth["uid"]) || create! do |u|
-      u.provider = auth["provider"]
-      u.uid = auth["uid"]
-      u.refresh_token = auth["refresh_token"]
-    end
-    user.access_token = auth["token"]
-    user.expires = auth["expires_at"]
-    user.name = auth["info"]["name"]
-    user
-  end
 end
 {% endhighlight %}
 
