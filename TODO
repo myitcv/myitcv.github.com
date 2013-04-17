@@ -1,0 +1,5 @@
+TODO
+----
+* Include a nice date tag on each page - blogger example?
+* Add tags and format (span.tag)
+* Add line numbers: https://github.com/a24kaku/scala-platea/issues/4 with ref to http://blog.waxman.me/extending-your-models-in-rails-3

@@ -1,0 +1,64 @@
+---
+layout: default
+comments: true
+---
+{% assign author = site.authors[page.author] %}
+<div itemprop='blogPost' itemscope='itemscope' itemtype='http://schema.org/BlogPosting'>
+  <meta content='blog.myitcv.org.uk{{ page.id }}' itemprop='url'>
+  <h1 itemprop='name'>{{ page.title }}</h1>
+  <div class='page_details'>
+    <hr class='page_details'>
+    <abbr class='pagedate' itemprop='datePublished' title='{{ page.date | date_to_xmlschema }}'>{{ page.date | date_to_string | upcase }}</abbr>
+    <span class='author' itemprop='author' itemscope='itemscope' itemtype='http://schema.org/Person'>
+      <meta content='{{ author.web }}' itemprop='url'>
+      <a href='{{ author.web }}' rel='author' title='author profile'>
+        <span itemprop='name'>{{ author.display_name }}</span>
+      </a>
+    </span>
+    <span class='location'>{{ page.location | upcase }}</span>
+    <span class='tags'>
+      <ul class='tags'>
+        {% for tag in page.tags %}
+        <li class='tags'>{{ tag | upcase }}</li>
+        {% endfor %}
+      </ul>
+    </span>
+    <hr class='page_details'>
+  </div>
+  {{ content }}
+</div>
+<hr>
+<h4>Related Posts</h4>
+<ul class='posts'>
+  {% for post in site.related_posts limit:3 %}
+  <li>
+    <span>{{ post.date | date_to_string }}</span>
+    &raquo;
+    <a href='{{ post.url }}'>{{ post.title }}</a>
+  </li>
+  {% endfor %}
+</ul>
+{{ if page.comments }}
+<hr>
+<div id='disqus_thread'></div>
+<script>
+  /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+  var disqus_shortname = 'myitcv'; // required: replace example with your forum shortname
+  var disqus_identifier = '{{ page.id }}';
+  
+  /* * * DON'T EDIT BELOW THIS LINE * * */
+  (function() {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>
+  Please enable JavaScript to view the
+  <a href='http://disqus.com/?ref_noscript'>comments powered by Disqus.</a>
+</noscript>
+<a class='dsq-brlink' href='http://disqus.com'>
+  comments powered by
+  <span class='logo-disqus'>Disqus</span>
+</a>
+{{ endif }}
