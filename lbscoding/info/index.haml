@@ -1,0 +1,221 @@
+<!doctype html>
+%html{:lang => "en"}
+  %head
+    %meta{:charset => "utf-8"}/
+    %title An Introduction to Web Development...for Business Students
+    %meta{:content => "A framework for easily creating beautiful presentations using HTML", :name => "description"}/
+    %meta{:content => "Hakim El Hattab", :name => "author"}/
+    %meta{:content => "yes", :name => "apple-mobile-web-app-capable"}/
+    %meta{:content => "black-translucent", :name => "apple-mobile-web-app-status-bar-style"}/
+    %meta{:content => "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no", :name => "viewport"}/
+    %link{:href => "css/reveal.min.css", :rel => "stylesheet"}/
+    %link#theme{:href => "css/theme/night.css", :rel => "stylesheet"}/
+    / For syntax highlighting
+    %link{:href => "lib/css/zenburn.css", :rel => "stylesheet"}/
+    / If the query includes 'print-pdf', use the PDF print sheet
+    :javascript
+      document.write( '<link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+    /[if lt IE 9]
+      <script src="lib/js/html5shiv.js"></script>
+  %body
+    .reveal
+      / Any section element inside of this container is displayed as a slide
+      .slides
+        %section
+          %h2 An Introduction to Web Development...
+          %h3 ...for Business Students
+          %br/
+          %br/
+          %p 9 Apr 2013
+          %p
+            %small
+              %a{:href => "http://myitcv.org.uk"} Paul Jolly
+              \/
+              %a{:href => "mailto:paul@myitcv.org.uk"} paul@myitcv.org.uk
+        %section
+          %h2 Why am I running this course?
+          %ul
+            %li Inspired by similar course at Berkeley on exchange
+            %li Interested classmates (working on ideas or at start-ups)
+            %li Technology is a passion of mine
+            %li I enjoy teaching others
+            %li Inspire others to learn more about something that will shape companies and organisations going forward
+            %li An experiment: strongly believe LBS should strengthen its entrepreneurship / start-up offering
+            %li I learn too
+        %section
+          %h2 What's this guy got to do with the course?
+          %img{:border => "0", :src => "img/sumly.jpg"}/
+        %section
+          %h2 Why are you here?
+          %ul
+            %li You want to work on your own idea
+            %li You want to work at a tech start-up
+            %li You work with engineers...or want to / will do
+            %li You are curious to learn
+            %li Others....
+        %section
+          %h2 Who am I?
+          %ul
+            %li MEng Software Engineering, Imperial College London
+            %li Worked for 5 years at Goldman Sachs in a software engineering role...
+            %li ...then for 2 years in a management / strategy role...but still very tech-based
+            %li Still coding in my spare time
+        %section
+          %h2 Who are you?
+          %ul
+            %li Student at LBS
+            %li (Almost) no experience of coding or development
+            %li Passion to learn something new
+            %li Ready for a fast paced course
+        %section
+          %h2 What are we going to do?
+          %ul
+            %li Learn a new skill
+            %li Build a real product: a very basic Twitter-like web application
+            %li Broaden your horizons
+        %section
+          %h2 How are we going to do this?
+          %ul
+            %li Six week course, three hour "lesson" per week + tutorial time + office hours
+            %li Step-by-step, in-class development
+            %li Homework exercises for those who want to go off-piste and a bit further
+            %li I will provide all the software you need
+        %section
+          %h2 What technologies will we use?
+          %ul
+            %li Ruby - very popular programming language (used at Twitter and thousands of other companies)
+            %li Ruby on Rails - very popular web application framework
+            %li OpenShift - open-source Platform as a Service
+            %li Linux - open-source operating system
+            %li VirtualBox - open-source virtual machine
+          %br/
+          %p
+            %br/
+            %br/
+            %small
+              %i For those interested... don't worry if some of these words doesn't make any sense for now
+        %section
+          %h2 Is there a course syllabus?
+          %p In a word....no. Largely because I want to remain responsive to how the class progresses. Rest assured, there is plenty of material we could cover if we find ourselves with time on our hands!
+          %br/
+          %p
+            We will follow a structure very similar (but different in some key aspects) to
+            %a{:href => "http://ruby.railstutorial.org/chapters/a-demo-app"} Michael Hartl's excellent Rails guide
+          %br/
+          %p If you are concerned about potential overlap with courses you may have taken before, take a look through this page
+        %section
+          %h2 So what are the logistics?
+          %ul
+            %li Evening class from 18:30 (day TBC after stage 1 survey)
+            %li Tutorial time (again, day TBC)
+            %li Office hours: flexible
+            %li 150 GBP for the entire course
+            %li Maximum of 30 students in the class
+        %section
+          %h2 What do I need for the course?
+          %ul
+            %li Yourself
+            %li A laptop
+            %li Bags of energy and enthusiasm
+        %section
+          %h2 Important disclaimer....
+        %section
+          %h3 Everything we will cover on this course you could pick-up yourself....for free
+        %section
+          %h3
+            All the software we will use is free
+            = succeed "(as" do
+              %br/
+            in beer)
+        %section
+          %h3 FREE
+        %section
+          %h2 So why am I charging for this course?
+          %ul
+            %li Significant time commitment on my behalf
+            %li I need your commitment - limited number of spaces
+            %li But at the same time I want to remain fully transparent on the other free options for learning out there (e.g. Michael Hartl's starter guide)
+        %section
+          %h2 So what next?
+          %ul
+            %li
+              %b> Sign-up stage 1
+              \: survey of interest to find best timings (closes 23:59 Wed 10 Apr)
+            %li
+              %a{:href => "https://docs.google.com/a/myitcv.org.uk/forms/d/1DMApPVEUYsm05z2_CpeU8NaFswBV5jYNdZnFCjRODX4/viewform"} Complete the survey
+          %br/
+          %li Schedule is finalised
+          %br/
+          %li First session of the course: open to all (date per finalised schedule)
+          %br/
+          %li
+            %b> Sign-up stage 2
+            \: commit to the course for sessions 2-6
+          %li Minimum of 10 people for the course to run
+          %li Maximum of 30
+          %li Sign-up will be FIRST COME FIRST SERVED!
+        %section
+          %h1 FAQ
+        %section
+          %h2 Can I do the course remotely?
+          %p No - the logistics of doing this over a webcast or similar are going to be too much...
+        %section
+          %h2 Who is going to be running the sessions?
+          %p Me - hence the limit to the size of class
+        %section
+          %h2 Is there a 'taster' session?
+          %p Yes - the first session will be open to all (subject to the capacity of the lecture theatre). Sign-up will then be on a first come, first served basis for session 2-6
+        %section
+          %h2 Can I take this course for credit?
+          %p No - this sites entirely outside the LBS course portfolio
+        %section
+          %h2 Can I miss a class?
+          %p Short answer is no, simply because you will immediately lose pace with the rest of the class
+          %br/
+          %br/
+          %p Long answer is, possibly, if you are willing to attend tutorial sessions and put in the effort to catch up
+        %section
+          %h2 How is this similar to courses offered by General Assembly?
+          %p This course will be very similar to any course that purports to be an "Introduction to Ruby on Rails." This includes any GA course by that title, Coursera online courses, books etc. free or otherwise
+          %br/
+          %p The main difference to online courses is that this will be a fully interactive "in-person" session
+          %br/
+          %p
+            If you have specific questions or concerns about any overlap to other courses you have done, please
+            %a{:href => "mailto:paul@myitcv.org.uk"} email me
+        %section
+          %h2 What experience of teaching do you have?
+          %ul
+            %li Mentored many colleagues at GS
+            %li Original member of the "Tech Group" at GS - steering group for a development framework used by 400+ developers
+        %section
+          %h1 Q &amp; A
+          %p
+            Still got a question?
+            %a{:href => "mailto:paul@myitcv.org.uk"} Email me
+    %script{:src => "lib/js/head.min.js"}
+    %script{:src => "js/reveal.min.js"}
+    :javascript
+      // Full list of configuration options available here:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+      	controls: true,
+      	progress: true,
+      	history: true,
+      	center: true,
+
+      	theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+      	transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+      	// Optional libraries used to extend on reveal.js
+      	dependencies: [
+      		{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+      		{ src: 'plugin/markdown/showdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      		{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      		{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+      		{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+      		{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+      		// { src: 'plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } }
+      		// { src: 'plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+      	]
+      });
