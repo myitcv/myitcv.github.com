@@ -1,0 +1,70 @@
+!!!
+/[if lt IE 7] <html class="no-js lt-ie9 lt-ie8 lt-ie7">
+/[if IE 7] <html class="no-js lt-ie9 lt-ie8">
+/[if IE 8] <html class="no-js lt-ie9">
+/ [if gt IE 8]><!
+%html.no-js
+  / <![endif]
+  %head
+    %meta{:charset => "utf-8"}/
+    %meta{:content => "IE=edge,chrome=1", "http-equiv" => "X-UA-Compatible"}/
+    %title
+    %meta{:content => "", :name => "description"}/
+    %meta{:content => "width=device-width", :name => "viewport"}/
+    %link{:href => "css/bootstrap.min.css", :rel => "stylesheet"}/
+    :css
+      body {
+          padding-top: 60px;
+          padding-bottom: 40px;
+      }
+    %link{:href => "css/bootstrap-responsive.min.css", :rel => "stylesheet"}/
+    %link{:href => "css/main.css", :rel => "stylesheet"}/
+    %script{:src => "js/vendor/modernizr-2.6.2-respond-1.1.0.min.js"}
+  %body
+    /[if lt IE 7]
+      <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+    / This code is taken from http://twitter.github.com/bootstrap/examples/hero.html
+    .navbar.navbar-inverse.navbar-fixed-top
+      .navbar-inner
+        .container
+          %a.btn.btn-navbar{"data-target" => ".nav-collapse", "data-toggle" => "collapse"}
+            %span.icon-bar
+            %span.icon-bar
+            %span.icon-bar
+          %a.brand{:href => "/lbscoding"} LBS Coding
+          .nav-collapse.collapse
+            %ul.nav
+              %li.active
+                %a{:href => "index.html"} Home
+              %li
+                %a{:href => "schedule.html"} Schedule
+          / /.nav-collapse
+    .container
+      %h1 Install Checklist
+      %p Please ensure you have the following applications installed:
+
+      %ul
+        %li 
+          %a{:href => "http://www.google.com/chrome/"} Google Chrome
+        %li 
+          %span VirtualBox
+          %ul
+            %li 
+              %a{:href => "http://download.virtualbox.org/virtualbox/4.2.12/VirtualBox-4.2.12-84980-Win.exe"} Windows
+            %li 
+              %a{:href => "http://download.virtualbox.org/virtualbox/4.2.12/VirtualBox-4.2.12-84980-OSX.dmg"} Mac
+      %hr/
+
+      %footer
+        %p &copy; Paul Jolly, 2013
+    / /container
+    %script{:src => "//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"}
+    :javascript
+      window.jQuery || document.write('<script src="js/vendor/jquery-1.9.1.min.js"><\/script>')
+    %script{:src => "js/vendor/bootstrap.min.js"}
+    %script{:src => "js/main.js"}
+    :javascript
+      var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];
+      (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+      g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
+      s.parentNode.insertBefore(g,s)}(document,'script'));

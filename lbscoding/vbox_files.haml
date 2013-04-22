@@ -1,0 +1,166 @@
+!!!
+/[if lt IE 7] <html class="no-js lt-ie9 lt-ie8 lt-ie7">
+/[if IE 7] <html class="no-js lt-ie9 lt-ie8">
+/[if IE 8] <html class="no-js lt-ie9">
+/ [if gt IE 8]><!
+%html.no-js
+  / <![endif]
+  %head
+    %meta{:charset => "utf-8"}/
+    %meta{:content => "IE=edge,chrome=1", "http-equiv" => "X-UA-Compatible"}/
+    %title
+    %meta{:content => "", :name => "description"}/
+    %meta{:content => "width=device-width", :name => "viewport"}/
+    %link{:href => "css/bootstrap.min.css", :rel => "stylesheet"}/
+    :css
+      body {
+          padding-top: 60px;
+          padding-bottom: 40px;
+      }
+    %link{:href => "css/bootstrap-responsive.min.css", :rel => "stylesheet"}/
+    %link{:href => "css/main.css", :rel => "stylesheet"}/
+    %script{:src => "js/vendor/modernizr-2.6.2-respond-1.1.0.min.js"}
+  %body
+    /[if lt IE 7]
+      <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+    / This code is taken from http://twitter.github.com/bootstrap/examples/hero.html
+    .navbar.navbar-inverse.navbar-fixed-top
+      .navbar-inner
+        .container
+          %a.btn.btn-navbar{"data-target" => ".nav-collapse", "data-toggle" => "collapse"}
+            %span.icon-bar
+            %span.icon-bar
+            %span.icon-bar
+          %a.brand{:href => "/lbscoding"} LBS Coding
+          .nav-collapse.collapse
+            %ul.nav
+              %li.active
+                %a{:href => "index.html"} Home
+              %li
+                %a{:href => "schedule.html"} Schedule
+          / /.nav-collapse
+    .container
+      %h1 VirtualBox Files
+      %p Once you have VirtualBox installed, there are two files that you need:
+      %ul
+        %li Virtual machine settings file (has a .vbox file extension)
+        %li Virtual machine disk (has a .vmdk file extension)
+      %p The operating system for our virtual machine is stored on the virtual machine disk, and the settings for our virtual machine (i.e. the virtual hardware) are stored in the machine settings file.
+      %p The latest version of both files can be found below:
+
+      %table.table.table-condensed.table-bordered
+        %thead
+          %tr
+            %th Version
+            %th Released
+            %th Virtual machine settings
+            %th Virtual machine disk 
+
+        %tbody
+          %tr.success
+            %td lbscoding_v03 (current version)
+            %td 22/04/2013
+            %td 
+              %a{:href => "https://docs.google.com/file/d/0B8wIfRgDWrMhdlc3RmVENzU2OE0/edit?usp=sharing", :target => "_blank"} lbscoding_v03.vbox
+            %td 
+              %a{:href => "https://docs.google.com/file/d/0B8wIfRgDWrMhVkZ6TllBVFZwT3c/edit?usp=sharing", :target => "_blank"} box-disk03.vmdk
+
+          %tr
+            %td lbscoding_v01
+            %td 16/04/2013
+            %td 
+              %a{:href => "https://docs.google.com/file/d/0B8wIfRgDWrMhdlc3RmVENzU2OE0/edit?usp=sharing", :target => "_blank"} lbscoding_v01.vbox
+            %td 
+              %a{:href => "https://docs.google.com/file/d/0B8wIfRgDWrMhVkZ6TllBVFZwT3c/edit?usp=sharing", :target => "_blank"} box-disk1.vmdk
+
+      %h2 Setting up VirtualBox
+      %p Follow these steps to ensure you have VirtualBox setup correctly
+      %br/
+      %p 1. Download the latest version of the two required files (see above)
+      %br/
+      %p 2. Launch Finder (bottom left icon) – on Windows open an Explorer window:
+      %br/
+      %img{:border => "0", :src => "img/s021.png.jpg"}/
+      %br/
+      %br/
+      %p Finder Window will then appear
+      %img{:border => "0", :src => "img/s022.png.jpg"}/
+      %br/
+      %br/
+      %p 3. Go to the Home folder – on Windows this can be your “My Documents” folder:
+      %img{:border => "0", :src => "img/s031.png.jpg"}/
+      %br/
+      %br/
+      %p 4. Create a New Folder called...
+      %img{:border => "0", :src => "img/s041.png.jpg"}/
+      %br/
+      %br/
+      %p ... [VirtualBox VMs] – don’t use brackets, case is significant:
+      %img{:border => "0", :src => "img/s042.png.jpg"}/
+      %br/
+      %br/
+      %p 5. Within [VirtualBox VMs] create another folder called...
+      %img{:border => "0", :src => "img/s051.png.jpg"}/
+      %br/
+      %br/
+      %p ... [lbscoding_v03] (use the name corresponding to the latest version - these images just show [lbscoding] to remain current):
+      %img{:border => "0", :src => "img/s052.png.jpg"}/
+      %br/
+      %br/
+      %p 6. Drag the VirtualBox files you downloaded into [lbscoding]
+      %img{:border => "0", :src => "img/s061.png.jpg"}/
+      %br/
+      %br/
+      %p Files are now in the right place:
+      %img{:border => "0", :src => "img/s062.png.jpg"}/
+      %br/
+      %br/
+      %p 7. Launch VirtualBox:
+      %img{:border => "0", :src => "img/s071.png.jpg"}/
+      %br/
+      %br/
+      %p 8. Add a new machine:
+      %img{:border => "0", :src => "img/s081.png.jpg"}/
+      %br/
+      %br/
+      %p 9. Find the lbscoding.vbox file we just moved into [VirtualBox VMs]/[lbscoding]. Click Open:
+      %img{:border => "0", :src => "img/s091.png.jpg"}/
+      %br/
+      %br/
+      %p 10. The virtual machine will be added. Click Start to start the virtual machine:
+      %img{:border => "0", :src => "img/s101.png.jpg"}/
+      %br/
+      %br/
+      %p 11. You can ignore these warnings that appear. If you want you can select "Do not show this message again"
+      %img{:border => "0", :src => "img/s111.png.jpg"}/
+      %img{:border => "0", :src => "img/s112.png.jpg"}/
+      %img{:border => "0", :src => "img/s113.png.jpg"}/
+      %img{:border => "0", :src => "img/s114.png.jpg"}/
+      %br/
+      %br/
+      %p 12. If you get here, good work. Log in with username: lbs, password: lbscoding:
+      %img{:border => "0", :src => "img/s121.png.jpg"}/
+      %br/
+      %br/
+      %p 13. You should then see something like this:
+      %img{:border => "0", :src => "img/s131.png.jpg"}/
+      %br/
+      %br/
+      %p 14. To turn off your virtual machine, click the Power icon in the top right hand corner of the virtual machine and select "Shut down"
+      %img{:border => "0", :src => "img/s141.png.jpg"}/
+
+
+      %hr/
+      %footer
+        %p &copy; Paul Jolly, 2013
+    / /container
+    %script{:src => "//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"}
+    :javascript
+      window.jQuery || document.write('<script src="js/vendor/jquery-1.9.1.min.js"><\/script>')
+    %script{:src => "js/vendor/bootstrap.min.js"}
+    %script{:src => "js/main.js"}
+    :javascript
+      var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];
+      (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+      g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
+      s.parentNode.insertBefore(g,s)}(document,'script'));
