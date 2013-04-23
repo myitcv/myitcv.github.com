@@ -80,7 +80,7 @@
         </section>
         <section>
           <h3>Create/edit a file I</h3>
-          <pre><code class="ruby">&#x000A;# config/routes.rb&#x000A;&#x000A;Homepage::Application.routes.draw do&#x000A;  root :to =&gt; 'home#index'&#x000A;end&#x000A;</code></pre>
+          <pre><code class="ruby">&#x000A;# config/routes.rb&#x000A;&#x000A;# this is a comment&#x000A;&#x000A;Homepage::Application.routes.draw do&#x000A;  root :to =&gt; 'home#index'&#x000A;end&#x000A;</code></pre>
         </section>
         <section>
           <h3>Create/edit a file II</h3>
@@ -105,6 +105,10 @@
         <section>
           <h3>Update our terminal config files</h3>
           <pre><code class="bash">&#x000A;# cd = /home/lbs&#x000A;&#x000A;$ cd dev/lbscoding-env&#x000A;$ git pull&#x000A;&#x000A;# we will see more of the git command later&#x000A;# it is a version control system, as opposed to "a person who is &#x000A;# deemed to be despicable or contemptible"&#x000A;&#x000A;$ cd&#x000A;$ source .bashrc&#x000A;</code></pre>
+        </section>
+        <section>
+          <h3>Install a required package</h3>
+          <pre><code class="bash">&#x000A;$ sudo apt-get install nodejs&#x000A;&#x000A;# password is lbscoding&#x000A;# sudo is a special command that temporarily elevates our privileges&#x000A;</code></pre>
         </section>
         <section>
           <h2>Right&#8230; here we go</h2>
@@ -135,11 +139,151 @@
           <ul>
           	<li>Rails created a template for our web application</li>
           	<li>In fact it created a working web application</li>
-          	<li>Let&#8217;s have a quick look around</li>
+          	<li>Let&#8217;s have a quick look around&#8230;</li>
+          	<li>&#8230;but first let&#8217;s see what it does</li>
           </ul>
         </section>
         <section>
-          <h3>Structure of a Rails app (basic)</h3>
+          <h3>Running a Rails application</h3>
+          <pre><code class="bash">&#x000A;$ rails server&#x000A;=&gt; Booting WEBrick&#x000A;=&gt; Rails 3.2.13 application starting in development on http://0.0.0.0:3000&#x000A;=&gt; Call with -d to detach&#x000A;=&gt; Ctrl-C to shutdown server&#x000A;[2013-04-23 12:46:32] INFO  WEBrick 1.3.1&#x000A;[2013-04-23 12:46:32] INFO  ruby 1.9.3 (2013-02-22) [i686-linux]&#x000A;[2013-04-23 12:46:32] INFO  WEBrick::HTTPServer#start: pid=3594 port=3000&#x000A;</code></pre>
+        </section>
+        <section>
+          <h3>That seemed to work&#8230;didn&#8217;t it?</h3>
+          <ul>
+          	<li>The command didn&#8217;t fail</li>
+          	<li>Notice we haven&#8217;t returned to a command prompt&#8230;</li>
+          	<li>&#8230;so the command is still running</li>
+          	<li>But where is the web application running?</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Time to load a browser</h3>
+          <ul>
+          	<li>Applications &rarr; Internet &rarr; Chromium Web Browser</li>
+          	<li>In the address bar type: http://0.0.0.0:3000</li>
+          	<li>Bookmark this page (click the star in the right of the address bar)</li>
+          	<li>Show the bookmark bar: Ctrl-Shift-b</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Great Success</h3>
+          <p><img src="img/rails_default.png" alt="" /></p>
+        </section>
+        <section>
+          <h3>Back to IP addresses&#8230;</h3>
+          <ul>
+          	<li>The web application is running on our virtual machine</li>
+          	<li>Remember the output: <code>`Rails 3.2.13 application starting in development on http://0.0.0.0:3000`</code></li>
+          	<li>The IP address 0.0.0.0 is a special address for &#8216;this machine&#8217; (localhost)</li>
+          	<li>3000 is the port the browser should connect to</li>
+          	<li>0.0.0.0:3000 is a network socket &#8211; an endpoint of an inter-process communication</li>
+          </ul>
+        </section>
+        <section>
+          <h3>A quick <span class="caps">DNS</span> example</h3>
+          <pre><code class="bash">&#x000A;# new terminal window: File &amp;rarr; Open Terminal&#x000A;&#x000A;$ nslookup news.bbc.co.uk&#x000A;Server:     10.0.2.3&#x000A;Address:    10.0.2.3#53&#x000A;&#x000A;Non-authoritative answer:&#x000A;news.bbc.co.uk  canonical name = newswww.bbc.net.uk.&#x000A;Name:   newswww.bbc.net.uk&#x000A;Address: 212.58.244.60&#x000A;</code></pre>
+        </section>
+        <section>
+          <h3>&#8230;continued</h3>
+          <ul>
+          	<li>Back to the browser</li>
+          	<li>Open http://212.58.244.60</li>
+          	<li>Open http://212.58.244.60:80</li>
+          	<li>Port 80 is the default port for http web sites/applications</li>
+          	<li>Port 443 is the default port for https web sites/applications</li>
+          	<li>See <a href="http://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers">Wikipedia</a> for more examples</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Sockets visualised</h3>
+          <p><img src="img/sockets.png" alt="" /></p>
+        </section>
+        <section>
+          <h3>Time to move onto the PaaS</h3>
+          <p>&#8230; where we will also cover the structure of a Rails application</p>
+        </section>
+        <section>
+          <h3>Install the OpenShift client</h3>
+          <pre><code class="bash">&#x000A;$ gem install rhc&#x000A;&#x000A;# it doesn't matter where we are when we run this command&#x000A;# only thing that matters is that we are logged in&#x000A;# as user lbs&#x000A;&#x000A;$ whoami&#x000A;lbs&#x000A;</code></pre>
+        </section>
+        <section>
+          <h3>Setup the OpenShift client</h3>
+          <pre><code class="bash">&#x000A;$ rhc setup&#x000A;OpenShift Client Tools (RHC) Setup Wizard&#x000A;...&#x000A;&#x000A;Login to openshift.redhat.com: pjolly.mba2013@london.edu&#x000A;Password: *********&#x000A;...&#x000A;&#x000A;Generate a token now? (yes|no) yes&#x000A;...&#x000A;&#x000A;Your public SSH key must be uploaded to the OpenShift server to access code.&#x000A;Upload now? (yes|no)&#x000A;yes&#x000A;...&#x000A;&#x000A;Your client tools are now configured.&#x000A;</code></pre>
+        </section>
+        <section>
+          <h3>Check the OpenShift setup</h3>
+          <pre><code class="bash">&#x000A;$ rhc cartridge list&#x000A;...&#x000A;ruby-1.8            Ruby 1.8                                  web&#x000A;ruby-1.9            Ruby 1.9                                  web&#x000A;...&#x000A;</code></pre>
+        </section>
+        <section>
+          <h3>Tidy up our first application</h3>
+          <pre><code class="bash">&#x000A;# cd = /home/lbs/dev&#x000A;$ rm -r my_first_app&#x000A;rm: descend into directory `my_first_app'? y&#x000A;rm: descend into directory `my_first_app/log'? y&#x000A;...&#x000A;&#x000A;Ctrl-c&#x000A;$ rm -rf my_first_app&#x000A;&#x000A;# be careful with the -rf option: it takes no prisoners...&#x000A;</code></pre>
+        </section>
+        <section>
+          <h3>Create our first PaaS-linked web app</h3>
+          <pre><code class="bash">&#x000A;# cd = /home/lbs/dev&#x000A;$ rhc app create myfirstapp ruby-1.9&#x000A;Checking your namespace ... none&#x000A;...&#x000A;&#x000A;Please enter a namespace (letters and numbers only): pjollymba2013&#x000A;Your domain name 'pjollymba2013' has been successfully created&#x000A;...&#x000A;&#x000A;Creating application 'myfirstapp' ... done&#x000A;...&#x000A;&#x000A;Are you sure you want to continue connecting (yes/no)? yes&#x000A;...&#x000A;</code></pre>
+        </section>
+        <section>
+          <h3>Confirm everything went well</h3>
+          <pre><code class="bash">&#x000A;myfirstapp @ http://myfirstapp-pjollymba2013.rhcloud.com/ (uuid: 5176a28a5973caf6e700015c)&#x000A;------------------------------------------------------------------------------------------&#x000A;  Created: 3:02 PM&#x000A;  Gears:   1 (defaults to small)&#x000A;  Git URL: ssh://5176a28a5973caf6e700015c@myfirstapp-pjollymba2013.rhcloud.com/~/git/myfirstapp.git/&#x000A;  SSH:     5176a28a5973caf6e700015c@myfirstapp-pjollymba2013.rhcloud.com&#x000A;&#x000A;  ruby-1.9 (Ruby 1.9)&#x000A;  -------------------&#x000A;    Gears: 1 small&#x000A;&#x000A;RESULT:&#x000A;Application myfirstapp was created.&#x000A;</code></pre>
+        </section>
+        <section>
+          <h3>Ok, so what happened there?</h3>
+          <ul>
+          	<li>Visit <a href="http://myfirstapp-pjollymba2013.rhcloud.com/">http://myfirstapp-<span class="caps">DOMAIN</span>.rhcloud.com/</a></li>
+          	<li>So something is running on the PaaS</li>
+          	<li>But what?</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Templates are back again&#8230;</h3>
+          <pre><code class="bash">&#x000A;# cd = ~/dev/myfirstapp&#x000A;$ ls -l&#x000A;total 40&#x000A;drwxr-xr-x 6 lbs lbs  4096 Apr 23 14:44 .&#x000A;drwxr-xr-x 4 lbs root 4096 Apr 23 14:43 ..&#x000A;-rwxrwxr-x 1 lbs lbs  5588 Apr 23 14:44 config.ru&#x000A;drwxrwxr-x 8 lbs lbs  4096 Apr 23 14:44 .git&#x000A;drwxrwxr-x 5 lbs lbs  4096 Apr 23 14:44 .openshift&#x000A;drwxrwxr-x 2 lbs lbs  4096 Apr 23 14:44 public&#x000A;-rw-rw-r-- 1 lbs lbs  3492 Apr 23 14:44 README&#x000A;-rw-rw-r-- 1 lbs lbs   664 Apr 23 14:44 thread-dumper.rb&#x000A;drwxrwxr-x 2 lbs lbs  4096 Apr 23 14:44 tmp&#x000A;</code></pre>
+        </section>
+        <section>
+          <h3>But this is not a Rails application</h3>
+          <pre><code class="bash">&#x000A;$ rackup&#x000A;&#x000A;# this is a Sinatra web application....&#x000A;# another Ruby web application framework&#x000A;# let's leave Frank for another day...&#x000A;</code></pre>
+        </section>
+        <section>
+          <h3>Local == PaaS?</h3>
+          <ul>
+          	<li>Load up <a href="http://localhost:9292">http://localhost:9292/</a></li>
+          	<li>localhost = 0.0.0.0 = 127.0.0.1 (almost)</li>
+          	<li>Go, we can see the same output</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Back to Rails</h3>
+          <pre><code class="bash">&#x000A;# Ctrl-c to kill the rackup command&#x000A;# cd = ~/dev/myfirstapp&#x000A;&#x000A;$ rm -rf *&#x000A;&#x000A;# * = everything that does not begin with .&#x000A;# .git and .openshift are important (more later)&#x000A;&#x000A;$ rails new .&#x000A;$ rails server&#x000A;&#x000A;# check it's running... http://0.0.0.0:3000/&#x000A;</code></pre>
+        </section>
+        <section>
+          <h3>How does this get to the Paas?</h3>
+          <ul>
+          	<li>Remember the command <code>`git`</code> we ran earlier?</li>
+          	<li>git is a version control system (<span class="caps">VCS</span>)</li>
+          	<li>Records changes to a file or set of files over time</li>
+          	<li>git is a distributed <span class="caps">VCS</span></li>
+          	<li>A version of our web app is local, another is in the PaaS</li>
+          </ul>
+        </section>
+        <section>
+          <p><img src="http://git-scm.com/figures/18333fig0103-tn.png" alt="" /></p>
+        </section>
+        <section>
+          <h3>Updating local version</h3>
+          <ul>
+          	<li>We have made some changes since we created our app</li>
+          	<li>We deleted the Sinatra app&#8230;</li>
+          	<li>&#8230;and replaced it with a Rails app</li>
+          	<li>We need to tell git about those changes</li>
+          </ul>
+        </section>
+        <section>
+          <h3>But first&#8230;</h3>
+          <p>We need to tell git who we are (one off config)</p>
+          <pre><code class="bash">&#x000A;# might need to Ctrl-c to kill the rails server command&#x000A;&#x000A;$ git config --global user.name "Paul Jolly"&#x000A;$ git config --global user.email "pjolly.mba2013@london.edu"&#x000A;</code></pre>
+        </section>
+        <section>
+          <h3>Local commit and push</h3>
+          <pre><code class="bash">&#x000A;$ git add -A&#x000A;$ git commit -m "Replace sinatra app with rails app"&#x000A;[master 2b4aebe] Replace sinatra app with rails app&#x000A; 41 files changed, 1205 insertions(+), 290 deletions(-)&#x000A; create mode 100644 .gitignore&#x000A;...&#x000A;&#x000A;$ git push&#x000A;Counting objects: 64, done.&#x000A;Compressing objects: 100% (49/49), done.&#x000A;Writing objects: 100% (61/61), 26.02 KiB, done.&#x000A;...&#x000A;&#x000A;remote: Running .openshift/action_hooks/post_deploy&#x000A;Auto packing the repository for optimum performance.&#x000A;To ssh://5176a28a5973caf6e700015c@myfirstapp-pjollymba2013.rhcloud.com/~/git/myfirstapp.git/&#x000A;   0c76995..2b4aebe  master -&gt; master&#x000A;</code></pre>
         </section>
         <section>
           <h3>Questions for you&#8230;</h3>
