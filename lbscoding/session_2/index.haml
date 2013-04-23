@@ -566,6 +566,71 @@
 
         %section
           :textile
+            h3. Local and PaaS instances should look identical...
+
+        %section
+          :textile
+            h3. Beyond the default pages
+
+            <pre><code class="bash">
+            # cd = ~/dev/myfirstapp
+
+            $ rm public/index.html 
+            rm: remove regular file `public/index.html'? y
+
+            $ rails generate controller home index
+            ...
+
+            </code></pre>
+
+        %section
+          :textile
+            h3. Setting up our first route
+
+            <pre><code class="ruby">
+            # config/routes.rb
+
+            Myfirstapp::Application.routes.draw do
+              get "home/index"
+              root :to => 'home#index'
+            end
+            </code></pre>
+
+        %section
+          :textile
+            h3. What did we just do?
+
+            <pre><code class="bash">
+            $ rails server
+
+            # check it's running... http://0.0.0.0:3000/
+            </code></pre>
+
+        %section
+          :textile
+            h3. Looks different...
+
+            * We removed the default page
+            * We created a new view
+            * We told Rails where to find the view
+            * We told Rails what the default route is
+
+        %section
+          :textile
+            h3. Push to the PaaS
+
+            <pre><code class="bash">
+            $ git add -A
+            $ git commit -m "Our first controller"
+            $ git push
+            </code></pre>
+
+        %section
+          :textile
+            h3. That's enough for today....
+
+        %section
+          :textile
             h3. Questions for you...
 
             * Lord Green speaker event

@@ -286,6 +286,37 @@
           <pre><code class="bash">&#x000A;$ git add -A&#x000A;$ git commit -m "Replace sinatra app with rails app"&#x000A;[master 2b4aebe] Replace sinatra app with rails app&#x000A; 41 files changed, 1205 insertions(+), 290 deletions(-)&#x000A; create mode 100644 .gitignore&#x000A;...&#x000A;&#x000A;$ git push&#x000A;Counting objects: 64, done.&#x000A;Compressing objects: 100% (49/49), done.&#x000A;Writing objects: 100% (61/61), 26.02 KiB, done.&#x000A;...&#x000A;&#x000A;remote: Running .openshift/action_hooks/post_deploy&#x000A;Auto packing the repository for optimum performance.&#x000A;To ssh://5176a28a5973caf6e700015c@myfirstapp-pjollymba2013.rhcloud.com/~/git/myfirstapp.git/&#x000A;   0c76995..2b4aebe  master -&gt; master&#x000A;</code></pre>
         </section>
         <section>
+          <h3>Local and PaaS instances should look identical&#8230;</h3>
+        </section>
+        <section>
+          <h3>Beyond the default pages</h3>
+          <pre><code class="bash">&#x000A;# cd = ~/dev/myfirstapp&#x000A;&#x000A;$ rm public/index.html &#x000A;rm: remove regular file `public/index.html'? y&#x000A;&#x000A;$ rails generate controller home index&#x000A;...&#x000A;&#x000A;</code></pre>
+        </section>
+        <section>
+          <h3>Setting up our first route</h3>
+          <pre><code class="ruby">&#x000A;# config/routes.rb&#x000A;&#x000A;Myfirstapp::Application.routes.draw do&#x000A;  get "home/index"&#x000A;  root :to =&gt; 'home#index'&#x000A;end&#x000A;</code></pre>
+        </section>
+        <section>
+          <h3>What did we just do?</h3>
+          <pre><code class="bash">&#x000A;$ rails server&#x000A;&#x000A;# check it's running... http://0.0.0.0:3000/&#x000A;</code></pre>
+        </section>
+        <section>
+          <h3>Looks different&#8230;</h3>
+          <ul>
+          	<li>We removed the default page</li>
+          	<li>We created a new view</li>
+          	<li>We told Rails where to find the view</li>
+          	<li>We told Rails what the default route is</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Push to the PaaS</h3>
+          <pre><code class="bash">&#x000A;$ git add -A&#x000A;$ git commit -m "Our first controller"&#x000A;$ git push&#x000A;</code></pre>
+        </section>
+        <section>
+          <h3>That&#8217;s enough for today&#8230;.</h3>
+        </section>
+        <section>
           <h3>Questions for you&#8230;</h3>
           <ul>
           	<li>Lord Green speaker event</li>
