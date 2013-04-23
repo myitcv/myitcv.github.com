@@ -25,655 +25,128 @@
       <!-- Any section element inside of this container is displayed as a slide -->
       <div class='slides'>
         <section>
-          <h2>An Introduction to Web Development...</h2>
-          <h3>...for Business Students</h3>
-          <br>
-          <br>
-          <p>Session 1</p>
-          <p>16 Apr 2013</p>
-          <p>
-            <small>
-              <a href='http://myitcv.org.uk'>Paul Jolly</a>
-              /
-              <a href='mailto:paul@myitcv.org.uk'>paul@myitcv.org.uk</a>
-            </small>
-          </p>
+          <h2>An Introduction to Web Development&#8230;</h2>
+          <h3>&#8230;for Business Students</h3>
+          <p><br/>
+          <br/></p>
+          <p>Session 2</p>
+          <p>23 Apr 2013</p>
+          <p><small><br />
+          <a href="http://myitcv.org.uk">Paul Jolly</a><br />
+          <a href="mailto:paul@myitcv.org.uk">paul@myitcv.org.uk</a><br />
+          </small></p>
         </section>
         <section>
-          <h1>Welcome</h1>
-          <br>
-          <br>
-          <br>
-          <br>
-          <small>
-            With thanks to Joe Wadcan (Berkeley MBA 2012)
-          </small>
-        </section>
-        <section>
-          <h2>Do you have:</h2>
+          <h3>Session 1 in 30 seconds</h3>
           <ul>
-            <li>Yourself</li>
-            <li>Laptop</li>
-            <li>Charging cable</li>
-            <li>Notebook + pen (if you prefer to take notes this way)</li>
+          	<li>Course overview</li>
+          	<li>Basics about computers</li>
+          	<li>VirtualBox, Linux (Ubuntu)</li>
+          	<li>File system</li>
+          	<li>Terminal</li>
+          	<li>Text Editor</li>
+          	<li>Basic Ruby Program</li>
+          	<li>Web application architecture basics</li>
+          	<li>Cloud computing</li>
           </ul>
         </section>
         <section>
-          <h2>Follow along...</h2>
-          <p>
-            <a href='http://blog.myitcv.org.uk/lbscoding/session_1' target='_blank'>http://blog.myitcv.org.uk/lbscoding/session_1</a>
-          </p>
-        </section>
-        <section>
-          <h2>How do I use the slides?</h2>
-          <p>A simple case of right arrow key to progress....</p>
-          <p>.... and left arrow key to go back</p>
-          <p>Needs Google Chrome to work properly (next slide)</p>
-        </section>
-        <section>
-          <h2>Install checklist</h2>
+          <h3>Housekeeping</h3>
           <ul>
-            <li>
-              <a href='http://www.google.com/chrome/' target='_blank'>Google Chrome</a>
-            </li>
-            <li>
-              <a href='http://download.virtualbox.org/virtualbox/4.2.12/VirtualBox-4.2.12-84980-Win.exe' target='_blank'>VirtualBox for Windows</a>
-            </li>
-            <li>
-              <a href='http://download.virtualbox.org/virtualbox/4.2.12/VirtualBox-4.2.12-84980-OSX.dmg' target='_blank'>VirtualBox for Mac</a>
-            </li>
+          	<li>Course homepage: <a href="http://blog.myitcv.org.uk/lbscoding">http://blog.myitcv.org.uk/lbscoding</a></li>
+          	<li>Schedule</li>
+          	<li>Pre-session checklist</li>
           </ul>
         </section>
         <section>
-          <h2>Download checklist</h2>
+          <h3>Session 2 Pre-checklist</h3>
           <ul>
-            <li>
-              <a href='https://docs.google.com/file/d/0B8wIfRgDWrMhdlc3RmVENzU2OE0/edit?usp=sharing' target='_blank'>lbscoding_v01.vbox</a>
-            </li>
-            <li>
-              <a href='https://docs.google.com/file/d/0B8wIfRgDWrMhVkZ6TllBVFZwT3c/edit?usp=sharing' target='_blank'>box-disk1.vmdk (the big one)</a>
-            </li>
+          	<li>Downloaded <code>lbscoding_v03</code></li>
+          	<li><a href="https://openshift.redhat.com/app/account/new">Created an OpenShift Account</a></li>
+          	<li>Ensured you are <a href="http://blog.myitcv.org.uk/lbscoding/session_2_pre_checklist.html">up-to-speed</a> with the basic concepts we covered last time</li>
           </ul>
         </section>
         <section>
-          <h2>Ready for me to continue?</h2>
-          <p>You can sit back and relax during this section</p>
-          <p>... particularly if you came to the info session</p>
-        </section>
-        <section>
-          <h2>Why am I running this course?</h2>
+          <h3>What are we going to cover today?</h3>
           <ul>
-            <li>Inspired by similar course at Berkeley on exchange</li>
-            <li>Interested classmates (working on ideas or at start-ups)</li>
-            <li>Technology is a passion of mine</li>
-            <li>I enjoy teaching others</li>
-            <li>Inspire others to learn more about something that will shape companies and organisations going forward</li>
-            <li>An experiment: strongly believe LBS should strengthen its entrepreneurship / start-up offering</li>
-            <li>I learn too</li>
+          	<li>Writing our first web application</li>
+          	<li>Understanding a bit about Ruby on Rails</li>
+          	<li>Deploying our application to a PaaS</li>
           </ul>
         </section>
         <section>
-          <h2>Why are you here?</h2>
+          <h3>Last bit of housekeeping&#8230;</h3>
+          <p>&#8230;on how to interpret the slides</p>
+        </section>
+        <section>
+          <h3>Create/edit a file I</h3>
+          <pre><code class="ruby">&#x000A;# config/routes.rb&#x000A;&#x000A;Homepage::Application.routes.draw do&#x000A;  root :to =&gt; 'home#index'&#x000A;end&#x000A;</code></pre>
+        </section>
+        <section>
+          <h3>Create/edit a file II</h3>
+          <pre><code class="ruby">&#x000A;# config/routes.rb&#x000A;&#x000A;Homepage::Application.routes.draw do&#x000A;&#x000A;  # ...&#x000A;&#x000A;  root :to =&gt; 'home#index'&#x000A;&#x000A;  # ...&#x000A;&#x000A;end&#x000A;</code></pre>
+        </section>
+        <section>
+          <h3>Run a command</h3>
+          <pre><code class="bash">&#x000A;# Another comment&#x000A;# You don't type the '$ ' - it is a shortened form of your prompt&#x000A;&#x000A;$ cd&#x000A;&#x000A;$ ls&#x000A;dev  my_dir&#x000A;&#x000A;# I will show the output if it is relevant&#x000A;</code></pre>
+        </section>
+        <section>
+          <h3>Commands in normal text</h3>
           <ul>
-            <li>You want to work on your own idea</li>
-            <li>You want to work at a tech start-up</li>
-            <li>You work with engineers...or want to / will do</li>
-            <li>You are curious to learn</li>
-            <li>(Almost) no experience of coding or development</li>
-            <li>Ready for a fast paced course</li>
+          	<li>This is a list item</li>
+          	<li>Here is another</li>
+          	<li>Here is a command: <code>`cd /tmp`</code></li>
+          	<li>Allows me to avoid lots of code blocks</li>
           </ul>
         </section>
         <section>
-          <h2>Who am I?</h2>
+          <h2>Now let&#8217;s test this out</h2>
+        </section>
+        <section>
+          <h3>Update our terminal config files</h3>
+          <pre><code class="bash">&#x000A;# cd = /home/lbs&#x000A;&#x000A;$ cd dev/lbscoding-env&#x000A;$ git pull&#x000A;&#x000A;# we will see more of the git command later&#x000A;# it is a version control system, as opposed to "a person who is &#x000A;# deemed to be despicable or contemptible"&#x000A;&#x000A;$ cd&#x000A;$ source .bashrc&#x000A;</code></pre>
+        </section>
+        <section>
+          <h2>Right&#8230; here we go</h2>
+        </section>
+        <section>
+          <h3>Our development area</h3>
+          <pre><code class="bash">&#x000A;$ cd ~/dev&#x000A;&#x000A;# ~ = /home/lbs&#x000A;# cd = cd ~ = cd /home/lbs&#x000A;&#x000A;# dev will contain any development files&#x000A;# it was created by me when I built the virtual machine&#x000A;</code></pre>
+        </section>
+        <section>
+          <h3>Check our development environment</h3>
+          <pre><code class="bash">&#x000A;$ which ruby&#x000A;/home/lbs/.rvm/rubies/ruby-1.9.3-p392/bin/ruby&#x000A;&#x000A;$ which rails&#x000A;/home/lbs/.rvm/gems/ruby-1.9.3-p392/bin/rails&#x000A;&#x000A;$ rails --version&#x000A;Rails 3.2.13&#x000A;&#x000A;$ pwd&#x000A;/home/lbs/dev&#x000A;</code></pre>
+        </section>
+        <section>
+          <h3>Create a new Rails application</h3>
+          <pre><code class="bash">&#x000A;# cd = /home/lbs/dev&#x000A;&#x000A;$ rails new my_first_app&#x000A;...&#x000A;&#x000A;# rails new -h&#x000A;</code></pre>
+        </section>
+        <section>
+          <h3>A quick word on templates</h3>
           <ul>
-            <li>MEng Software Engineering, Imperial College London</li>
-            <li>Worked for 5 years at Goldman Sachs in a software engineering role...</li>
-            <li>...then for 2 years in a management / strategy role...but still very tech-based</li>
-            <li>Still coding in my spare time</li>
+          	<li>Programs can create directories, files&#8230;</li>
+          	<li>&#8230;can write code&#8230;</li>
+          	<li>&#8230;can run other programs&#8230;</li>
+          	<li><code>`rails new XYZ`</code> creates a template Rails web application</li>
           </ul>
         </section>
         <section>
-          <h2>What are we going to do?</h2>
+          <h3>So what happened there?</h3>
           <ul>
-            <li>Learn a new skill</li>
-            <li>Build a real product: a very basic Twitter-like web application</li>
-            <li>Broaden your horizons</li>
+          	<li>Rails created a template for our web application</li>
+          	<li>In fact it created a working web application</li>
+          	<li>Let&#8217;s have a quick look around</li>
           </ul>
         </section>
         <section>
-          <h2>How are we going to do this?</h2>
+          <h3>Structure of a Rails app (basic)</h3>
+        </section>
+        <section>
+          <h3>Questions for you&#8230;</h3>
           <ul>
-            <li>Six week course, three hour "lesson" per week + tutorial time + office hours</li>
-            <li>Step-by-step, in-class development</li>
-            <li>Homework exercises for those who want to go off-piste and a bit further (but not today :-)</li>
-          </ul>
-        </section>
-        <section>
-          <h2>So what are the logistics?</h2>
-          <ul>
-            <li>Class and tutorial schedule has been finalised</li>
-            <li>... with the option of Wednesday tutorials some weeks</li>
-            <li>Office hours: flexible</li>
-            <li>150 GBP for the entire course</li>
-            <li>Maximum of 30 students in the class</li>
-            <li>Course homepage... (will be communicated to those who sign up)</li>
-          </ul>
-        </section>
-        <section>
-          <h2>What's on the course homepage?</h2>
-          <ul>
-            <li>Logistics and admin items</li>
-            <li>Links to all the tools/software we are using...</li>
-            <li>...slides...</li>
-            <li>...exercises...</li>
-            <li>...everything!</li>
-          </ul>
-        </section>
-        <section>
-          <h2>Anything else I should know?</h2>
-          <ul>
-            <li>I'm as much a guide as a "teacher"</li>
-            <li>Your time is very valuable</li>
-            <li>Ask questions</li>
-            <li>Be on time</li>
-            <li>Understand that missing the first hour of a class is a serious problem...</li>
-            <li>...everything we do builds entirely on the previous steps</li>
-            <li>We are learning as a group: help each other!</li>
-          </ul>
-        </section>
-        <section>
-          <h2>I didn't follow the last session...</h2>
-          <ul>
-            <li>Feedback requested after each session</li>
-            <li>Adjust pace and content</li>
-            <li>Adjust style</li>
-            <li>e.g. dedicate more time to walking through examples</li>
-          </ul>
-        </section>
-        <section>
-          <h2>I have a question...</h2>
-          <ul>
-            <li>
-              <p>In class: please ask</p>
-              <ul>
-                <li>Good questions help the class' understanding</li>
-                <li>Off-topic questions can throw things</li>
-                <li>Could you have answered the question yourself?</li>
-              </ul>
-            </li>
-            <li>
-              <a href='http://stackoverflow.com/'>stackoverflow</a>
-              <ul>
-                <li>Programmer-2-programmer peer-support</li>
-                <li>Sign-up and start having a look around...</li>
-                <li>...particularly the Ruby on Rails questions</li>
-              </ul>
-            </li>
-            <li>
-              <a href='http://www.google.com/'>Google</a>
-              <ul>
-                <li>Search the whole web</li>
-                <li>More difficult/time consuming to find "the answer"</li>
-              </ul>
-            </li>
-            <li>
-              <p>Peer groups</p>
-              <ul>
-                <li>Explicit groups set for next week once sign-up complete</li>
-              </ul>
-            </li>
-          </ul>
-        </section>
-        <section>
-          <h2>Important disclaimer....</h2>
-        </section>
-        <section>
-          <h3>Everything we will cover on this course you could pick-up yourself....for free</h3>
-        </section>
-        <section>
-          <h3>
-            All the software we will use is free
-            <br>(as
-            in beer)
-          </h3>
-        </section>
-        <section>
-          <h3>FREE</h3>
-        </section>
-        <section>
-          <h2>So what next?</h2>
-          <ul>
-            <li>Sign-up stage 2: payment covers sessions 2-6</li>
-            <li>Maximum of 30</li>
-            <li>Sign-up will be FIRST COME FIRST SERVED!</li>
-            <li>Will send out the link Wed 17 Apr</li>
-          </ul>
-        </section>
-        <section>
-          <h2>What this course IS</h2>
-          <ul>
-            <li>Getting to the nitty gritty of how web apps work</li>
-            <li>Understanding the development workflow</li>
-            <li>Basic understanding of how Ruby works</li>
-            <li>Better perspective on programmers jobs</li>
-            <li>A primer on programming/coding</li>
-            <li>Most useful for absolute beginners</li>
-          </ul>
-        </section>
-        <section>
-          <h2>What this course is NOT</h2>
-          <ul>
-            <li>A full tutorial on Ruby</li>
-            <li>A course on coding a full web app</li>
-            <li>Catering to fast learners</li>
-            <li>The only way to learn how to code</li>
-            <li>The end of your learning</li>
-            <li>For children</li>
-          </ul>
-        </section>
-        <section>
-          <h2>Catch our breath....</h2>
-          <p>
-            Any questions?
-          </p>
-        </section>
-        <section>
-          <h2>What are we going to cover today</h2>
-          <ul>
-            <li>The development environment</li>
-            <li>VirtualBox</li>
-            <li>Linux (Ubuntu)</li>
-            <li>Using Linux</li>
-            <li>Writing some code (very basic)</li>
-            <li>Deployment (part I)</li>
-          </ul>
-        </section>
-        <section>
-          <h2>But first...</h2>
-        </section>
-        <section>
-          <h2>Computers are dumb</h2>
-          <p>They do what they're told to do</p>
-          <p>And nothing else</p>
-          <p>(they might have been taught how to learn)</p>
-        </section>
-        <section>
-          <h2>At the most basic</h2>
-          <ul>
-            <li>Inputs (hardware/data): mouse, keyboard, camera, files...</li>
-            <li>Processing (software): programs, code</li>
-            <li>Output (hardware/data): monitor, printer, web page...</li>
-          </ul>
-        </section>
-        <section>
-          <h2>What is hardware?</h2>
-          <ul>
-            <li>Hard drive - long term storage</li>
-            <li>RAM - short term memory (needs power)</li>
-            <li>CPU/processor - follows instructions (maths and logic)</li>
-            <li>(obviously an incomplete list)</li>
-          </ul>
-        </section>
-        <section>
-          <h2>What is software?</h2>
-          <ul>
-            <li>A series of instructions</li>
-            <li>A recipe if you will</li>
-            <li>Needs to be stored somewhere</li>
-          </ul>
-        </section>
-        <section>
-          <h2>What is data?</h2>
-          <ul>
-            <li>Another input/output</li>
-            <li>Needs to be stored somewhere</li>
-            <li>Classically understood as "files"</li>
-          </ul>
-        </section>
-        <section>
-          <h2>We understand computers in terms of stacks</h2>
-          <ul>
-            <li>Users (you and me)</li>
-            <li>Applications (Word, Excel)</li>
-            <li>Operating Systems (Windows, Mac OS X, Linux)</li>
-            <li>Firmware (a special kind of software)</li>
-            <li>Hardware (Samsung, MacBook Pro)</li>
-          </ul>
-        </section>
-        <section>
-          <h2>What does this have to do with our web application?</h2>
-        </section>
-        <section>
-          <h2>Picking up the Twitter example</h2>
-          <ul>
-            <li>Twitter is an application</li>
-            <li>A very big application</li>
-            <li>...that scales to millions of users</li>
-            <li>...all over the world</li>
-            <li>But an application nonetheless</li>
-          </ul>
-        </section>
-        <section>
-          <h2>But I can't install Twitter...</h2>
-          <ul>
-            <li>We distinguish between clients and servers</li>
-            <li>Server: the software + hardware that "provides" Twitter</li>
-            <li>
-              <span>Client: the software + hardware that "uses" Twitter</span>
-              <ul>
-                <li>Mobile phone (iPhone, Android)</li>
-                <li>Personal computer</li>
-                <li>Another server (using the Twitter data API)</li>
-              </ul>
-            </li>
-            <li>Coffee shop analogy</li>
-          </ul>
-        </section>
-        <section>
-          <h2>But "where" is Twitter?</h2>
-          <ul>
-            <li>Computers connect to networks</li>
-            <li>Computers on networks have IP addresses: unique identifier</li>
-            <li>e.g. 163.119.33.119</li>
-            <li>eduroam is the network here at LBS</li>
-            <li>eduroam is connected to the internet</li>
-            <li>The Twitter hardware is similarly networked...</li>
-            <li>...and ultimately connected to the internet</li>
-            <li>But I typed http://twitter.com/#lbs?</li>
-          </ul>
-        </section>
-        <section>
-          <h2>A quick primer on internet addresses</h2>
-          <ul>
-            <li>http://twitter.com/#lbs is a URL</li>
-            <li>twitter.com is a domain</li>
-            <li>Domain Name System (DNS) translates domain names to an IP address</li>
-            <li>This locates the Twitter hardware on the internet</li>
-            <li>Twitter servers know how to "answer" or serve http://twitter.com/#lbs</li>
-          </ul>
-        </section>
-        <section>
-          <h2>Browser webpage access sequence</h2>
-          <img border='0' src='img/dns.png'>
-          <small>Source: http://courses.ischool.berkeley.edu/i153/s11/browsers#(8)</small>
-        </section>
-        <section>
-          <h2>Terminology refresher</h2>
-          <ul>
-            <li>Program = code = application (slight abuse of termology here...)</li>
-            <li>Programs are stored, like data, in files on disk (hard drive?)</li>
-            <li>When we "run" a program it is loaded into memory (RAM)</li>
-            <li>Processor then steps through instructions (and may repeat)</li>
-            <li>A running program is called a process, e.g. Chrome</li>
-          </ul>
-        </section>
-        <section>
-          <h2>Enough of me talking...</h2>
-        </section>
-        <section>
-          <h2>What on earth is VirtualBox?</h2>
-          <ul>
-            <li>It is an application</li>
-            <li>...that simulates computer hardware</li>
-            <li>...hence "Virtual" (not real)</li>
-            <li>..."Box" (slang for computer)</li>
-            <li>So we need an operating system to run in our VirtualBox</li>
-          </ul>
-        </section>
-        <section>
-          <img border='0' src='img/vbox.png'>
-        </section>
-        <section>
-          <h2>Install checklist</h2>
-          <ul>
-            <li>
-              <a href='http://www.google.com/chrome/' target='_blank'>Google Chrome</a>
-            </li>
-            <li>
-              <a href='http://download.virtualbox.org/virtualbox/4.2.12/VirtualBox-4.2.12-84980-Win.exe' target='_blank'>VirtualBox for Windows</a>
-            </li>
-            <li>
-              <a href='http://download.virtualbox.org/virtualbox/4.2.12/VirtualBox-4.2.12-84980-OSX.dmg' target='_blank'>VirtualBox for Mac</a>
-            </li>
-          </ul>
-        </section>
-        <section>
-          <h2>Download checklist</h2>
-          <ul>
-            <li>
-              <a href='https://docs.google.com/file/d/0B8wIfRgDWrMhdlc3RmVENzU2OE0/edit?usp=sharing' target='_blank'>lbscoding_v01.vbox</a>
-            </li>
-            <li>
-              <a href='https://docs.google.com/file/d/0B8wIfRgDWrMhVkZ6TllBVFZwT3c/edit?usp=sharing' target='_blank'>box-disk1.vmdk (the big one)</a>
-            </li>
-          </ul>
-        </section>
-        <section>
-          <h2>Using VirtualBox</h2>
-          <p>Time for you to do some work</p>
-          <p>First ensure you have your VirtualBox files in the right place:</p>
-          <a href='' target='_blank'>box-disk1.vmdk (the big one)</a>
-        </section>
-        <section>
-          <h2>Start</h2>
-          <p>Time for you to do some work</p>
-        </section>
-        <section>
-          <h2>Login details</h2>
-          <ul>
-            <li>Username: lbs</li>
-            <li>Password: lbscoding</li>
-          </ul>
-        </section>
-        <section>
-          <h2>Welcome back...</h2>
-        </section>
-        <section>
-          <h2>VirtualBox concepts</h2>
-          <ul>
-            <li>Host = your computer and its operating system</li>
-            <li>Guest = the virtual computer and Ubuntu Linux</li>
-            <li>Feel free to mess up your VirtualBox entirely</li>
-            <li>Can move between full screen and window for virtual machine</li>
-            <li>"Host Key" helps you to navigate between the host and guest</li>
-          </ul>
-        </section>
-        <section>
-          <h2>More on the "guest" operating system</h2>
-          <ul>
-            <li>Linux Ubuntu</li>
-            <li>Linux is an operating system</li>
-            <li>Ubuntu is a particular distribution (flavour?) of Linux</li>
-            <li>Popular amongst "newbies" - very graphical</li>
-            <li>Other distributions better suited to server environment</li>
-          </ul>
-        </section>
-        <section>
-          <h2>So what is OUR development environment?</h2>
-          <p>A set of programs that run on Ubuntu...</p>
-          <p>...that allow us to write (code) and run Ruby programs</p>
-          <p>...specifically web applications</p>
-        </section>
-        <section>
-          <h2>Why are we using Linux (Ubuntu)?</h2>
-          <ul>
-            <li>Very stable</li>
-            <li>Very fast</li>
-            <li>Very popular</li>
-            <li>Works on nearly every machine</li>
-            <li>100% customizeable</li>
-            <li>Gives us a good grounding in concepts that underpin computers and programming</li>
-            <li>But more importantly...it’s free!</li>
-          </ul>
-        </section>
-        <section>
-          <h2>File system (storage)</h2>
-          <ul>
-            <li>/ - root, everything sits under here</li>
-            <li>/home - user directories</li>
-            <li>/home/lbs - the directory for your files, your home directory</li>
-            <li>/home/lbs/my_file.txt - a text file in the lbs home directory</li>
-          </ul>
-        </section>
-        <section>
-          <h2>File system (more)</h2>
-          <ul>
-            <li>/etc - operating system settings</li>
-            <li>/bin - essential bin-aries (programs)</li>
-            <li>/boot - files essential to boot (start) the operating system</li>
-            <li>/tmp - temporary area, every file "below" here gets deleted when the machine restarts</li>
-          </ul>
-        </section>
-        <section>
-          <h2>Let's have a drive around</h2>
-          <ul>
-            <li>Terminal = command line = command prompt</li>
-            <li>Browser</li>
-            <li>Text Editor</li>
-          </ul>
-        </section>
-        <section>
-          <h2>Terminal commands</h2>
-          <ul>
-            <li>ls - list directory contents</li>
-            <li>cd - change current directory</li>
-            <li>pwd - print the current directory</li>
-            <li>mkdir - make/create a directory</li>
-            <li>rm - remove a file/directory</li>
-            <li>touch - create an empty file</li>
-            <li>cp - copy a file/directory</li>
-            <li>man - show a manual for a command</li>
-          </ul>
-        </section>
-        <section>
-          <h2>Examples</h2>
-          <ul>
-            <li>ls /home/lbs - show the contents of our home directory</li>
-            <li>pwd - print the current directory</li>
-            <li>cd /tmp - change the current directory to /tmp</li>
-            <li>pwd - print the current directory</li>
-            <li>mkdir blah - create a directory called blah in the current directory</li>
-            <li>cd blah - change the current directory to blah</li>
-            <li>touch test - create an empty file called test in the current directory</li>
-            <li>ls . - show the contents of the current directory</li>
-            <li>cd .. - go up a directory</li>
-            <li>rm -r blah - remove the directory we just created</li>
-            <li>man rm - show the manual for the rm command</li>
-          </ul>
-        </section>
-        <section>
-          <h2>OK, lots of new stuff here...</h2>
-          <ul>
-            <li>Windows calls directories "folders"</li>
-            <li>Within the terminal, a program called bash is accepting our "input"</li>
-            <li>Everything is case sensitive</li>
-            <li>Difference between files and directories</li>
-            <li>Filenames containing spaces create real problems...use underscore</li>
-          </ul>
-        </section>
-        <section>
-          <h2>Our first Ruby program: Hello World</h2>
-          <p>A standard in programming...</p>
-        </section>
-        <section>
-          <h2>Text Editor to the rescue</h2>
-          <ul>
-            <li>Applications...</li>
-            <li>Accessories...</li>
-            <li>Text Editor</li>
-          </ul>
-        </section>
-        <section>
-          <h2>Text Editor to the rescue</h2>
-          <p>Looks like Notepad/TextEdit</p>
-          <p>Runs like a Ferrari by comparison</p>
-        </section>
-        <section>
-          <h2>Write the code</h2>
-          <pre><code contenteditable=''>puts "Hello world"&#x000A;</code></pre>
-        </section>
-        <section>
-          <h2>Save the file</h2>
-          <ul>
-            <li>File...</li>
-            <li>Save...</li>
-            <li>Choose your home directory</li>
-            <li>hello_world.rb</li>
-            <li>Save</li>
-          </ul>
-        </section>
-        <section>
-          <h2>Ready to run this?</h2>
-          <p>What's it going to do?</p>
-        </section>
-        <section>
-          <h2>Back to the Terminal...</h2>
-        </section>
-        <section>
-          <h2>Commands to run our program</h2>
-          <ul>
-            <li>whoami - who am I?</li>
-            <li>cd - return to our home directory</li>
-            <li>which ruby - where is the ruby program?</li>
-            <li>ruby hello_world.rb - run our program</li>
-          </ul>
-        </section>
-        <section>
-          <h2>Great success</h2>
-        </section>
-        <section>
-          <h2>But we're developing a web application...</h2>
-        </section>
-        <section>
-          <h2>What on earth in Cloud Computing?</h2>
-          <p>Wikipedia: use of computing resources (hardware and software) that are delivered as a service over a network (typically the Internet)</p>
-          <p>Covers compute, network and storage services</p>
-        </section>
-        <section>
-          <h2>Why Cloud Computing?</h2>
-          <ul>
-            <li>Fast</li>
-            <li>Easily scalable</li>
-            <li>Spans geographies</li>
-          </ul>
-        </section>
-        <section>
-          <h2>Here comes another stack....</h2>
-          <ul>
-            <li>Software as a Service (SaaS) - Gmail, Salesforce</li>
-            <li>Platform as a Service (PaaS) - OpenShift, Heroku</li>
-            <li>Infrastructure as a Service (IaaS) - Amazon Web Services</li>
-          </ul>
-        </section>
-        <section>
-          <h2>More on PaaS</h2>
-          <ul>
-            <li>Runs on IaaS</li>
-            <li>i.e. runs within an operating system (typically a Linux distribution)</li>
-            <li>PaaS is itself a set of programs that host applications</li>
-            <li>Take away management headaches of running those applications</li>
-            <li>Easy deployment</li>
-          </ul>
-        </section>
-        <section>
-          <h2>OpenShift</h2>
-          <ul>
-            <li>An open-source PaaS</li>
-            <li>Provided by RedHat, who also provide a distribution of Linux</li>
-            <li>Free (to a point)</li>
-            <li>
-              <a href='https://openshift.redhat.com/app/account/new'>Create an account</a>
-            </li>
-          </ul>
-        </section>
-        <section>
-          <h2>That's it for today!</h2>
-        </section>
-        <section>
-          <h2>Next steps</h2>
-          <ul>
-            <li>Follow-up survey</li>
-            <li>Sign-up for sessions 2-6 - look out for email tomorrow</li>
+          	<li>Lord Green speaker event</li>
+          	<li>Language requirement</li>
+          	<li>Wednesday tutorials</li>
           </ul>
         </section>
       </div>
