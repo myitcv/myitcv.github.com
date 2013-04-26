@@ -7,6 +7,7 @@ task :build do
   system("haml lbscoding/vbox_files.haml lbscoding/vbox_files.html")
   system("haml lbscoding/install_checklist.haml lbscoding/install_checklist.html")
   system("haml lbscoding/session_2_pre_checklist.haml lbscoding/session_2_pre_checklist.html")
+  system("haml lbscoding/session_2_post_checklist.haml lbscoding/session_2_post_checklist.html")
   system("haml lbscoding/info/index.haml lbscoding/info/index.html")
   system("haml lbscoding/session_1/index.haml lbscoding/session_1/index.html")
   system("haml lbscoding/session_2/index.haml lbscoding/session_2/index.html")
