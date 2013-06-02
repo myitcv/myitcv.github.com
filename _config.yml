@@ -1,5 +1,8 @@
+url: http://blog.myitcv.org.uk
 markdown: rdiscount
 pygments: true
+safe: true
+lsi: false
 future: false
 authors:
   paul:
