@@ -1,7 +1,7 @@
 ---
 date: 2013-06-01
 layout: post
-title: Listing the files Google Drive is actively syncing
+title: Showing/listing the files Google Drive is actively syncing
 location: London
 author: paul
 tags:
