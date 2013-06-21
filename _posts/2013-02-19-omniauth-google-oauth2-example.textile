@@ -12,6 +12,7 @@ tags:
 
 _*Update 2013-03-10:* modified to use "figaro":https://github.com/laserlemon/figaro instead of rather half-baked @parseconfig@ approach._
 _*Update 2013-03-24:* modified to use @ActiveRecord@ sessions and @first_or_initialize@ for user creation (moving the logic from the model to the controller)_
+_*Update 2013-06-20:* I have written a "follow-up post":/2013/06/20/using-google-apis-in-rails-apps-with-oauth-2.0.html which provides a better example of OAuth2, persistance of OAuth credentials and using those credentials with Google APIs_
 
 All of the code for the following example is "on GitHub":https://github.com/myitcv/omniauth-google-oauth2-example. However for the sake of readability I have left out the init of a git repository in the description that follows... clearly this is an important step
 

@@ -12,7 +12,7 @@ tags:
 - google
 ---
 
-"Back in February":/2013/02/19/omniauth-google-oauth2-example.html I wrote a blog post about omniauth + Google OAuth2 on Rails. This article stopped short of doing anything useful once the OAuth2 credentials had been obtained. This article revises my current thinking on how best to use OAuth2 + Google in a Rails app, but importantly goes the extra mile of offering some code that pulls data from the "Google Calendar API":https://developers.google.com/google-apps/calendar/
+"Back in February":/2013/02/19/omniauth-google-oauth2-example.html I wrote a blog post about omniauth + Google OAuth2 on Rails. The app desribed in the post stopped short of doing anything useful once the OAuth2 credentials had been obtained. The article you are reading revises my current thinking on how best to use OAuth2 + Google in a Rails app, but importantly goes the extra mile of offering some code that pulls data from the "Google Calendar API":https://developers.google.com/google-apps/calendar/
 
 Firstly credits. I bumped into "this article":http://blog.baugues.com/google-calendar-api-oauth2-and-ruby-on-rails by Greg Baugues which inspired me to step outside the world of "@omniauth@":https://github.com/intridea/omniauth and explore "@google-api-client@":https://github.com/google/google-api-ruby-client and "@signet@":https://github.com/google/signet
 
