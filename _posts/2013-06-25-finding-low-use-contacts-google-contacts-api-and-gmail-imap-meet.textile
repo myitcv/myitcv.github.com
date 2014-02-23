@@ -25,11 +25,11 @@ So I decided to have a purge. An automated purge. I wanted to find contacts wher
 # I had only one email address for the individual, and that email address was a @london.edu@ or @mba.berkeley.edu@ address
 # They had sent me (not a list) zero emails
 
-Conditions 1 and 2 could be solved by inspecting the contacts alone. The third condition makes this task non-trivial, because it requires an email search on a contact-by-contact basis. 
+Conditions 1 and 2 could be solved by inspecting the contacts alone. The third condition makes this task non-trivial, because it requires an email search on a contact-by-contact basis.
 
-Building on my recently developed "@signet-rails@":https://github.com/myitcv/signet-rails I decided to give this a go. This type of task is not well suited to a web application, but it certainly wouldn't harm to exercise @signet-rails@ a bit more. 
+Building on my recently developed "@signet-rails@":https://github.com/myitcv/signet-rails I decided to give this a go. This type of task is not well suited to a web application, but it certainly wouldn't harm to exercise @signet-rails@ a bit more.
 
-Below is the controller (again, a Rails app is really not the place for this kind of utility app) code that achieves this. Once all the contacts have been found that meet the conditions above, each contact is placed into a group called 'Not Used'. This would allow me to perform once last quick visual check in my browser to ensure I wasn't deleting any legitimate contacts. 
+Below is the controller (again, a Rails app is really not the place for this kind of utility app) code that achieves this. Once all the contacts have been found that meet the conditions above, each contact is placed into a group called 'Not Used'. This would allow me to perform once last quick visual check in my browser to ensure I wasn't deleting any legitimate contacts.
 
 The code itself is not the most efficient but demonstrates a couple of interesting/important features:
 
@@ -41,7 +41,7 @@ The code itself is not the most efficient but demonstrates a couple of interesti
 
 h2. Conclusion
 
-The Google Contacts API is not, in its current form, at all usable. In fact it's horrid. One imagines they have a "new style API":https://developers.google.com/apis-explorer/#p/ cooking in the background, but for now we are stuck with an Atom-based monster. 
+The Google Contacts API is not, in its current form, at all usable. In fact it's horrid. One imagines they have a "new style API":https://developers.google.com/apis-explorer/#p/ cooking in the background, but for now we are stuck with an Atom-based monster.
 
 The code is not difficult, but the lack of good documentation for the Google Contacts API specifically made progress slow. That and the very unhelpful error messages every now and then: "Something went wrong - that's all we know"
 
