@@ -1,0 +1,153 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta content='chrome=1' http-equiv='X-UA-Compatible'>
+    <title>VirtualBox Ubuntu guest DNS lookups failing after Mac host wake from sleep</title>
+    <link href='/images/bike_favicon.png' rel='icon' type='image/png'>
+    <!-- Generated 2014-02-24 16:38:29 +0000-->
+    <link href='/stylesheets/styles.css' rel='stylesheet'>
+    <link href='/stylesheets/pygment_trac.css' rel='stylesheet'>
+    <meta content='width=device-width, initial-scale=1, user-scalable=no' name='viewport'>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class='wrapper'>
+      <header>
+        <div itemscope='itemscope' itemtype='http://schema.org/Blog'>
+          <h1>
+            <a href='/'>myitcv:blog</a>
+          </h1>
+        </div>
+        <meta content='schema blog' itemprop='name'>
+        <hr>
+        <h3>Paul Jolly's blog</h3>
+      </header>
+      <section>
+        
+<div itemprop='blogPost' itemscope='itemscope' itemtype='http://schema.org/BlogPosting'>
+  <meta content='blog.myitcv.org.uk/2013/06/12/virtualbox-ubuntu-guest-dns-lookups-failing-after-mac-host-wake-from-sleep' itemprop='url'>
+  <h1 itemprop='name'>VirtualBox Ubuntu guest DNS lookups failing after Mac host wake from sleep</h1>
+  <div class='page_details'>
+    <hr class='page_details'>
+    <abbr class='pagedate' itemprop='datePublished' title='2013-06-12T00:00:00+01:00'>12 JUN 2013</abbr>
+    <span class='author' itemprop='author' itemscope='itemscope' itemtype='http://schema.org/Person'>
+      <meta content='https://plus.google.com/105997489348527668257' itemprop='url'>
+      <a href='https://plus.google.com/105997489348527668257' rel='author' title='author profile'>
+        <span itemprop='name'>Paul Jolly</span>
+      </a>
+    </span>
+    <span class='location'>LONDON</span>
+    <span class='tags'>
+      <ul class='tags'>
+        
+        <li class='tags'>MAC</li>
+        
+        <li class='tags'>VIRTUALBOX</li>
+        
+      </ul>
+    </span>
+    <hr class='page_details'>
+  </div>
+  <p>I run <a href="http://www.ubuntu.com/">Ubuntu Linux</a> as a guest operating system within
+<a href="https://www.virtualbox.org/wiki/Downloads">VirtualBox</a> on my <a href="http://www.apple.com/uk/macbook-pro/">MacBook Pro</a></p>
+
+<p>Often (and for some reason more often than not lately) when I open my Mac to wake it from sleeping, Ubuntu has lost the
+ability to do a DNS lookup. <code>ping</code> to any IP address works, but DNS is entirely broken.</p>
+
+<p><a href="https://www.virtualbox.org/ticket/10864">This problem was reported</a> in Oct 2012 and reported as being fixed in version
+<code>&gt;= 4.1</code> of VirtualBox. At the time of writing I am running <code>4.2.12</code> and yet still see the problem. The solution for now
+appears to be to run the following command from the host (as the previously linked bug report suggests):</p>
+<div class="highlight"><pre><code class="bash language-bash" data-lang="bash">VBoxManage modifyvm VMNAME --natdnshostresolver1 on
+</code></pre></div>
+</div>
+<hr>
+<h4>Related Posts</h4>
+<ul class='posts'>
+  
+  <li>
+    <span>25 Jun 2013</span>
+    &raquo;
+    <a href='/2013/06/25/finding-low-use-contacts-google-contacts-api-and-gmail-imap-meet.html'>Finding 'low use' contacts - Google Contacts API and GMail IMAP meet</a>
+  </li>
+  
+  <li>
+    <span>20 Jun 2013</span>
+    &raquo;
+    <a href='/2013/06/20/using-google-apis-in-rails-apps-with-oauth-2.0.html'>Using Google APIs in Rails apps with OAuth 2.0</a>
+  </li>
+  
+  <li>
+    <span>01 Jun 2013</span>
+    &raquo;
+    <a href='/2013/06/01/listing-the-files-google-drive-is-actively-syncing.html'>Showing/listing the files Google Drive is actively syncing</a>
+  </li>
+  
+</ul>
+
+<hr>
+<div id='disqus_thread'></div>
+<script>
+  /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+  
+  var disqus_developer = 1;
+  
+  var disqus_shortname = 'myitcv'; // required: replace example with your forum shortname
+  var disqus_identifier = 'http://blog.myitcv.org.uk/2013/06/12/virtualbox-ubuntu-guest-dns-lookups-failing-after-mac-host-wake-from-sleep';
+  
+  /* * * DON'T EDIT BELOW THIS LINE * * */
+  (function() {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>
+  Please enable JavaScript to view the
+  <a href='http://disqus.com/?ref_noscript'>comments powered by Disqus.</a>
+</noscript>
+<a class='dsq-brlink' href='http://disqus.com'>
+  comments powered by
+  <span class='logo-disqus'>Disqus</span>
+</a>
+
+
+      </section>
+      <footer>
+        <p>
+          <a href='http://www.myitcv.org.uk'>http://www.myitcv.org.uk</a>
+          <br>
+          <a href='mailto:paul@myitcv.org.uk'>paul@myitcv.org.uk</a>
+        </p>
+        <p>
+          <a class='twitter icon' href='http://twitter.com/P__A__J'>Twitter</a>
+          <a class='google icon' href='https://plus.google.com/u/0/105997489348527668257' rel='publisher'>Google</a>
+          <a class='skype icon' href='skype:myitcv'>Skype</a>
+          <a class='linkedin icon' href='http://uk.linkedin.com/in/pauljolly/'>LinkedIn</a>
+          <a class='github icon' href='https://github.com/myitcv'>github</a>
+          <br>
+        </p>
+        <p>
+          <small>
+            Theme by
+            <a href='https://github.com/orderedlist'>orderedlist</a>
+          </small>
+        </p>
+      </footer>
+    </div>
+    <script src='/javascripts/scale.fix.js'></script>
+    <script>
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-38400814-2']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+  </body>
+</html>
