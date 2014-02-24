@@ -1,0 +1,320 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta content='chrome=1' http-equiv='X-UA-Compatible'>
+    <title>Email validation against RFC2822 using Rails ActiveModel::EachValidator</title>
+    <link href='/images/bike_favicon.png' rel='icon' type='image/png'>
+    <!-- Generated 2014-02-24 16:38:29 +0000-->
+    <link href='/stylesheets/styles.css' rel='stylesheet'>
+    <link href='/stylesheets/pygment_trac.css' rel='stylesheet'>
+    <meta content='width=device-width, initial-scale=1, user-scalable=no' name='viewport'>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class='wrapper'>
+      <header>
+        <div itemscope='itemscope' itemtype='http://schema.org/Blog'>
+          <h1>
+            <a href='/'>myitcv:blog</a>
+          </h1>
+        </div>
+        <meta content='schema blog' itemprop='name'>
+        <hr>
+        <h3>Paul Jolly's blog</h3>
+      </header>
+      <section>
+        
+<div itemprop='blogPost' itemscope='itemscope' itemtype='http://schema.org/BlogPosting'>
+  <meta content='blog.myitcv.org.uk/2013/03/14/validators-in-rails-using-email-as-an-example' itemprop='url'>
+  <h1 itemprop='name'>Email validation against RFC2822 using Rails ActiveModel::EachValidator</h1>
+  <div class='page_details'>
+    <hr class='page_details'>
+    <abbr class='pagedate' itemprop='datePublished' title='2013-03-14T00:00:00+00:00'>14 MAR 2013</abbr>
+    <span class='author' itemprop='author' itemscope='itemscope' itemtype='http://schema.org/Person'>
+      <meta content='https://plus.google.com/105997489348527668257' itemprop='url'>
+      <a href='https://plus.google.com/105997489348527668257' rel='author' title='author profile'>
+        <span itemprop='name'>Paul Jolly</span>
+      </a>
+    </span>
+    <span class='location'>SAN FRANCISCO</span>
+    <span class='tags'>
+      <ul class='tags'>
+        
+        <li class='tags'>CODING</li>
+        
+        <li class='tags'>RUBY</li>
+        
+        <li class='tags'>RAILS</li>
+        
+      </ul>
+    </span>
+    <hr class='page_details'>
+  </div>
+  <p>Often when you create a <code>user</code> model you are faced with the question of &quot;how do I check whether the email address they
+supplied is valid?&quot;</p>
+
+<p>This question needs to be broken down further:</p>
+
+<ul>
+<li>Is the supplied email address even a valid format?</li>
+<li>Can the user confirm they &#39;own&#39; the email address?</li>
+</ul>
+
+<p>The second point will be dealt with in a later post, and so to the first.</p>
+
+<p>The ultimate reference on what constitutes a valid email format is <a href="http://www.ietf.org/rfc/rfc2822.txt">RFC2822</a>,
+specifically ??&sect; 3.4.1. Addr-spec specification??. This section defines the
+<a href="http://en.wikipedia.org/wiki/Syntax_(programming_languages)">syntax</a> of email addresses using a parsing expression
+grammar. Quoting directly from the RFC:</p>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">ddr-spec        =       local-part &quot;@&quot; domain
+
+local-part      =       dot-atom / quoted-string / obs-local-part
+
+domain          =       dot-atom / domain-literal / obs-domain
+
+domain-literal  =       [CFWS] &quot;[&quot; *([FWS] dcontent) [FWS] &quot;]&quot; [CFWS]
+
+dcontent        =       dtext / quoted-pair
+
+dtext           =       NO-WS-CTL /     ; Non white space controls
+
+                        %d33-90 /       ; The rest of the US-ASCII
+                        %d94-126        ;  characters not including &quot;[&quot;,
+                                        ;  &quot;]&quot;, or &quot;\&quot;&quot;
+</code></pre></div>
+<p>What do we do with this grammar? Well if we were feeling brave we could use use
+<a href="https://github.com/nathansobo/treetop">treetop</a> to generate a parser, a parser which we could then use to parse (and
+therefore validate the format of) email addresses we receive from our users.</p>
+
+<p>Thankfully, the <code>mail</code> gem has done all this hard work for us. For those interested in viewing the treetop grammar,
+<a href="https://github.com/mikel/mail/blob/master/lib/mail/parsers/rfc2822.treetop">take a look here</a></p>
+
+<p>Let&#39;s cut straight to an example. First load <code>irb</code> on the command line and then:</p>
+<div class="highlight"><pre><code class="ruby language-ruby" data-lang="ruby"><span class="nb">require</span> <span class="s1">&#39;mail&#39;</span>
+</code></pre></div>
+<p>First let&#39;s see what happens with an invalid address:</p>
+<div class="highlight"><pre><code class="ruby language-ruby" data-lang="ruby"><span class="n">parsed</span> <span class="o">=</span> <span class="no">Mail</span><span class="o">::</span><span class="no">Address</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s2">&quot;@P__A__J&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>You should see that a <code>Mail::Field::ParseError</code> exception is raised. Good start, because this is definitely not valid (except in Twitter world)</p>
+
+<p>How about a valid email address?</p>
+<div class="highlight"><pre><code class="ruby language-ruby" data-lang="ruby"><span class="n">parsed</span> <span class="o">=</span> <span class="no">Mail</span><span class="o">::</span><span class="no">Address</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s2">&quot;paul@myitcv.org.uk&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>No exception, and indeed we now have a <code>Mail::Address</code> object:</p>
+<div class="highlight"><pre><code class="text language-text" data-lang="text"> =&gt; #&lt;Mail::Address:87073640 Address: |paul@myitcv.org.uk| &gt;
+</code></pre></div>
+<p>Do we have a valid address? Yes we do, but be careful:</p>
+<div class="highlight"><pre><code class="ruby language-ruby" data-lang="ruby"><span class="n">parsed</span> <span class="o">=</span> <span class="no">Mail</span><span class="o">::</span><span class="no">Address</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s2">&quot;paul&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>is also valid. It&#39;s a local address with no domain portion. So more completely we should check:</p>
+<div class="highlight"><pre><code class="ruby language-ruby" data-lang="ruby"><span class="n">address</span> <span class="o">=</span> <span class="s2">&quot;paul@myitcv.org.uk&quot;</span>
+<span class="n">parsed</span> <span class="o">=</span> <span class="no">Mail</span><span class="o">::</span><span class="no">Address</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">address</span><span class="p">)</span>
+<span class="nb">puts</span> <span class="s2">&quot;Valid&quot;</span> <span class="k">if</span> <span class="n">parsed</span><span class="o">.</span><span class="n">address</span> <span class="o">==</span> <span class="n">address</span> <span class="o">&amp;&amp;</span> <span class="n">parsed</span><span class="o">.</span><span class="n">local</span> <span class="o">!=</span> <span class="n">address</span>
+</code></pre></div>
+<p>This outputs <code>Valid</code> as expected. We have a fully qualified email address.</p>
+
+<h2>Checking email formats in Rails models</h2>
+
+<p>How then do we use this in our Rails application? Let&#39;s build a basic example from the ground up.</p>
+<div class="highlight"><pre><code class="bash language-bash" data-lang="bash">rails new email_validator_example
+<span class="nb">cd </span>email_validator_example
+rails generate model user name:string email:string
+rake db:migrate
+</code></pre></div>
+<p>At this stage we have no validation on either the <code>name</code> or <code>email</code> fields of our <code>user</code>.</p>
+
+<p>Rails provides means of validating fields using <a href="http://api.rubyonrails.org/classes/ActiveModel/Validations/HelperMethods.html#method-i-validates_format_of">regular expressions</a> but our validation (as we saw above) is slightly more involved. We are in fact going to define an <a href="http://api.rubyonrails.org/classes/ActiveModel/EachValidator.html"><code>ActiveModel::EachValidator</code></a></p>
+
+<p>First let&#39;s create a directory to hold out validators:</p>
+<div class="highlight"><pre><code class="bash language-bash" data-lang="bash">mkdir app/models/validators
+</code></pre></div>
+<p>We need to ensure this directory is autoloaded when our Rails application starts:</p>
+<div class="highlight"><pre><code class="ruby language-ruby" data-lang="ruby"><span class="c1"># config/application.rb</span>
+
+<span class="c1"># ...</span>
+<span class="k">module</span> <span class="nn">EmailValidatorExample</span>
+  <span class="k">class</span> <span class="nc">Application</span> <span class="o">&lt;</span> <span class="no">Rails</span><span class="o">::</span><span class="no">Application</span>
+
+    <span class="c1">#...</span>
+
+    <span class="n">config</span><span class="o">.</span><span class="n">autoload_paths</span> <span class="o">+=</span> <span class="sx">%W(</span><span class="si">#{</span><span class="n">config</span><span class="o">.</span><span class="n">root</span><span class="si">}</span><span class="sx">/app/models/validators)</span>
+</code></pre></div>
+<p>Now let&#39;s ensure the <code>mail</code> gem is included in our application:</p>
+<div class="highlight"><pre><code class="ruby language-ruby" data-lang="ruby"><span class="c1"># Gemfile</span>
+
+<span class="c1"># ...</span>
+
+<span class="n">gem</span> <span class="s1">&#39;mail&#39;</span>
+</code></pre></div>
+<p>Ensure that the requisite gems are installed:</p>
+<div class="highlight"><pre><code class="bash language-bash" data-lang="bash">bundle install
+</code></pre></div>
+<p>Now let&#39;s create our email validator:</p>
+<div class="highlight"><pre><code class="ruby language-ruby" data-lang="ruby"><span class="c1"># app/models/validators/email_validator.rb</span>
+
+<span class="nb">require</span> <span class="s1">&#39;mail&#39;</span>
+
+<span class="k">module</span> <span class="nn">Validators</span>
+  <span class="k">class</span> <span class="nc">EmailValidator</span> <span class="o">&lt;</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">EachValidator</span>
+    <span class="k">def</span> <span class="nf">validate_each</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+      <span class="k">begin</span>
+        <span class="n">parsed</span> <span class="o">=</span> <span class="no">Mail</span><span class="o">::</span><span class="no">Address</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+      <span class="k">rescue</span> <span class="no">Mail</span><span class="o">::</span><span class="no">Field</span><span class="o">::</span><span class="no">ParseError</span> <span class="o">=&gt;</span> <span class="n">e</span>
+      <span class="k">end</span>
+      <span class="n">record</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">add</span> <span class="n">attribute</span><span class="p">,</span> <span class="s2">&quot;is not valid&quot;</span> <span class="k">unless</span> <span class="o">!</span><span class="n">parsed</span><span class="o">.</span><span class="n">nil?</span> <span class="o">&amp;&amp;</span> <span class="n">parsed</span><span class="o">.</span><span class="n">address</span> <span class="o">==</span> <span class="n">value</span> <span class="o">&amp;&amp;</span> <span class="n">parsed</span><span class="o">.</span><span class="n">local</span> <span class="o">!=</span> <span class="n">value</span> <span class="c1">#cannot be a local address</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>You can see our class <code>EmailValidator</code> is placed within the <code>Validators</code> module and derives from <code>ActiveModel::EachValidator</code>. As we saw earlier, a badly formed email address raises an error so we need to handle that. The final line captures the error cases in the <code>unless</code> condition.</p>
+
+<p>Time to add this to our model:</p>
+<div class="highlight"><pre><code class="ruby language-ruby" data-lang="ruby"><span class="c1"># app/models/user.rb</span>
+
+<span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="kp">include</span> <span class="no">Validators</span>
+
+  <span class="n">attr_accessible</span> <span class="ss">:email</span><span class="p">,</span> <span class="ss">:name</span>
+  <span class="n">validates</span> <span class="ss">:email</span><span class="p">,</span> <span class="ss">:on</span> <span class="o">=&gt;</span> <span class="ss">:update</span><span class="p">,</span> <span class="ss">:&#39;validators/email&#39;</span> <span class="o">=&gt;</span> <span class="kp">true</span>
+  <span class="n">validates</span> <span class="ss">:email</span><span class="p">,</span> <span class="ss">:on</span> <span class="o">=&gt;</span> <span class="ss">:create</span><span class="p">,</span> <span class="ss">:allow_nil</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">,</span> <span class="ss">:&#39;validators/email&#39;</span> <span class="o">=&gt;</span> <span class="kp">true</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>The only line worth explaining here is the apparently double-entry for <code>validates :email</code>. The second line allows nil to be a valid value when we first create a <code>user</code>, but ensures that if a value is set then the email address is of a valid format.</p>
+
+<p>Time to give this a test in <code>rails console</code>:</p>
+<div class="highlight"><pre><code class="text language-text" data-lang="text">$ rails console
+Loading development environment (Rails 3.2.12)
+1.9.3-p374 :001 &gt; User.all
+  User Load (0.2ms)  SELECT &quot;users&quot;.* FROM &quot;users&quot;
+ =&gt; []
+1.9.3-p374 :002 &gt; u = User.new
+ =&gt; #&lt;User id: nil, name: nil, email: nil, created_at: nil, updated_at: nil&gt;
+1.9.3-p374 :003 &gt; u.valid?
+ =&gt; true
+1.9.3-p374 :004 &gt; u.email = &quot;@blah&quot;
+ =&gt; &quot;@blah&quot;
+1.9.3-p374 :005 &gt; u.valid?
+ =&gt; false
+1.9.3-p374 :006 &gt; u.save
+   (0.1ms)  begin transaction
+   (0.2ms)  rollback transaction
+ =&gt; false
+1.9.3-p374 :007 &gt; u.email = nil
+ =&gt; nil
+1.9.3-p374 :008 &gt; u.valid?
+ =&gt; true
+1.9.3-p374 :009 &gt; u.save
+   (0.3ms)  begin transaction
+  SQL (30.8ms)  INSERT INTO &quot;users&quot; (&quot;created_at&quot;, &quot;email&quot;, &quot;name&quot;, &quot;updated_at&quot;) VALUES (?, ?, ?, ?)  [[&quot;created_at&quot;, Thu, 14 Mar 2013 22:25:44 UTC +00:00], [&quot;email&quot;, nil], [&quot;name&quot;, nil], [&quot;updated_at&quot;, Thu, 14 Mar 2013 22:25:44 UTC +00:00]]
+   (18.6ms)  commit transaction
+ =&gt; true
+1.9.3-p374 :010 &gt; u.email = &quot;paul@myitcv.org.uk&quot;
+ =&gt; &quot;paul@myitcv.org.uk&quot;
+1.9.3-p374 :011 &gt; u.valid?
+ =&gt; true
+1.9.3-p374 :012 &gt; u.save
+   (0.3ms)  begin transaction
+   (0.0ms)  UPDATE &quot;users&quot; SET &quot;email&quot; = &#39;paul@myitcv.org.uk&#39;, &quot;updated_at&quot; = &#39;2013-03-14 22:25:58.598365&#39; WHERE &quot;users&quot;.&quot;id&quot; = 4
+   (4.4ms)  commit transaction
+ =&gt; true
+1.9.3-p374 :013 &gt; User.all
+  User Load (0.9ms)  SELECT &quot;users&quot;.* FROM &quot;users&quot;
+ =&gt; [#&lt;User id: 4, name: nil, email: &quot;paul@myitcv.org.uk&quot;, created_at: &quot;2013-03-14 22:25:44&quot;, updated_at: &quot;2013-03-14 22:25:58&quot;&gt;]
+1.9.3-p374 :014 &gt;
+</code></pre></div>
+<h2>Is this code available anywhere?</h2>
+
+<p>As always, there is <a href="https://github.com/myitcv/email_validator_example">a repository on GitHub</a> .</p>
+
+</div>
+<hr>
+<h4>Related Posts</h4>
+<ul class='posts'>
+  
+  <li>
+    <span>25 Jun 2013</span>
+    &raquo;
+    <a href='/2013/06/25/finding-low-use-contacts-google-contacts-api-and-gmail-imap-meet.html'>Finding 'low use' contacts - Google Contacts API and GMail IMAP meet</a>
+  </li>
+  
+  <li>
+    <span>20 Jun 2013</span>
+    &raquo;
+    <a href='/2013/06/20/using-google-apis-in-rails-apps-with-oauth-2.0.html'>Using Google APIs in Rails apps with OAuth 2.0</a>
+  </li>
+  
+  <li>
+    <span>12 Jun 2013</span>
+    &raquo;
+    <a href='/2013/06/12/virtualbox-ubuntu-guest-dns-lookups-failing-after-mac-host-wake-from-sleep.html'>VirtualBox Ubuntu guest DNS lookups failing after Mac host wake from sleep</a>
+  </li>
+  
+</ul>
+
+<hr>
+<div id='disqus_thread'></div>
+<script>
+  /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+  
+  var disqus_developer = 1;
+  
+  var disqus_shortname = 'myitcv'; // required: replace example with your forum shortname
+  var disqus_identifier = 'http://blog.myitcv.org.uk/2013/03/14/validators-in-rails-using-email-as-an-example';
+  
+  /* * * DON'T EDIT BELOW THIS LINE * * */
+  (function() {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+<noscript>
+  Please enable JavaScript to view the
+  <a href='http://disqus.com/?ref_noscript'>comments powered by Disqus.</a>
+</noscript>
+<a class='dsq-brlink' href='http://disqus.com'>
+  comments powered by
+  <span class='logo-disqus'>Disqus</span>
+</a>
+
+
+      </section>
+      <footer>
+        <p>
+          <a href='http://www.myitcv.org.uk'>http://www.myitcv.org.uk</a>
+          <br>
+          <a href='mailto:paul@myitcv.org.uk'>paul@myitcv.org.uk</a>
+        </p>
+        <p>
+          <a class='twitter icon' href='http://twitter.com/P__A__J'>Twitter</a>
+          <a class='google icon' href='https://plus.google.com/u/0/105997489348527668257' rel='publisher'>Google</a>
+          <a class='skype icon' href='skype:myitcv'>Skype</a>
+          <a class='linkedin icon' href='http://uk.linkedin.com/in/pauljolly/'>LinkedIn</a>
+          <a class='github icon' href='https://github.com/myitcv'>github</a>
+          <br>
+        </p>
+        <p>
+          <small>
+            Theme by
+            <a href='https://github.com/orderedlist'>orderedlist</a>
+          </small>
+        </p>
+      </footer>
+    </div>
+    <script src='/javascripts/scale.fix.js'></script>
+    <script>
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-38400814-2']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+  </body>
+</html>
