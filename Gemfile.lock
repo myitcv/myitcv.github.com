@@ -1,6 +1,6 @@
 GIT
   remote: git://github.com/jekyll/jekyll.git
-  revision: 87a3208df24e7e9cba920c79e64fd64b427ad972
+  revision: 83e3c0f7babc616cdb10e2155fc17473fb173b7f
   specs:
     jekyll (2.0.0.alpha.1)
       classifier (~> 1.3)
