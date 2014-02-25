@@ -71,7 +71,7 @@ require 'nokogiri'
 
 class XOAUTH2Authenticator
   def process(challenge)
-    "user=#{`user}\u0001auth=Bearer #{`access_token}\u0001\u0001"
+    "user=#{@user}\u0001auth=Bearer #{@access_token}\u0001\u0001"
   end
 
   def initialize(user, access_token)
@@ -102,8 +102,8 @@ class HomeController < ApplicationController
       })
       contacts = Nokogiri::XML(contacts_feed.body.to_s)
 
-      # find 'low use' contacts; 0 phone numbers, email address either `london.edu or `mba.berkeley.edu
-      low_use = contacts.xpath("//xmlns:entry[count(gd:phoneNumber) = 0 and count(gd:email) = 1 and (contains(gd:email/`address, 'mba.berkeley.edu') or contains(gd:email/`address, 'london.edu'))]")
+      # find 'low use' contacts; 0 phone numbers, email address either @london.edu or @mba.berkeley.edu
+      low_use = contacts.xpath("//xmlns:entry[count(gd:phoneNumber) = 0 and count(gd:email) = 1 and (contains(gd:email/@address, 'mba.berkeley.edu') or contains(gd:email/@address, 'london.edu'))]")
 
       # ***************************
       # setup imap

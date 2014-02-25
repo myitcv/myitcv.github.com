@@ -56,8 +56,8 @@ on to show how to connect to the Google Calendar API and retrieve a list of the 
 
 Another question that vexed me for some time was how and when to refresh expired access tokens. `omniauth` does not
 claim to make any provision for this functionality. Indeed in response to a question on the matter,
-[`zquestz](https://github.com/zquestz) (who maintains the `omniauth` Google OAuth2 implementation amongst other things)
-[directed me towards `google-api-client@](https://github.com/intridea/omniauth-oauth2/issues/40#issuecomment-19335998)
+[@zquestz](https://github.com/zquestz) (who maintains the `omniauth` Google OAuth2 implementation amongst other things)
+[directed me towards `google-api-client`](https://github.com/intridea/omniauth-oauth2/issues/40#issuecomment-19335998)
 
 With `signet-rails`, refreshing of access tokens is indeed left to `google-api-client`. If a user's `access_token` is
 refreshed in the course of a request, the updated `access_token` is persisted for use in later requests.

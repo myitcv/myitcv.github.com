@@ -1,5 +1,5 @@
 ---
-date: 2015-02-23
+date: 2014-02-23
 layout: post
 title: Row-level version control with PostgreSQL
 location: London
