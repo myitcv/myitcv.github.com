@@ -1,7 +1,7 @@
 ---
 date: 2014-02-25
 layout: post
-title: Row-level version control with PostgreSQL
+title: Row-level version control with PostgreSQL on AWS
 location: London
 author: paul
 tags:
