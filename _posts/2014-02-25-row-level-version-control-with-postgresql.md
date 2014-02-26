@@ -142,6 +142,11 @@ DROP TRIGGER IF EXISTS fruits_before ON fruits;
 CREATE TRIGGER fruits_before
 BEFORE INSERT OR UPDATE OR DELETE ON fruits
   FOR EACH ROW EXECUTE PROCEDURE process_timetravel_before();
+
+DROP TRIGGER IF EXISTS fruits_after ON fruits;
+CREATE TRIGGER fruits_after
+AFTER UPDATE OR DELETE ON fruits
+  FOR EACH ROW EXECUTE PROCEDURE process_timetravel_after();
 ```
 
 Again, execute this SQL to create the tables and triggers, at which point you should be in a position to run the
