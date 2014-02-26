@@ -12,9 +12,9 @@ tags:
 
 Time Travel appears to have been a little known feature of [PostgreSQL] that [fell out of favour as of version
 `6.2`](http://www.postgresql.org/docs/6.3/static/c0503.htm). This feature effectively provided row-level version history
-- a paper trail of all your changes to data in a table - something useful when it comes to auditing, providing version
-history to users etc.  This post covers how to achieve Time Travel-esque behaviour using [AWS' PostgreSQL RDS] via
-triggers.
+- a paper trail of all your changes to data in a table - useful when it comes to auditing, providing version
+history to users etc.  This post covers how to achieve Time Travel-esque behaviour using an [AWS PostgreSQL RDS]
+instance via triggers.
 
 ## Background
 
@@ -92,7 +92,7 @@ PostgreSQL on AWS.
 
 ### PostgreSQL on AWS
 
-If you are using [AWS' PostgreSQL RDS] you will be disappointed to learn that [`timetravel` is not a supported
+If you are using an [AWS PostgreSQL RDS] instance you will be disappointed to learn that [`timetravel` is not a supported
 extension](https://forums.aws.amazon.com/thread.jspa?threadID=146661), as of 2014-02-25 at least.
 
 As the [legacy `v6.3` documentation points out](http://www.postgresql.org/docs/6.3/static/c0503.htm) however,
@@ -105,9 +105,11 @@ What follows assumes:
 * That you have a PostgreSQL instance running on AWS (my tests were against a `v9.3.2` instance in `eu-west`)
 * You can connect to that instance using the PostgreSQL CLI or some GUI tool (to execute arbitrary SQL)
 
-## Installing the main function (trigger)
+## Installing the main functions
 
-To get up and running, you will need to execute the following SQL to create the main function that simulates `timetravel`:
+To get up and running, you will need to execute the following SQL to create the two functions that simulate
+`timetravel`. One will be called from a before trigger, the other from an after trigger (we show how to create the
+triggers below):
 
 <div style="font-size:12px">
 <script src="https://gist.github.com/myitcv/9212407.js"></script>
@@ -124,9 +126,9 @@ locking](http://api.rubyonrails.org/classes/ActiveRecord/Locking/Optimistic.html
 to the effort of inserting a new row to represent the old version (much like we do for an update) and then allow the
 original delete to continue.
 
-## The trigger in action: fruit
+## The functions in action: fruit trigger
 
-By itself, the aforementioned function is useless. So how do we use it? The following SQL gives just such an example:
+By themselves, the aforementioned functions are useless. So how do we use them? The following SQL gives just such an example:
 
 ```sql
 DROP TABLE IF EXISTS fruits;
@@ -150,14 +152,14 @@ AFTER UPDATE OR DELETE ON fruits
 ```
 
 Again, execute this SQL to create the tables and triggers, at which point you should be in a position to run the
-SQL found earlier in this post where we created, updated and deleted an apple (pear).
+SQL found earlier in this post where we inserted, updated and deleted an apple (pear).
 
 ## Known limitations/problems
 
 Feedback, corrections, suggestions etc. would be greatly appreciated. Indeed, please let me know if something should be
 added to this list:
 
-* The main function assumes that the table columns that provide `valid_from` and `valid_to` are called just that.
+* The main functions assumes that the table columns that provide `valid_from` and `valid_to` are called just that.
 `timetravel` provided support for providing alternative columns (e.g. `starting` and `ending`); our version is limited
 in that respect
 * This whole process only safely works within a transaction; our version does not check that it is called within the
@@ -178,5 +180,5 @@ In writing this trigger-based alternative to `timetravel`, I've relied heavily o
 Thanks to the many contributors to PostgreSQL and its community for what is a great DB.
 
 [PostgreSQL]: http://www.postgresql.org/
-[AWS' PostgreSQL RDS]: http://aws.amazon.com/rds/postgresql/
+[AWS PostgreSQL RDS]: http://aws.amazon.com/rds/postgresql/
 [Pavel Stěhule]: http://okbob.blogspot.co.uk/
