@@ -109,7 +109,9 @@ What follows assumes:
 
 To get up and running, you will need to execute the following SQL to create the main function that simulates `timetravel`:
 
+<div style="font-size:12px">
 <script src="https://gist.github.com/myitcv/9212407.js"></script>
+</div>
 
 The code itself is commented to give some motivation behind certain decisions. But the one point worth making regards
 deletes.

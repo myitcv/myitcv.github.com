@@ -45,4 +45,6 @@ result2 = {"Fruit:"=>["orange", "Apple"], "Size:"=>["large"], "Quantity:"=>["5"]
 
 My solution (probably not the most efficient) was slightly more involved that I had thought it would be:
 
+<div style="font-size:12px">
 <script src="https://gist.github.com/myitcv/5062274.js"></script>
+</div>
