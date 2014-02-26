@@ -170,7 +170,7 @@ In writing this trigger-based alternative to `timetravel`, I've relied heavily o
 * An important note about [executing dynamic
   commands](http://www.postgresql.org/docs/9.3/static/plpgsql-statements.html#PLPGSQL-STATEMENTS-EXECUTING-DYN)
 
-Thanks for the PostgreSQL writers and community for what is a great DB.
+Thanks to the many contributors to PostgreSQL and its community for what is a great DB.
 
 [PostgreSQL]: http://www.postgresql.org/
 [AWS' PostgreSQL RDS]: http://aws.amazon.com/rds/postgresql/
