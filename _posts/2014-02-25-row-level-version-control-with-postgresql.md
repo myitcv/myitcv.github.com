@@ -25,9 +25,9 @@ come to them later), let us first create a piece of fruit:
 ```sql
 myitcv=# insert into fruits (name) values ('apple');
 myitcv=# select * from fruits;
- id | name  |       valid_from       | valid_to
-----+-------+------------------------+----------
-  1 | apple | 2014-02-25 15:58:59+00 | infinity
+ id | name  |         valid_from         | valid_to
+----+-------+----------------------------+----------
+  1 | apple | 2014-02-26 11:40:17.014514 | infinity
 ```
 
 Creating a new record inserts a new row into our table. `valid_from = now()` corresponds to the creation time. Notice
@@ -39,10 +39,10 @@ latest version):
 ```sql
 myitcv=# update fruits set name = 'pear' where id = 1 and valid_to = 'infinity';
 myitcv=# select * from fruits;
- id | name  |       valid_from       |        valid_to
-----+-------+------------------------+------------------------
-  1 | apple | 2014-02-25 15:58:59+00 | 2014-02-25 15:59:32+00
-  1 | pear  | 2014-02-25 15:59:32+00 | infinity
+ id | name  |         valid_from         |          valid_to
+----+-------+----------------------------+----------------------------
+  1 | apple | 2014-02-26 11:40:17.014514 | 2014-02-26 11:40:17.015796
+  1 | pear  | 2014-02-26 11:40:17.015796 | infinity
 ```
 
 The update has been translated into two changes:
@@ -55,10 +55,10 @@ And then finally delete the piece of fruit; we don't need it any more:
 ```sql
 myitcv=# delete from fruits where id = 1 and valid_to = 'infinity';
 myitcv=# select * from fruits;
- id | name  |       valid_from       |        valid_to
-----+-------+------------------------+------------------------
-  1 | apple | 2014-02-25 15:58:59+00 | 2014-02-25 15:59:32+00
-  1 | pear  | 2014-02-25 15:59:32+00 | 2014-02-25 15:59:55+00
+ id | name  |         valid_from         |          valid_to
+----+-------+----------------------------+----------------------------
+  1 | apple | 2014-02-26 11:40:17.014514 | 2014-02-26 11:40:17.015796
+  1 | pear  | 2014-02-26 11:40:17.015796 | 2014-02-26 11:40:17.018864
 ```
 
 Notice the row itself is not deleted, rather the `valid_to` date is simply updated from `infinity -> now()`. This is in
