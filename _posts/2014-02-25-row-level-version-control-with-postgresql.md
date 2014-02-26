@@ -132,8 +132,8 @@ DROP TABLE IF EXISTS fruits;
 CREATE TABLE fruits (
   id SERIAL NOT NULL,
   name TEXT,
-  valid_from ABSTIME NOT NULL,
-  valid_to ABSTIME NOT NULL
+  valid_from TIMESTAMP NOT NULL,
+  valid_to TIMESTAMP NOT NULL
 );
 
 DROP TRIGGER IF EXISTS fruits_before ON fruits;
