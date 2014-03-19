@@ -6,6 +6,8 @@ location: London
 author: paul
 ---
 
+*See [change history](#changehistory) for a list of changes to this article*
+
 This article covers my attempts to implement behaviour akin to variant symlinks within my development environment. It
 charts a failed attempt at building a fuse-based file system solution through to a working (but somewhat hacky) solution
 that uses Linux process namespaces. It then presents an example of how this approach can be used to emulate the
@@ -30,7 +32,7 @@ There must be a better way.
 What if path names could be driven by (environment) variables such that `PATH`, `GOPATH` etc. could become dynamic?
 
 ```bash
-$ export PATH=/home/myitcv/gostuff/\$GO_VERSION/bin:$PATH
+$ export PATH=$HOME/gostuff/\$GO_VERSION/bin:$PATH
 ```
 
 _(the backslash here being the way that Bash allows you to delay the evaluation of the variable that follows; useful for
@@ -117,62 +119,64 @@ symlinks. Let's see how that works.
 ## Groundwork
 
 <p style="color:red"><strong style="color:red">** WARNING **</strong> - this section (currently) involves making changes
-that enable privileged commands to be run by unprivileged users. Only continue if you know what you are doing</p>
+to enable privileged functions and commands to be run by unprivileged users. Only continue if you know what you are
+doing</p>
 
-Everything that follows also assumes you have a [working Go installation](http://golang.org/doc/install).
+Everything that follows also assumes you have a [working Go installation](http://golang.org/doc/install) - all of these
+commands have been tested against Go 1.2.1.
 
-With that security caveat out the way, we first need to do some ground work in order than an unprivileged user can:
+With the security caveat out the way, we first need to do some ground work to ensure an unprivileged user can:
 
-* start a process whose mount namespace is detached from its parent
-* perform a `mount -n --bind` under certain restricted scenarios
+1. start a process whose mount namespace is unshared (or detached) from its parent
+2. perform a [`mount -n --bind`](http://linux.die.net/man/8/mount) under certain restricted scenarios
 
-Firstly ensure you have `unshare` available. On Ubuntu saucy (and probably most Debian flavours) this is available via
-[util-linux](http://packages.ubuntu.com/saucy/util-linux). `unshare` needs to be `setuid`:
+On Linux, anything to do with `mount` (and hence both points) requires root privilege. Indeed the `mount`
+command itself is setuid to allow unprivileged users to list active mounts. And this is the bit that makes me
+uncomfortable - in its current form (hence the term 'hacky') my solution involves relaxing those restrictions somewhat.
+
+To help address these very real concerns, and to avoid making changes to 'system' installed/maintained
+binaries/permissions, I have tried to adopt the principle of least privilege and written a couple of wrappers
+to achieve the above two goals but only in *very specific circumstances*. Let's install those now:
 
 ```bash
-$ sudo chmod u+s /usr/bin/unshare
-$ ls -la /usr/bin/unshare
--rwsr-xr-x 1 root root 10432 Jun 12  2013 /usr/bin/unshare
-
+$ go get -u github.com/myitcv/go-proc-ns/mount_wrap
+# mount_wrap is automatically installed by the previous go get
+$ go install github.com/myitcv/go-proc-ns/unshare_mounts
 ```
 
-`mount` is already `setuid` in order to allow a user to list active mounts. So we need to write a simple little wrapper
-that is itself `setuid` which can escalate to full root privileges. I have written such a wrapper which performs minimum
-escalation of privileges:
+`unshare_mounts` runs a user's shell such that the shell is unshared (or detached) from the parent process' mount
+namespace. This achieve point 1 from above.
 
-* allows the user to bind a directory from within his/her home directory to a mount point within his/her home directory
-* allows the user to unmount a mount point mounted as described in the previous point
+`mount_wrap` allows a user to bind (and unbind) a directory within his/her home directory to a mount point within
+his/her home directory.
 
-```
+```bash
 $ mount_wrap --help
 Usage: mount_wrap OLD_DIR NEW_DIR
        mount_wrap -u MOUNT_DIR
 ```
 
-Install it as follows:
+This achieve point 2.
 
-```bash
-$ go get -u github.com/myitcv/go-proc-ns/mount_wrap
-$ go install github.com/myitcv/go-proc-ns/mount_wrap # this step is arguably unnecessary
-```
-
-At this stage I suggest placing a copy of the installed binary into a 'safe' location:
+Before we go any further, I suggest placing a copy of these binaries in a 'safe' location:
 
 ```bash
 $ mkdir -p $HOME/bin
-$ cp `IFS=":" read -ra _go_path <<< "$GOPATH"; echo $_go_path`/bin/mount_wrap $HOME/bin
+$ cp `IFS=":" read -ra _go_path <<< "$GOPATH"; echo $_go_path`/bin/{mount_wrap,unshare_mounts} $HOME/bin
 ```
 
-We also need to make this binary setuid:
+We also need to make both setuid:
 
 ```bash
-$ sudo chown root:root $HOME/bin/mount_wrap
-$ sudo chmod u+s $HOME/bin/mount_wrap
-$ ls -la $HOME/bin/mount_wrap
--rwsr-xr-x  1 root   root   3047448 Mar 19 14:48 mount_wrap
+$ sudo chown root:root $HOME/bin/{mount_wrap,unshare_mounts}
+$ sudo chmod u+s $HOME/bin/{mount_wrap,unshare_mounts}
+$ ls -la $HOME/bin/{mount_wrap,unshare_mounts}
+-rwsr-xr-x 1 root root 3047448 Mar 19 23:18 /home/myitcv/bin/mount_wrap
+-rwsr-xr-x 1 root root 2571288 Mar 19 23:18 /home/myitcv/bin/unshare_mounts
+
 ```
 
-And finally ensure that `$HOME/bin` is on our `PATH`:
+Finally ensure that `$HOME/bin` is on our `PATH`:
 
 ```bash
 $ export PATH=$HOME/bin:$PATH # I recommend adding this to your .bashrc
@@ -187,26 +191,26 @@ to ensure that when I spawn a new terminal, the bash instance running within it 
 parent and all other terminals. Let's create a couple such terminals:
 
 ```bash
-$ xterm -e "/usr/bin/unshare -m /bin/bash" & # terminal 1
-$ xterm -e "/usr/bin/unshare -m /bin/bash" & # terminal 2
+$ xterm -e $HOME/bin/unshare_mounts & # terminal 1
+$ xterm -e $HOME/bin/unshare_mounts & # terminal 2
 ```
 
 Let us refer to the original terminal in which we ran these commands as `terminal 0`. And let us assume we have a
 directory we want to map:
 
-```
+```bash
 # terminal 0
-$ ls /home/myitcv/.gostuff/go1.2.1
+$ ls $HOME/.gostuff/go1.2.1
 bin  pkg  src
 ```
 
 Now let's create a mount point to try this out:
 
 
-```
+```bash
 # terminal 0
-$ mkdir /home/myitcv/blah
-$ ls /home/myitcv/blah
+$ mkdir $HOME/blah
+$ ls $HOME/blah
 ```
 
 This new directory is obviously going to be empty.
@@ -215,25 +219,25 @@ Now in one of our spawned terminals, `terminal 1` for the sake of argument, let'
 
 ```bash
 # terminal 1
-$ mount_wrap /home/myitcv/.gostuff/go1.2.1/ /home/myitcv/blah
-$ ls /home/myitcv/blah
+$ mount_wrap $HOME/.gostuff/go1.2.1/ $HOME/blah
+$ ls $HOME/blah
 bin  pkg  src
 ```
 
-As you can see, `/home/myitcv/blah` has been mounted as requested and the contents correspond to the contents of
-`/home/myitcv/.gostuff/go1.2.1`. Excellent. But what about the other two terminals?
+As you can see, `$HOME/blah` has been mounted as requested and the contents correspond to the contents of
+`$HOME/.gostuff/go1.2.1`. Excellent. But what about the other two terminals?
 
 ```bash
 # terminal 0
-$ ls /home/myitcv/blah
+$ ls $HOME/blah
 ```
 
 ```bash
 # terminal 2
-$ ls /home/myitcv/blah
+$ ls $HOME/blah
 ```
 
-Even better. Both show `/home/myitcv/blah` as empty.
+Even better. Both show `$HOME/blah` as empty.
 
 The mount we performed in `terminal 1` will be available to the containing bash process and all its child processes
 (ignoring for a second we could `unshare` again...), but isolated entirely from other processes running on the same
@@ -251,7 +255,7 @@ and that instead we have to build our own.
 Let us further assume that we have downloaded, compiled and installed various versions of Go as follows:
 
 ```bash
-$ ls -la /home/myitcv/.gos
+$ ls -la $HOME/.gos
 total 64
 drwxr-xr-x  7 myitcv myitcv  4096 Mar 14 15:09 .
 drwxr-xr-x 69 myitcv myitcv 36864 Mar 19 15:04 ..
@@ -260,7 +264,7 @@ drwxr-xr-x 12 myitcv myitcv  4096 Mar 14 15:03 go1.0.3
 drwxr-xr-x 12 myitcv myitcv  4096 Mar 14 15:09 go1.1.2
 drwxr-xr-x 12 myitcv myitcv  4096 Feb 28 09:19 go1.2
 drwxr-xr-x 12 myitcv myitcv  4096 Mar 12 17:54 go1.2.1
-$ ls /home/myitcv/.gos/go1.2.1/bin/go
+$ ls $HOME/.gos/go1.2.1/bin/go
 /home/myitcv/.gos/go1.2.1/bin/go
 # each installation has a go binary
 ```
@@ -268,14 +272,14 @@ $ ls /home/myitcv/.gos/go1.2.1/bin/go
 For simplicity, let us create a different mount point that will drive the version of Go we are using:
 
 ```bash
-$ mkdir /home/myitcv/gos
+$ mkdir $HOME/gos
 ```
 
 Now let us define our `PATH` and `GOROOT` environment variables in terms of this new mount point:
 
 ```bash
-$ export PATH=/home/myitcv/gos/bin:$PATH
-$ export GOPATH=/home/myitcv/gos
+$ export PATH=$HOME/gos/bin:$PATH
+$ export GOPATH=$HOME/gos
 $ which go || echo "Go is not installed"
 Go is not installed
 ```
@@ -286,7 +290,7 @@ problem, just bear that in mind as we continue.
 How do we start using Go 1.2.1? Simple:
 
 ```bash
-$ mount_wrap /home/myitcv/.gos/go1.2.1/ /home/myitcv/gos
+$ mount_wrap $HOME/.gos/go1.2.1/ $HOME/gos
 $ which go
 /home/myitcv/gos/bin/go
 $ go version
@@ -298,7 +302,7 @@ How do we start using Go 1.0.3? You guessed it:
 
 
 ```bash
-$ mount_wrap /home/myitcv/.gos/go1.0.3/ /home/myitcv/gos
+$ mount_wrap $HOME/.gos/go1.0.3/ $HOME/gos
 $ which go
 /home/myitcv/gos/bin/go
 $ go version
@@ -324,19 +328,24 @@ A couple of points in conclusion:
 * My testing has only been on Linux, specifically Ubuntu 13.10. Plan9 will clearly allow for something similar, other
   platforms may also. Please add comments below if you have something similar working on Mac OS X, Windows etc.
 * As of 2014-03-19, I class this solution as <span style="color:red">'slightly hacky'</span> because of the escalation
-  of privileges required. Perhaps security types could comment on the safety (or otherwise) of my approach. Indeed I am
-in the process of writing a wrapper for `man 2 unshare` that limits the esclation required, something that would obviate
-the need for making `/usr/bin/unshare` setuid (and indeed requiring this package in the first place). Keep an eye on
-[this code](https://github.com/myitcv/go-proc-ns/tree/master/unshare_mounts) - trying to track down a setuid bug right
-now
+  of privileges required. Perhaps security types could comment on the safety (or otherwise) of my approach
 * The example outlined above presents something of a chicken and egg problem if you want to avoid installing `gvm` and
   instead use a process namespace-based solution. This can of course be circumvented by using a system install of Go to
 bootstrap things (e.g. `sudo apt-get install golang` on Ubuntu)
 * Whilst the examples presented above are all Go related, this solution is of course not language specific and could be
-  extended, as I have suggsted, to `rbenv`, `nvm` etc. as well as their associated package managers. Indeed the good
+  extended, as I have suggested, to `rbenv`, `nvm` etc. as well as their associated package managers. Indeed the good
 thing about this solution is that it is no way prescriptive about how to structure your environment/work/packages etc.
 
 Any feedback gratefully received in the comments below.
+
+
+## Change history<a name="changehistory"></a>
+
+* *2014-03-19* - replace references to `unshare` package (and subsequent `chmod u+s`) with references to `unshare_mounts` command.
+  Removes requirement on package being installed but also means we don't have to modify permission of package-installed
+file
+* *2014-03-19* - change all references to `/home/myitcv` in commands to `$HOME` - allows copy-paste
+
 
 [FUSE]: http://fuse.sourceforge.net/
 [`go-fuse`]: https://github.com/hanwen/go-fuse
