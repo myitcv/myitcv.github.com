@@ -139,9 +139,8 @@ binaries/permissions, I have tried to adopt the principle of least privilege and
 to achieve the above two goals but only in *very specific circumstances*. Let's install those now:
 
 ```bash
-$ go get -u github.com/myitcv/go-proc-ns/mount_wrap
-# mount_wrap is automatically installed by the previous go get
-$ go install github.com/myitcv/go-proc-ns/unshare_mounts
+$ go get -u github.com/myitcv/go-proc-ns/...
+$ go install github.com/myitcv/go-proc-ns/...
 ```
 
 `unshare_mounts` runs a user's shell such that the shell is unshared (or detached) from the parent process' mount
