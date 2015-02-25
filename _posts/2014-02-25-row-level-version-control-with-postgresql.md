@@ -10,6 +10,9 @@ tags:
 - postgresql
 ---
 
+**Update 2015-02-25:** updated to use `now() at time zone 'utc'` and `TIMESTAMP WITH TIME ZONE` for safe default
+behaviour<br/>
+
 Time Travel appears to have been a little known feature of [PostgreSQL] that [fell out of favour as of version
 `6.2`](http://www.postgresql.org/docs/6.3/static/c0503.htm). This feature effectively provided row-level version history
 - a paper trail of all your changes to data in a table - useful when it comes to auditing, providing version
