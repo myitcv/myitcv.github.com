@@ -25,12 +25,12 @@ come to them later), let us first create a piece of fruit:
 ```sql
 myitcv=# insert into fruits (name) values ('apple');
 myitcv=# select * from fruits;
- id | name  |         valid_from         | valid_to
-----+-------+----------------------------+----------
-  1 | apple | 2014-02-26 11:40:17.014514 | infinity
+ id | name  |          valid_from           | valid_to
+----+-------+-------------------------------+----------
+  1 | apple | 2015-02-25 19:27:18.011267+00 | infinity
 ```
 
-Creating a new record inserts a new row into our table. `valid_from = now()` corresponds to the creation time. Notice
+Creating a new record inserts a new row into our table. `valid_from = now() at time zone 'utc'` corresponds to the creation time. Notice
 the `valid_to = infinity` - this tells us that the row is current.
 
 If we then change the name of the piece of fruit (notice we use the restriction `valid_to = infinity` to refer to the
@@ -39,15 +39,15 @@ latest version):
 ```sql
 myitcv=# update fruits set name = 'pear' where id = 1 and valid_to = 'infinity';
 myitcv=# select * from fruits;
- id | name  |         valid_from         |          valid_to
-----+-------+----------------------------+----------------------------
-  1 | apple | 2014-02-26 11:40:17.014514 | 2014-02-26 11:40:17.015796
-  1 | pear  | 2014-02-26 11:40:17.015796 | infinity
+ id | name  |          valid_from           |           valid_to
+----+-------+-------------------------------+-------------------------------
+  1 | apple | 2015-02-25 19:27:18.011267+00 | 2015-02-25 19:27:50.242802+00
+  1 | pear  | 2015-02-25 19:27:50.242802+00 | infinity
 ```
 
 The update has been translated into two changes:
 
-1. Update `valid_to` on the now old version to `now()`
+1. Update `valid_to` on the now old version to `now() at time zone 'utc'`
 2. Insert a new row to represent the new version, following the same logic for `valid_from` as for insert
 
 And then finally delete the piece of fruit; we don't need it any more:
@@ -55,13 +55,14 @@ And then finally delete the piece of fruit; we don't need it any more:
 ```sql
 myitcv=# delete from fruits where id = 1 and valid_to = 'infinity';
 myitcv=# select * from fruits;
- id | name  |         valid_from         |          valid_to
-----+-------+----------------------------+----------------------------
-  1 | apple | 2014-02-26 11:40:17.014514 | 2014-02-26 11:40:17.015796
-  1 | pear  | 2014-02-26 11:40:17.015796 | 2014-02-26 11:40:17.018864
+ id | name  |          valid_from           |           valid_to
+----+-------+-------------------------------+-------------------------------
+  1 | apple | 2015-02-25 19:27:18.011267+00 | 2015-02-25 19:27:50.242802+00
+  1 | pear  | 2015-02-25 19:27:50.242802+00 | 2015-02-25 19:28:21.066919+00
 ```
 
-Notice the row itself is not deleted, rather the `valid_to` date is simply updated from `infinity -> now()`. This is in
+Notice the row itself is not deleted, rather the `valid_to` date is simply updated from `infinity -> now() at time zone
+'utc'`. This is in
 effect a soft delete.
 
 With appropriate indexes and restrictions on key constraints, this can in effect give you a version history, or paper
@@ -119,7 +120,7 @@ The code itself is commented to give some motivation behind certain decisions. B
 deletes.
 
 A delete could simply be achieved by intercepting a user request to delete and translating that to update the `valid_to
-= now()` on the corresponding row. We would therefore silently ignore the request to delete something. However,
+= now() at time zone 'utc'` on the corresponding row. We would therefore silently ignore the request to delete something. However,
 the effect of this is to return that 0 rows were affected by the delete. Client libraries using our table might well have problems
 with this ([ActiveRecrod with optimistic
 locking](http://api.rubyonrails.org/classes/ActiveRecord/Locking/Optimistic.html) does for example). Hence we have to go
@@ -136,8 +137,8 @@ DROP TABLE IF EXISTS fruits;
 CREATE TABLE fruits (
   id SERIAL NOT NULL,
   name TEXT,
-  valid_from TIMESTAMP NOT NULL,
-  valid_to TIMESTAMP NOT NULL
+  valid_from TIMESTAMP WITH TIME ZONE NOT NULL,
+  valid_to TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
 DROP TRIGGER IF EXISTS fruits_before ON fruits;
