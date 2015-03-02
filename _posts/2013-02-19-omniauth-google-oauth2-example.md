@@ -10,6 +10,8 @@ tags:
 - oauth2
 ---
 
+**Update 2015-03-02:** this post is very out of date and no longer reflects changes in upstream Rails or
+OmniAuth-GoogleAuth2<br/>
 **Update 2013-03-10:** modified to use [figaro](https://github.com/laserlemon/figaro) instead of rather half-baked
 `parseconfig` approach.<br/>
 **Update 2013-03-24:** modified to use `ActiveRecord` sessions and `first_or_initialize` for user creation (moving the
