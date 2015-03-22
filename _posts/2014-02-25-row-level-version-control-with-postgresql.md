@@ -10,6 +10,7 @@ tags:
 - postgresql
 ---
 
+**Update 2015-03-22:** reverted use of `now() at time zone 'utc'` because it's superfluous. Added license details</br>
 **Update 2015-02-25:** updated to use `now() at time zone 'utc'` and `TIMESTAMP WITH TIME ZONE` for safe default
 behaviour<br/>
 
@@ -33,7 +34,7 @@ myitcv=# select * from fruits;
   1 | apple | 2015-02-25 19:27:18.011267+00 | infinity
 ```
 
-Creating a new record inserts a new row into our table. `valid_from = now() at time zone 'utc'` corresponds to the creation time. Notice
+Creating a new record inserts a new row into our table. `valid_from = now()` corresponds to the creation time. Notice
 the `valid_to = infinity` - this tells us that the row is current.
 
 If we then change the name of the piece of fruit (notice we use the restriction `valid_to = infinity` to refer to the
@@ -50,7 +51,7 @@ myitcv=# select * from fruits;
 
 The update has been translated into two changes:
 
-1. Update `valid_to` on the now old version to `now() at time zone 'utc'`
+1. Update `valid_to` on the now old version to `now()`
 2. Insert a new row to represent the new version, following the same logic for `valid_from` as for insert
 
 And then finally delete the piece of fruit; we don't need it any more:
@@ -64,9 +65,8 @@ myitcv=# select * from fruits;
   1 | pear  | 2015-02-25 19:27:50.242802+00 | 2015-02-25 19:28:21.066919+00
 ```
 
-Notice the row itself is not deleted, rather the `valid_to` date is simply updated from `infinity -> now() at time zone
-'utc'`. This is in
-effect a soft delete.
+Notice the row itself is not deleted, rather the `valid_to` date is simply updated from `infinity -> now()`.
+This is in effect a soft delete.
 
 With appropriate indexes and restrictions on key constraints, this can in effect give you a version history, or paper
 trail if you will, of changes to rows in your table. Nothing gets deleted; we append to the table any changes, including
@@ -123,7 +123,7 @@ The code itself is commented to give some motivation behind certain decisions. B
 deletes.
 
 A delete could simply be achieved by intercepting a user request to delete and translating that to update the `valid_to
-= now() at time zone 'utc'` on the corresponding row. We would therefore silently ignore the request to delete something. However,
+= now()` on the corresponding row. We would therefore silently ignore the request to delete something. However,
 the effect of this is to return that 0 rows were affected by the delete. Client libraries using our table might well have problems
 with this ([ActiveRecrod with optimistic
 locking](http://api.rubyonrails.org/classes/ActiveRecord/Locking/Optimistic.html) does for example). Hence we have to go
