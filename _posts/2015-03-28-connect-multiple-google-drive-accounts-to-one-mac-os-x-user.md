@@ -6,6 +6,11 @@ location: London
 author: paul
 ---
 
+**Update 2015-04-18:** updated `bindfs` command to use `--xattr-none` to avoid extended attribute problems when creating
+files using Finder</br>
+**Update 2015-06-09:** updated `bindfs` command to use `-o volname="XYZ"` to set a custom name for the mount (as opposed
+to the ugly default). With thanks to Dennis Jarvis for highlighting this</br>
+
 Installed on your Mac/PC, [Google Drive](https://support.google.com/drive/?hl=en#topic=6069785) allows you to sync
 files/folders (to use the terminology from the support page) with Google Drive on the web. That is to say for example,
 a Mac OS X user can connect his/her Google Drive account so that files/folders stored locally on the OS hard drive are
@@ -45,12 +50,12 @@ Let's assume you are already logged in as `user_1`
 2. In a Terminal: `brew install bindfs`
 3. Create a new Mac OS X user called `user_2`
 4. Login as this user (it is fastest to [switch user](https://support.apple.com/kb/PH18897?locale=en_US) from `user_1`)
-5. In a Terminal: `mkdir "$HOME/Google Drive" && chmod 700 $_`
+5. In a Terminal: `mkdir "$HOME/Google Drive" && chmod 700 "$HOME/Google Drive"`
 5. Setup Google Drive as the user `user_2` to connect `user_1@work.com`, syncing to `/Users/user_2/Google Drive` (the default)
 6. Let this sync complete
 7. Switch user back to `user_1`
 8. In a Terminal: `mkdir "/Users/user_1/Google Drive - work"`
-9. In a Terminal: `sudo bindfs -o local --mirror=user_2,user_1,@staff --create-for-user=user_2 "/Users/user_2/Google Drive" "/Users/user_1/Google Drive - work"`
+9. In a Terminal: `sudo bindfs -o volname="Google Drive - work" -o local --xattr-none --mirror=user_2,user_1,@staff --create-for-user=user_2 "/Users/user_2/Google Drive" "/Users/user_1/Google Drive - work"`
 
 _With thanks to [this link](http://apple.stackexchange.com/questions/114761/how-can-i-fix-the-spotlight-index-for-an-encfs-mounted-directory) for the
 `-o local fix`_
