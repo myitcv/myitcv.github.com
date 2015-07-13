@@ -10,9 +10,7 @@ tags:
 - postgresql
 ---
 
-**Update 2015-03-22:** reverted use of `now() at time zone 'utc'` because it's superfluous. Added license details</br>
-**Update 2015-02-25:** updated to use `now() at time zone 'utc'` and `TIMESTAMP WITH TIME ZONE` for safe default
-behaviour<br/>
+_Originally authored in Feb 2014; refreshed in Jun 2015. See change log at the end of this article for a list of updates_
 
 Time Travel appears to have been a little known feature of [PostgreSQL] that [fell out of favour as of version
 `6.2`](http://www.postgresql.org/docs/6.3/static/c0503.htm). This feature effectively provided row-level version history
@@ -182,6 +180,11 @@ In writing this trigger-based alternative to `timetravel`, I've relied heavily o
   commands](http://www.postgresql.org/docs/9.3/static/plpgsql-statements.html#PLPGSQL-STATEMENTS-EXECUTING-DYN)
 
 Thanks to the many contributors to PostgreSQL and its community for what is a great DB.
+
+**Update 2015-03-22:** reverted use of `now() at time zone 'utc'` because it's superfluous. Added license details</br>
+**Update 2015-02-25:** updated to use `now() at time zone 'utc'` and `TIMESTAMP WITH TIME ZONE` for safe default
+behaviour<br/>
+
 
 [PostgreSQL]: http://www.postgresql.org/
 [AWS PostgreSQL RDS]: http://aws.amazon.com/rds/postgresql/

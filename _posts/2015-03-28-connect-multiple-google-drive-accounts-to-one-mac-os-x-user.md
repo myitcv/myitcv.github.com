@@ -46,7 +46,7 @@ Let us assume:
 Let's assume you are already logged in as `user_1`
 
 0. Install [FUSE for OS X](https://osxfuse.github.io/)
-1. Install [Brew](http://brew.sh/)
+1. Install [Brew](http://brew.sh/) or update your existing install via `brew update`
 2. In a Terminal: `brew install bindfs`
 3. Create a new Mac OS X user called `user_2`
 4. Login as this user (it is fastest to [switch user](https://support.apple.com/kb/PH18897?locale=en_US) from `user_1`)

@@ -15,6 +15,8 @@ tags:
 - contacts
 ---
 
+**Update 2015-06-24:** this code has not been tested for some time. Caveat emptor!</br>
+
 My address book contacts a number of contacts I bulk imported from the business school ([LBS](http://www.london.edu/)
 and [Haas](http://www.haas.berkeley.edu/) ). Given the size of the years, there are ~1000 people I have therefore never
 properly spoken to. Quite a thought.

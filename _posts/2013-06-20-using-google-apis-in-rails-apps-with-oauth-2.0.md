@@ -11,6 +11,7 @@ tags:
 - oauth2
 - google
 ---
+**Update 2015-06-24:** `signet-rails` is no longer being maintained, neither is this post</br>
 
 [Back in February](/2013/02/19/omniauth-google-oauth2-example.html) I wrote a blog post about omniauth + Google OAuth2
 on Rails. The app desribed in the post stopped short of doing anything useful once the OAuth2 credentials had been
