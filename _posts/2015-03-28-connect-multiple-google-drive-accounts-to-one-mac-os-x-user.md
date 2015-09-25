@@ -6,6 +6,7 @@ location: London
 author: paul
 ---
 
+**Update 2015-09-25:** clarify the term 'switch user' and emphasise that logout/login is not equivalent</br>
 **Update 2015-04-18:** updated `bindfs` command to use `--xattr-none` to avoid extended attribute problems when creating
 files using Finder</br>
 **Update 2015-06-09:** updated `bindfs` command to use `-o volname="XYZ"` to set a custom name for the mount (as opposed
@@ -49,11 +50,11 @@ Let's assume you are already logged in as `user_1`
 1. Install [Brew](http://brew.sh/) or update your existing install via `brew update`
 2. In a Terminal: `brew install bindfs`
 3. Create a new Mac OS X user called `user_2`
-4. Login as this user (it is fastest to [switch user](https://support.apple.com/kb/PH18897?locale=en_US) from `user_1`)
+4. [Switch user](https://support.apple.com/kb/PH18897?locale=en_US) (do not logout) to `user_2`
 5. In a Terminal: `mkdir "$HOME/Google Drive" && chmod 700 "$HOME/Google Drive"`
 5. Setup Google Drive as the user `user_2` to connect `user_1@work.com`, syncing to `/Users/user_2/Google Drive` (the default)
 6. Let this sync complete
-7. Switch user back to `user_1`
+7. Switch user back to `user_1` (again, do not logout)
 8. In a Terminal: `mkdir "/Users/user_1/Google Drive - work"`
 9. In a Terminal: `sudo bindfs -o volname="Google Drive - work" -o local --xattr-none --mirror=user_2,user_1,@staff --create-for-user=user_2 "/Users/user_2/Google Drive" "/Users/user_1/Google Drive - work"`
 
