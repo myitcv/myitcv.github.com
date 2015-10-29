@@ -36,7 +36,8 @@ To use this:
 
 * Create a directory in your home directory called `bin`
 * Copy the script above into a new file, `$HOME/bin/keepVPNConnected`
-* Set `VPN_IP`, `INTERNET_TEST_IP` and `VPN_CONNECTION` as indicated
+* Set `VPN_IP`, `INTERNET_TEST_IP` and `VPN_CONNECTION` as indicated. `VPN_IP` should be set to an IP address behind the
+  VPN that responds to `ping` requests
 * `chmod +x $HOME/bin/keepVPNConnected`
 * Add `keepVPNConnected` to your [login items](https://support.apple.com/kb/PH21985?locale=en_US&viewlocale=en_US) - I
   also select the 'Hide' option
