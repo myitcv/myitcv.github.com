@@ -9,6 +9,8 @@ tags:
 - go
 ---
 
+**Update 2016-02-16:** anyone reading this post should stop reading and instead use [`vim-go`](https://github.com/fatih/vim-go)</br>
+
 Having decided to give [Go] a proper, well, go, it was time to get setup in [Vim]. The good news is the support is
 really rather, well, good. This article aims to cover the main steps required to kick start your development.
 
