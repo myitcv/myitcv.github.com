@@ -26,6 +26,7 @@ task :publish => [:generate] do
 
     system "git init"
     system "git add ."
+    system "git config hooks.stopbinaries false"
     message = "Site updated at #{Time.now.utc}"
     system "git commit -m #{message.inspect}"
     system "git remote add origin git@github.com:#{GITHUB_REPONAME}.git"
