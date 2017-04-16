@@ -29,6 +29,6 @@ You can [download the paper here](/files/concord-ftfjp04.pdf).
  year      = {2004},
  month     = {June},
  address   = {Oslo, Norway},
- url       = {http://myitcv.org.uk/papers/concord04.html}
+ url       = {http://blog.myitcv.io/2004/06/15/ftfjp-concord.html}
 }
 ```

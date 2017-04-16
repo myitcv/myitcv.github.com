@@ -33,6 +33,6 @@ The more technical aspects of setting up development environments for teaching a
 post](/2013/02/18/introducing-people-to-coding-the-vagrant-and-puppet-way.html)
 
 So for now this page is a simple placeholder for the course but if you have any questions please [get in
-touch](mailto:paul@myitcv.org.uk)
+touch](mailto:paul@myitcv.io)
 
 

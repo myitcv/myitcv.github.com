@@ -4,7 +4,7 @@ comments: true
 ---
 {% assign author = site.authors[page.author] %}
 <div itemprop='blogPost' itemscope='itemscope' itemtype='http://schema.org/BlogPosting'>
-  <meta content='blog.myitcv.org.uk{{ page.id }}' itemprop='url'>
+  <meta content='blog.myitcv.io{{ page.id }}' itemprop='url'>
   <h1 itemprop='name'>{{ page.title }}</h1>
   <div class='page_details'>
     <hr class='page_details'>
@@ -48,7 +48,7 @@ comments: true
   {% endif %}
   var disqus_shortname = 'myitcv'; // required: replace example with your forum shortname
   var disqus_identifier = '{{ site.url }}{{ page.id }}';
-  
+
   /* * * DON'T EDIT BELOW THIS LINE * * */
   (function() {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;

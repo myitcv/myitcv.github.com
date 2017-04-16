@@ -1,4 +1,4 @@
-url: http://blog.myitcv.org.uk
+url: http://blog.myitcv.io
 markdown: redcarpet
 highlighter: pygments
 safe: true
@@ -9,8 +9,8 @@ redcarpet:
 authors:
   paul:
     display_name: Paul Jolly
-    email: paul@myitcv.org.uk
+    email: paul@myitcv.io
     web: https://plus.google.com/105997489348527668257
-    twitter: P__A__J
+    twitter: _myitcv
     github: myitcv
-    blog: http://blog.myitcv.org.uk
+    blog: http://blog.myitcv.io
