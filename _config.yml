@@ -1,10 +1,16 @@
-url: http://blog.myitcv.io
-markdown: redcarpet
-highlighter: pygments
-safe: true
-lsi: false
-future: false
+title: blog.myitcv.io
+author: Paul Jolly
+email: paul@myitcv.io
+description: >
+  Thoughts on programming and engineering.
+baseurl: ""
+url: "http://blog.myitcv.io"
+twitter_username: _myitcv
+github_username:  myitcv
+
 theme: minima
+
+markdown: redcarpet
 redcarpet:
   extensions: [footnotes,tables]
 
@@ -14,12 +20,3 @@ exclude:
   - Gemfile
   - Gemfile.lock
 
-author: Paul Jolly
-title: blog.myitcv.io
-email: paul@myitcv.io
-description: >
-  Thoughts on programming and engineering.
-baseurl: ""
-url: "http://blog.myitcv.io"
-twitter_username: _myitcv
-github_username:  myitcv
