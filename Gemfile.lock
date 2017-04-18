@@ -199,6 +199,7 @@ PLATFORMS
 
 DEPENDENCIES
   github-pages
+  minima
   pygments.rb
   redcarpet (>= 3.0.0)
 

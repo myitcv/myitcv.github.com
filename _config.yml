@@ -4,13 +4,22 @@ highlighter: pygments
 safe: true
 lsi: false
 future: false
+theme: minima
 redcarpet:
   extensions: [footnotes,tables]
-authors:
-  paul:
-    display_name: Paul Jolly
-    email: paul@myitcv.io
-    web: https://plus.google.com/105997489348527668257
-    twitter: _myitcv
-    github: myitcv
-    blog: http://blog.myitcv.io
+
+gems:
+  - jekyll-feed
+exclude:
+  - Gemfile
+  - Gemfile.lock
+
+author: Paul Jolly
+title: blog.myitcv.io
+email: paul@myitcv.io
+description: >
+  Thoughts on programming and engineering.
+baseurl: ""
+url: "http://blog.myitcv.io"
+twitter_username: _myitcv
+github_username:  myitcv
