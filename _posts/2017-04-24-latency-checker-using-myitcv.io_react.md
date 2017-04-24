@@ -16,7 +16,7 @@ This demo version doesn't actually check latencies for the supplied URL, instead
 
 Here's a screenshot to whet your appetite:
 
-<img src="{{ site.url }}/images/2017-04-23-latency.png" style="border: solid 1px lightgray;"/>
+<a href="http://blog.myitcv.io/gopherjs_examples_sites/latency/"><img src="{{ site.url }}/images/2017-04-23-latency.png" style="border: solid 1px lightgray;"/></a>
 
 The source code for the React components can be found [on
 Github](https://github.com/myitcv/react/blob/master/examples/sites/latency/latency.go).
