@@ -7,17 +7,23 @@ require "jekyll"
 # Change your GitHub reponame
 GITHUB_REPONAME = "myitcv/myitcv.github.com"
 
-
-desc "Generate blog files"
-task :generate do
+def generate()
   Jekyll::Site.new(Jekyll.configuration({
     "source"      => ".",
     "destination" => "_site"
   })).process
 end
 
+desc "Generate blog files"
+task :generate do
+  generate
+end
+
 desc "Generate and publish blog to gh-pages"
-task :publish => [:generate] do
+task :publish do
+  ENV["JEKYLL_ENV"] = "production"
+
+  generate
   Dir.mktmpdir do |tmp|
     cp_r "_site/.", tmp
 
