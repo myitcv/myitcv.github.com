@@ -16,7 +16,7 @@ theme: minima
 
 markdown: redcarpet
 redcarpet:
-  extensions: [footnotes,tables]
+  extensions: ["footnotes","tables","with_toc_data"]
 
 plugins:
   - jekyll-feed
