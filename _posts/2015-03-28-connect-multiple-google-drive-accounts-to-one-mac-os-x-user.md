@@ -29,11 +29,9 @@ This is something of a restriction for those of us who have multiple accounts fo
 accounts and a personal account, where sharing across domains is either not possible/desirable, and where sync access to
 files from the same machine _is_ desirable.
 
-There are [various](http://techno-dribble.blogspot.hk/2015/03/macos-using-multiple-google-drive.html)
-[solutions](http://truongtx.me/2013/06/30/macos-using-multiple-google-drive-accounts-at-the-same-time/) elsewhere on the
-web that variously talk about opening up permissions etc. but I could never truly get these to work (and to be honest the
-thought of `chmod 777` on anything made me rather ill). Hence the alternative that I have laid out below. _With thanks to
-**`@Moose`** for a great contribution in the comments._
+There are various solutions elsewhere on the web that involve opening up permissions etc. but I could never truly get
+these to work (and to be honest the thought of `chmod 777` on anything made me rather ill). Hence the alternative that I
+have laid out below. _With thanks to **`@Moose`** for a great contribution in the comments._
 
 ### WARNING
 
