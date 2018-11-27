@@ -10,7 +10,7 @@ author: paul
 Facebook's [React](https://facebook.github.io/react/), a Javascript library for building interactive user interfaces.
 
 This post details the main features in the latest "release": [2017-05-02 - CSS, stateGen and JSX
-goodies](https://github.com/myitcv/react/wiki/Changelog#2017-05-02---css-stategen-and-jsx-goodies)
+goodies](https://github.com/myitcv/x/blob/master/react/_doc/changelog.md#2017-05-02---css-stategen-and-jsx-goodies)
 
 ### JSX-like support
 
@@ -79,7 +79,7 @@ This is my first GopherJS React App.
 ```
 
 The arguments to the `jsx.*` functions must be compile-time string constants. To enforce this we also provide
-[`reactVet`](https://github.com/myitcv/react/wiki/reactVet). Whilst the stop-gap solution remains this also helps to
+[`reactVet`](https://github.com/myitcv/x/blob/master/react/_doc/reactvet.md). Whilst the stop-gap solution remains this also helps to
 prevent security problems (non-constant values would open the door to user-provided HTML or Markdown strings).
 
 Clearly this "compile-time string constants"-approach is limited when compared to TypeScript's native support. But it
@@ -95,9 +95,9 @@ If you've ever used ClojureScript's [Reagent](https://github.com/reagent-project
 `atom`'s.
 
 With `myitcv.io/react` we achieve a similar result via
-[`stateGen`](https://github.com/myitcv/react/tree/master/cmd/stateGen). `stateGen` translates a succinct Go-based
+[`stateGen`](https://github.com/myitcv/x/tree/master/react/cmd/stateGen). `stateGen` translates a succinct Go-based
 template into a typed state tree. Here is an example template (taken from the [global state
-example](https://github.com/myitcv/react/blob/master/examples/sites/globalstate/state/state.go)):
+example](https://github.com/myitcv/x/blob/master/react/examples/sites/globalstate/state/state.go)):
 
 ```go
 package state
@@ -128,8 +128,8 @@ _I tend to enforce that the leaves of a state tree only contain [immutable](http
 structures. This makes reasoning about state transitions much easier and ensures that components cannot modify data
 "underneath" another that might share a reference to the same value/data structure._
 
-The [`PersonChooser`](https://github.com/myitcv/react/blob/master/examples/sites/globalstate/person_chooser.go)
-component that is part of the [global state example](http://blog.myitcv.io/gopherjs_examples_sites/globalstate/) shows
+The [`PersonChooser`](https://github.com/myitcv/x/blob/master/react/examples/sites/globalstate/person_chooser.go)
+component that is part of the [global state example](https://blog.myitcv.io/gopherjs_examples_sites/globalstate/) shows
 how the state tree is used. A component can either reference the global variable that represents the singleton instance
 of the state tree, or it can reference a node/leaf from the tree. If the referencing of a node/leaf is achieved via
 interfaces, then the component can be made reusable (i.e.  instances of that component can be passed different
@@ -162,7 +162,7 @@ func (p *PersonChooserDef) Render() r.Element {
 Of course this could easily be fixed by passing in a `*model.People` value via the props.
 
 This is very much a first-cut of `stateGen` - feedback/questions/questions greatly appreciated via [Github
-issues](https://github.com/myitcv/react/issues).
+issues](https://github.com/myitcv/x/issues/new?title=react:).
 
 ### Events are now interface-based
 

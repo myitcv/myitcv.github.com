@@ -4,7 +4,7 @@ email: paul@myitcv.io
 description: >
   Thoughts on programming and engineering.
 baseurl: ""
-url: "http://blog.myitcv.io"
+url: "https://blog.myitcv.io"
 twitter_username: _myitcv
 github_username:  myitcv
 github: [metadata]
