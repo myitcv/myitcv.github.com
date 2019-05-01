@@ -29,5 +29,8 @@ with our members and sponsors on how things are run.
 
 In summary: 2018 was an exciting year, plenty to look forward to in 2019!
 
+A huge thanks to everyone who attended any of our events, to our speakers, to our sponsors, and of course to my fellow
+organisers.
+
 As ever, we greatly appreciate, welcome and encourage feedback. Please contact the organisers via
 [glug-organisers@googlegroups.com](mailto:glug-organisers@googlegroups.com).
