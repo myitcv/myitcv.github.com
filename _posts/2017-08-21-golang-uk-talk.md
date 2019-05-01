@@ -12,10 +12,10 @@ post](https://blog.myitcv.io/2017/04/16/myitcv.io_react-gopherjs-bindings-for-re
 `myitcv.io/react`](https://github.com/myitcv/x/blob/master/react/_doc/README.md).
 
 <p>
-<a href="https://youtu.be/emoUiK-GHkE"><img src="/images/youtube.png" style="width: 40px"></a>&nbsp;<a href="https://youtu.be/emoUiK-GHkE">Video</a>
+<a href="https://youtu.be/emoUiK-GHkE"><img src="/images/youtube.png" style="width: 30px"></a>&nbsp;<a href="https://youtu.be/emoUiK-GHkE">Video</a>
 </p>
 <p>
-<a href="https://blog.myitcv.io/gopherjs_examples_sites/present/?url=https://raw.githubusercontent.com/myitcv/x/master/react/_talks/2017/golang_uk.slide&hideAddressBar=true"><img src="/images/gopher.png" style="width: 40px"></a>&nbsp;<a href="https://blog.myitcv.io/gopherjs_examples_sites/present/?url=https://raw.githubusercontent.com/myitcv/x/master/react/_talks/2017/golang_uk.slide&hideAddressBar=true">Slides</a>
+<a href="https://blog.myitcv.io/gopherjs_examples_sites/present/?url=https://raw.githubusercontent.com/myitcv/x/master/react/_talks/2017/golang_uk.slide&hideAddressBar=true"><img src="/images/gopher.png" style="width: 30px"></a>&nbsp;<a href="https://blog.myitcv.io/gopherjs_examples_sites/present/?url=https://raw.githubusercontent.com/myitcv/x/master/react/_talks/2017/golang_uk.slide&hideAddressBar=true">Slides</a>
 </p>
 
 The slides are loaded by a browser-based version (compiled with GopherJS) of the [`present`
