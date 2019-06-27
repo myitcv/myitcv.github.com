@@ -2,7 +2,7 @@ title: blog.myitcv.io
 author: Paul Jolly
 email: paul@myitcv.io
 description: >
-  Thoughts on programming and engineering.
+  A largely Go-based blog
 baseurl: ""
 url: "https://blog.myitcv.io"
 twitter_username: _myitcv
