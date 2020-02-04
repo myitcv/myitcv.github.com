@@ -37,7 +37,7 @@ doesn't defend against the commit disappearing._
 
 The problems don't stop there, because there is also the risk that transitive dependencies can do malicious things too:
 
-<blockquote class="twitter-tweet"><p lang="en" dir="ltr">There is also a risk that the transitive dependencies can do malicious things.<a href="https://t.co/juffjxwxIr">https://t.co/juffjxwxIr</a></p>&mdash; DrSensor👹 (@dr_sensor) <a href="https://twitter.com/dr_sensor/status/1208098900747284480?ref_src=twsrc%5Etfw">December 20, 2019</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<blockquote class="twitter-tweet"><p lang="en" dir="ltr">There is also a risk that the transitive dependencies can do malicious things.<a href="https://t.co/juffjxwxIr">https://t.co/juffjxwxIr</a></p>&mdash; DrSensor👹 (@dr\_sensor) <a href="https://twitter.com/dr_sensor/status/1208098900747284480?ref_src=twsrc%5Etfw">December 20, 2019</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 On top of this, it's not made particularly clear to users that every action they use in their workflow is given implicit
 access to an access token that has fairly [wide-ranging read-write access to the host
