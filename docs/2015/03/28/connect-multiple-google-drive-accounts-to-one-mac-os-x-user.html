@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Connect multiple Google Drive accounts to one Mac OS X user | blog.myitcv.io</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="Connect multiple Google Drive accounts to one Mac OS X user" />
+<meta name="author" content="paul" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Update 2017-10-16: major update to article following the release of Backup and Sync; no longer require bindfs" />
+<meta property="og:description" content="Update 2017-10-16: major update to article following the release of Backup and Sync; no longer require bindfs" />
+<link rel="canonical" href="https://blog.myitcv.io/2015/03/28/connect-multiple-google-drive-accounts-to-one-mac-os-x-user.html" />
+<meta property="og:url" content="https://blog.myitcv.io/2015/03/28/connect-multiple-google-drive-accounts-to-one-mac-os-x-user.html" />
+<meta property="og:site_name" content="blog.myitcv.io" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2015-03-28T00:00:00+00:00" />
+<script type="application/ld+json">
+{"description":"Update 2017-10-16: major update to article following the release of Backup and Sync; no longer require bindfs","headline":"Connect multiple Google Drive accounts to one Mac OS X user","dateModified":"2015-03-28T00:00:00+00:00","datePublished":"2015-03-28T00:00:00+00:00","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://blog.myitcv.io/2015/03/28/connect-multiple-google-drive-accounts-to-one-mac-os-x-user.html"},"url":"https://blog.myitcv.io/2015/03/28/connect-multiple-google-drive-accounts-to-one-mac-os-x-user.html","author":{"@type":"Person","name":"paul"},"@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://blog.myitcv.io/feed.xml" title="blog.myitcv.io" /></head>
+
+
+  <body>
+
+    <header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">blog.myitcv.io</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"></div>
+      </nav></div>
+</header>
+
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Connect multiple Google Drive accounts to one Mac OS X user</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2015-03-28T00:00:00+00:00" itemprop="datePublished">Mar 28, 2015
+      </time>• <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span class="p-author h-card" itemprop="name">paul</span></span></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p><strong>Update 2017-10-16:</strong> major update to article following the release of Backup and Sync; no longer require <code class="language-plaintext highlighter-rouge">bindfs</code><br /></p>
+
+<p><a href="https://www.google.co.uk/drive/download/">Google Drive</a> allows you to sync files/folders (to use the terminology from
+the support page) on your Mac/PC with Google Drive on the web. That is to say for example, a Mac OS X user can connect
+their Google Drive account such that files/folders stored locally on the OS hard drive are automatically synced with the
+contents of Google Drive on the web.</p>
+
+<p>As of September/October 2017, Google released two replacements for the old Google Drive application: <a href="https://www.google.co.uk/drive/download/backup-and-sync/">Backup and
+Sync</a> (aimed at personal accounts) and <a href="https://support.google.com/a/answer/7491144?utm_medium=et&amp;utm_source=aboutdrive&amp;utm_content=getstarted&amp;utm_campaign=en_us">Drive File
+Stream</a>
+(aimed at business customers who have G Suite accounts). It turns out that, despite the apparent distinction, Backup and
+Sync can also be used for “business” accounts (i.e. users of G Suite accounts). Drive File Stream can only be used by G
+Suite users, and presents a virtual file system that syncs files on demand.</p>
+
+<p>This article focuses on the use of <strong>Backup and Sync</strong> for either personal or business (G Suite) accounts.</p>
+
+<p>Whilst it is possible to be <a href="https://support.google.com/accounts/answer/1721977?hl=en">signed in to multiple Google accounts at once in a
+browser</a>, with Backup and Sync on your Mac/PC it is only
+possible to be signed in to one account at a time, i.e. you can only sync one account’s files/folders at any given time.
+This is something of a restriction for those of us who have multiple accounts for genuine reasons, e.g. multiple work
+accounts and a personal account, where sharing across domains is either not possible/desirable, and where sync access to
+files from the same machine <em>is</em> desirable.</p>
+
+<p>There are various solutions elsewhere on the web that involve opening up permissions etc. but I could never truly get
+these to work (and to be honest the thought of <code class="language-plaintext highlighter-rouge">chmod 777</code> on anything made me rather ill). Hence the alternative that I
+have laid out below. <em>With thanks to <strong><code class="language-plaintext highlighter-rouge">@Moose</code></strong> for a great contribution in the comments.</em></p>
+
+<h3 id="warning">WARNING</h3>
+
+<p>The following instructions have not be heavily road-tested, so please follow with caution. Use at your own
+risk, etc.</p>
+
+<p>Let us assume:</p>
+
+<ul>
+  <li>We are using High Sierra (only tested under High Sierra, may well work under other versions of OS X)</li>
+  <li>Tested using Backup and Sync <code class="language-plaintext highlighter-rouge">v3.36.6721.3394</code></li>
+  <li>The Mac OS X user who wants to connect and sync two Google Drive accounts is <code class="language-plaintext highlighter-rouge">user_1</code></li>
+  <li><code class="language-plaintext highlighter-rouge">user_1</code> has access to both <code class="language-plaintext highlighter-rouge">user_1@gmail.com</code> (personal account) and <code class="language-plaintext highlighter-rouge">user_1@work.com</code> (G Suite work account - could
+equally be another personal account)</li>
+  <li><code class="language-plaintext highlighter-rouge">user_1</code> has followed the standard Backup and Sync setup to connect and sync <code class="language-plaintext highlighter-rouge">user_1@gmail.com</code> to <code class="language-plaintext highlighter-rouge">"/Users/user_1/Google Drive"</code></li>
+  <li><code class="language-plaintext highlighter-rouge">user_1</code> wants to be able to connect and sync <code class="language-plaintext highlighter-rouge">user_1@work.com</code> to <code class="language-plaintext highlighter-rouge">"/Users/user_1/Google Drive - work"</code></li>
+  <li>You have configured your system so that <code class="language-plaintext highlighter-rouge">user_1</code> can <a href="https://support.apple.com/en-gb/HT202035">run <code class="language-plaintext highlighter-rouge">sudo</code> commands</a></li>
+</ul>
+
+<h3 id="steps">Steps</h3>
+
+<p>Let’s assume you are already logged in as <code class="language-plaintext highlighter-rouge">user_1</code> (lines in <code class="language-plaintext highlighter-rouge">code blocks</code> should be run in the Terminal):</p>
+
+<ol>
+  <li>Create a new Mac OS X user called <code class="language-plaintext highlighter-rouge">user_2</code></li>
+  <li><a href="https://support.apple.com/kb/PH18897?locale=en_US">Switch user</a> (do not logout) to <code class="language-plaintext highlighter-rouge">user_2</code></li>
+  <li>In a Terminal: <code class="language-plaintext highlighter-rouge">mkdir "$HOME/Google Drive" &amp;&amp; chmod 700 "$HOME/Google Drive"</code></li>
+  <li>Setup Backup and Sync as the user <code class="language-plaintext highlighter-rouge">user_2</code> to connect <code class="language-plaintext highlighter-rouge">user_1@work.com</code>, syncing to <code class="language-plaintext highlighter-rouge">/Users/user_2/Google Drive</code> (the default)</li>
+  <li>Let this sync complete</li>
+  <li>Switch user back to <code class="language-plaintext highlighter-rouge">user_1</code> (again, do not logout)</li>
+  <li><code class="language-plaintext highlighter-rouge">sudo chown root:user_2 /Users/user_2/Google\ Drive</code></li>
+  <li><code class="language-plaintext highlighter-rouge">sudo chmod 770 /Users/user_2/Google\ Drive</code></li>
+  <li><code class="language-plaintext highlighter-rouge">sudo chmod -R +a "user:user_1 allow list,add_file,search,add_subdirectory,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,file_inherit,directory_inherit,delete" /Users/user_2/Google\ Drive/</code></li>
+  <li><code class="language-plaintext highlighter-rouge">sudo chmod -R +a "user:user_2 allow list,add_file,search,add_subdirectory,delete_child,readattr,writeattr,readextattr,writeextattr,readsecurity,writesecurity,chown,file_inherit,directory_inherit,delete" /Users/user_2/Google\ Drive/</code></li>
+  <li><code class="language-plaintext highlighter-rouge">ln -s /Users/user_2/Google\ Drive/ /Users/user_1/Google\ Drive\ -\ work</code></li>
+</ol>
+
+<p>Done. This should now allow you to read/write/etc. files in <code class="language-plaintext highlighter-rouge">"/Users/user_1/Google Drive - work"</code> as <code class="language-plaintext highlighter-rouge">user_1</code>.  These
+changes will get written as if you were <code class="language-plaintext highlighter-rouge">user_2</code>, which allows the Backup and Sync sync process for <code class="language-plaintext highlighter-rouge">user_2</code> (linked to
+<code class="language-plaintext highlighter-rouge">user_1@work.com</code>) to proceed as if the changes had been made by the <code class="language-plaintext highlighter-rouge">user_2</code> Mac OS X user.</p>
+
+<h3 id="conclusion">Conclusion</h3>
+
+<p>This approach appears to work and doesn’t interfere with the normal operation of Backup and Sync for Mac OS X (it just
+thinks it’s running for another user). However, this has not been heavily load/road tested.</p>
+
+<p>As of this latest update (2017-10-16) even Spotlight works for <code class="language-plaintext highlighter-rouge">user_1</code> for the files synced via <code class="language-plaintext highlighter-rouge">user_2</code>.</p>
+
+<p>One thing you will need to remember, if you restart your computer you need to: switch user to <code class="language-plaintext highlighter-rouge">user_2</code> to ensure Backup
+and Sync is started (should start by default on login).</p>
+
+<p>Comments/thoughts on this approach welcomed below.</p>
+
+<hr />
+
+<p> </p>
+
+<p><em>Older revision history</em></p>
+
+<p><strong>Update 2015-09-25:</strong> clarify the term ‘switch user’ and emphasise that logout/login is not equivalent<br />
+<strong>Update 2015-04-18:</strong> updated <code class="language-plaintext highlighter-rouge">bindfs</code> command to use <code class="language-plaintext highlighter-rouge">--xattr-none</code> to avoid extended attribute problems when creating
+files using Finder<br />
+<strong>Update 2015-06-09:</strong> updated <code class="language-plaintext highlighter-rouge">bindfs</code> command to use <code class="language-plaintext highlighter-rouge">-o volname="XYZ"</code> to set a custom name for the mount (as opposed
+to the ugly default). With thanks to Dennis Jarvis for highlighting this<br /></p>
+
+  </div><div id="disqus_thread"></div>
+  <script>
+    var disqus_config = function () {
+      this.page.url = 'https://blog.myitcv.io/2015/03/28/connect-multiple-google-drive-accounts-to-one-mac-os-x-user.html';
+      this.page.identifier = 'https://blog.myitcv.io/2015/03/28/connect-multiple-google-drive-accounts-to-one-mac-os-x-user.html';
+    };
+
+    (function() {
+      var d = document, s = d.createElement('script');
+
+      s.src = 'https://myitcv.disqus.com/embed.js';
+
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript><a class="u-url" href="/2015/03/28/connect-multiple-google-drive-accounts-to-one-mac-os-x-user.html" hidden></a>
+</article>
+
+      </div>
+    </main>
+
+    
+<footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">blog.myitcv.io</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>
+            
+              Paul Jolly
+            
+            </li>
+          <li>
+            <a href="https://myitcv.io">https://myitcv.io</a>
+          </li>
+            
+            <li><a href="mailto:paul@myitcv.io">paul@myitcv.io</a></li>
+            
+        </ul>
+
+        <p class="rss-subscribe"><a href="/feed.xml"><img style="width: 20px; height: 20px" src="/assets/rss.svg"/>&nbsp;RSS</a></p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+            <a href="https://github.com/myitcv"><span class="icon icon--github"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">myitcv</span></a>
+
+          </li>
+          
+
+          
+          <li>
+            <a href="https://twitter.com/_myitcv"><span class="icon icon--twitter"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M15.969,3.058c-0.586,0.26-1.217,0.436-1.878,0.515c0.675-0.405,1.194-1.045,1.438-1.809c-0.632,0.375-1.332,0.647-2.076,0.793c-0.596-0.636-1.446-1.033-2.387-1.033c-1.806,0-3.27,1.464-3.27,3.27 c0,0.256,0.029,0.506,0.085,0.745C5.163,5.404,2.753,4.102,1.14,2.124C0.859,2.607,0.698,3.168,0.698,3.767 c0,1.134,0.577,2.135,1.455,2.722C1.616,6.472,1.112,6.325,0.671,6.08c0,0.014,0,0.027,0,0.041c0,1.584,1.127,2.906,2.623,3.206 C3.02,9.402,2.731,9.442,2.433,9.442c-0.211,0-0.416-0.021-0.615-0.059c0.416,1.299,1.624,2.245,3.055,2.271 c-1.119,0.877-2.529,1.4-4.061,1.4c-0.264,0-0.524-0.015-0.78-0.046c1.447,0.928,3.166,1.469,5.013,1.469 c6.015,0,9.304-4.983,9.304-9.304c0-0.142-0.003-0.283-0.009-0.423C14.976,4.29,15.531,3.714,15.969,3.058z"/></svg>
+</span><span class="username">_myitcv</span></a>
+
+          </li>
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>A largely Go-based blog
+</p>
+
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+    <script>
+  var anchorForHeader = function(heading) {
+    var anchor = document.createElement("a");
+    anchor.className = "header-link";
+    anchor.href      = "#" + heading.id;
+    anchor.innerHTML = "<svg class=\"octicon octicon-link\" height=\"16\" version=\"1.1\" viewBox=\"0 0 16 16\" width=\"16\"><path fill-rule=\"evenodd\" d=\"M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z\"></path></svg>";
+    anchor.title = "Permalink";
+    anchor.style = "float: left; margin-left: -20px; padding-right: 4px;";
+    return anchor;
+  };
+  var linkifyAnchors = function (level, containingElement) {
+    var headers = containingElement.getElementsByTagName("h" + level);
+    var work = [];
+    for (var h = 0; h < headers.length; h++) {
+      var header = headers[h];
+      if (typeof header.id !== "undefined" && header.id !== "") {
+        header.insertBefore(anchorForHeader(header), header.firstChild);
+      }
+    }
+  };
+  document.onreadystatechange = function () {
+    if (this.readyState === "complete") {
+      var contentBlock = document.getElementsByClassName("post-content")[0] || document.getElementsByClassName("news")[0];
+      if (!contentBlock) {
+        return;
+      }
+      for (var level = 1; level <= 6; level++) {
+        linkifyAnchors(level, contentBlock);
+      }
+    }
+  };
+</script>
+
+
+  </body>
+
+</html>

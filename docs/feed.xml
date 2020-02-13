@@ -1,0 +1,559 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="https://blog.myitcv.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://blog.myitcv.io/" rel="alternate" type="text/html" /><updated>2020-02-13T13:23:57+00:00</updated><id>https://blog.myitcv.io/feed.xml</id><title type="html">blog.myitcv.io</title><subtitle>A largely Go-based blog
+</subtitle><author><name>Paul Jolly</name></author><entry><title type="html">Portable CI/CD with pure Go GitHub Actions</title><link href="https://blog.myitcv.io/2020/02/04/portable-ci-cd-with-pure-go-github-actions.html" rel="alternate" type="text/html" title="Portable CI/CD with pure Go GitHub Actions" /><published>2020-02-04T00:00:00+00:00</published><updated>2020-02-04T00:00:00+00:00</updated><id>https://blog.myitcv.io/2020/02/04/portable-ci-cd-with-pure-go-github-actions</id><content type="html" xml:base="https://blog.myitcv.io/2020/02/04/portable-ci-cd-with-pure-go-github-actions.html">&lt;p&gt;I recently converted the &lt;a href=&quot;https://github.com/govim/govim&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;govim&lt;/code&gt;&lt;/a&gt; project to use &lt;a href=&quot;https://github.com/features/actions&quot;&gt;GitHub
+Actions&lt;/a&gt;. The move away from &lt;a href=&quot;https://travis-ci.org/&quot;&gt;TravisCI&lt;/a&gt; was largely
+motivated by more generous concurrency limits (&lt;a href=&quot;https://help.github.com/en/actions/automating-your-workflow-with-github-actions/about-github-actions#usage-limits&quot;&gt;GitHub’s
+20&lt;/a&gt;
+jobs vs TravisCI’s 5), faster job startup times, and solid cross-platform support. But there was also the promise of
+making it easy to extend workflows with composable third-party actions. This post  demonstrates how to write
+cross-platform, pure Go GitHub actions that you can  use in your workflows and share with others. But first we start by
+motivating the real problem we are trying to solve.&lt;/p&gt;
+
+&lt;h3 id=&quot;wait-theres-a-problem-with-github-actions&quot;&gt;Wait, there’s a problem with GitHub Actions?&lt;/h3&gt;
+
+&lt;blockquote class=&quot;twitter-tweet&quot;&gt;&lt;p lang=&quot;en&quot; dir=&quot;ltr&quot;&gt;Did you know that malicious code can be inserted into any GitHub action, even those which are tagged ?&lt;br /&gt;I wrote a blog post about it:&lt;a href=&quot;https://t.co/PNq2MwaMUN&quot;&gt;https://t.co/PNq2MwaMUN&lt;/a&gt; cc &lt;a href=&quot;https://twitter.com/github?ref_src=twsrc%5Etfw&quot;&gt;@github&lt;/a&gt; &lt;a href=&quot;https://t.co/gUevMJOS6n&quot;&gt;pic.twitter.com/gUevMJOS6n&lt;/a&gt;&lt;/p&gt;&amp;mdash; Julien Renaux (@julienrenaux) &lt;a href=&quot;https://twitter.com/julienrenaux/status/1208046853780062210?ref_src=twsrc%5Etfw&quot;&gt;December 20, 2019&lt;/a&gt;&lt;/blockquote&gt;
+&lt;script async=&quot;&quot; src=&quot;https://platform.twitter.com/widgets.js&quot; charset=&quot;utf-8&quot;&gt;&lt;/script&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://twitter.com/julienrenaux&quot;&gt;Julien Renaux’s&lt;/a&gt; blog post linked from that tweet does a good job of laying out one
+of the core problems with GitHub Actions. The story goes roughly like this:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;someone writes and open-sources an action that requires secret credentials, e.g. DockerHub access token&lt;/li&gt;
+  &lt;li&gt;lots of people start using the action via directives like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;uses: good/action@v1&lt;/code&gt; because it’s well written and useful&lt;/li&gt;
+  &lt;li&gt;original author welcomes a new maintainer on board&lt;/li&gt;
+  &lt;li&gt;somehow existing action version tags get moved, pointing to malicious code that steals secrets (any maintainer can
+update a branch or a tag)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Hence the specific advice is to use a commit hash to partially mitigate this risk:&lt;/p&gt;
+
+&lt;blockquote class=&quot;twitter-tweet&quot;&gt;&lt;p lang=&quot;en&quot; dir=&quot;ltr&quot;&gt;That’s why you need to specify the exact version (action@sha1) you want to use, so further changes won’t impact you.&lt;/p&gt;&amp;mdash; Alain Hélaïli (@AlainHelaili) &lt;a href=&quot;https://twitter.com/AlainHelaili/status/1205238489056501761?ref_src=twsrc%5Etfw&quot;&gt;December 12, 2019&lt;/a&gt;&lt;/blockquote&gt;
+&lt;script async=&quot;&quot; src=&quot;https://platform.twitter.com/widgets.js&quot; charset=&quot;utf-8&quot;&gt;&lt;/script&gt;
+
+&lt;p&gt;&lt;em&gt;It is somewhat unfortunate at best that this isn’t the default advice in the official documentation; worth noting it
+doesn’t defend against the commit disappearing.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;The problems don’t stop there, because there is also the risk that transitive dependencies can do malicious things too:&lt;/p&gt;
+
+&lt;blockquote class=&quot;twitter-tweet&quot;&gt;&lt;p lang=&quot;en&quot; dir=&quot;ltr&quot;&gt;There is also a risk that the transitive dependencies can do malicious things.&lt;a href=&quot;https://t.co/juffjxwxIr&quot;&gt;https://t.co/juffjxwxIr&lt;/a&gt;&lt;/p&gt;&amp;mdash; DrSensor👹 (@dr\_sensor) &lt;a href=&quot;https://twitter.com/dr_sensor/status/1208098900747284480?ref_src=twsrc%5Etfw&quot;&gt;December 20, 2019&lt;/a&gt;&lt;/blockquote&gt;
+&lt;script async=&quot;&quot; src=&quot;https://platform.twitter.com/widgets.js&quot; charset=&quot;utf-8&quot;&gt;&lt;/script&gt;
+
+&lt;p&gt;On top of this, it’s not made particularly clear to users that every action they use in their workflow is given implicit
+access to an access token that has fairly &lt;a href=&quot;https://help.github.com/en/actions/automating-your-workflow-with-github-actions/authenticating-with-the-github_token#permissions-for-the-github_token&quot;&gt;wide-ranging read-write access to the host
+repository&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;So we clearly have a software dependency problem here.&lt;/p&gt;
+
+&lt;h3 id=&quot;why-go&quot;&gt;Why Go?&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://twitter.com/_rsc&quot;&gt;Russ Cox&lt;/a&gt; has &lt;a href=&quot;https://research.swtch.com/deps&quot;&gt;repeatedly&lt;/a&gt; &lt;a href=&quot;https://twitter.com/_rsc/status/1088109141409837063&quot;&gt;written&lt;/a&gt; about “Our Software Dependency Problem.” The basic premise of those articles is that “software dependencies carry with them serious risks that are too often overlooked.” Whilst Russ’ articles raise awareness of the risks and encourage more investigation of solutions (and I strongly encourage you to read the article in full), the bottom line is that Go has a comprehensive solution to the major problems outlined, via the &lt;a href=&quot;https://proxy.golang.org/&quot;&gt;Go Module Mirror&lt;/a&gt;, &lt;a href=&quot;https://index.golang.org/&quot;&gt;Index&lt;/a&gt;, and &lt;a href=&quot;https://sum.golang.org/&quot;&gt;Checksum Database&lt;/a&gt;, that ultimately results in the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;go&lt;/code&gt; command referencing an auditable checksum database to authenticate modules. Coupled with the &lt;a href=&quot;https://research.swtch.com/vgo-mvs&quot;&gt;minimum version selection&lt;/a&gt; property of Go modules, we have ourselves a verifiable way to run exactly the (third party) action code we  previously audited (you all audit your dependencies, right?)&lt;/p&gt;
+
+&lt;h3 id=&quot;the-slight-wrinkle&quot;&gt;The slight wrinkle&lt;/h3&gt;
+
+&lt;p&gt;At the time of writing (2020/02/04), GitHub does not natively support writing actions in Go:&lt;/p&gt;
+
+&lt;blockquote class=&quot;twitter-tweet&quot;&gt;&lt;p lang=&quot;en&quot; dir=&quot;ltr&quot;&gt;Hi &lt;a href=&quot;https://twitter.com/github?ref_src=twsrc%5Etfw&quot;&gt;@github&lt;/a&gt; - please can you provide a native way to write/use actions written in Go, that would allow me to do something like:&lt;br /&gt;&lt;br /&gt; uses: $package@$version&lt;br /&gt;&lt;br /&gt;which would then use &lt;a href=&quot;https://t.co/fGOHqwoWSA&quot;&gt;https://t.co/fGOHqwoWSA&lt;/a&gt; for resolution, and &lt;a href=&quot;https://t.co/hqG8e8gGf6&quot;&gt;https://t.co/hqG8e8gGf6&lt;/a&gt; for verification. Thanks &lt;a href=&quot;https://twitter.com/hashtag/golang?src=hash&amp;amp;ref_src=twsrc%5Etfw&quot;&gt;#golang&lt;/a&gt;&lt;/p&gt;&amp;mdash; Paul Jolly (@\_myitcv) &lt;a href=&quot;https://twitter.com/_myitcv/status/1224288510053691393?ref_src=twsrc%5Etfw&quot;&gt;February 3, 2020&lt;/a&gt;&lt;/blockquote&gt;
+&lt;script async=&quot;&quot; src=&quot;https://platform.twitter.com/widgets.js&quot; charset=&quot;utf-8&quot;&gt;&lt;/script&gt;
+
+&lt;p&gt;Instead, you have &lt;a href=&quot;https://help.github.com/en/actions/automating-your-workflow-with-github-actions/about-actions&quot;&gt;the
+choice&lt;/a&gt; of writing
+either:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Docker container-based actions (Linux only; Docker also works on Windows but the official GitHub Actions docs don’t
+yet list that as “supported”)&lt;/li&gt;
+  &lt;li&gt;JavaScript-based actions (Linux, macOS, Windows)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;With the goal of being fully cross-platform in mind, Docker actions are therefore ruled out.&lt;/p&gt;
+
+&lt;p&gt;I fell out of love with JavaScript a long time ago, a process that was accelerated by my working on
+&lt;a href=&quot;https://github.com/gopherjs/gopherjs&quot;&gt;GopherJS&lt;/a&gt; (a compiler from Go to JavaScript). Having to return to its “unique”
+approach didn’t exactly fill me with glee, but given the current state of affairs there was, seemingly, no other option.
+Indeed, the first couple of iterations of writing pure Go GitHub actions  used GopherJS and the &lt;a href=&quot;https://github.com/golang/go/wiki/WebAssembly&quot;&gt;Go’s WebAssembly
+port&lt;/a&gt;. However, both fell a long way short because neither support
+fork/exec syscalls.&lt;/p&gt;
+
+&lt;h3 id=&quot;the-solution&quot;&gt;The solution&lt;/h3&gt;
+
+&lt;p&gt;With half a mind to GitHub eventually shipping native support for Go actions, I instead landed on a solution that uses a
+light JavaScript wrapper around the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;go&lt;/code&gt; command. Let’s explore that approach by writing an action.&lt;/p&gt;
+
+&lt;p&gt;But first, let’s start by defining what our toy action will do. Incorporated into a workflow, this toy action will take
+a single input, the user’s name, and will output a line like:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Hello, Helena! We are running on linux; Hooray!
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;(obviously adapted to the name of the user and the platform on which our workflow is running).&lt;/p&gt;
+
+&lt;h3 id=&quot;creating-a-module-for-our-action&quot;&gt;Creating a module for our action&lt;/h3&gt;
+
+&lt;p&gt;The documentation for &lt;a href=&quot;https://golang.org/cmd/go/#hdr-Modules__module_versions__and_more&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cmd/go&lt;/code&gt;&lt;/a&gt; says of modules:&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;A module is a collection of related Go packages. Modules are the unit of source code interchange and versioning.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;The is precisely the definition we are after when it comes to GitHub Actions: we want users of the action to express
+their dependency on semver versions of our action.&lt;/p&gt;
+
+&lt;p&gt;We start therefore by creating a module:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ go mod init github.com/myitcv/myfirstgoaction
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Before we define the action itself, we briefly discuss a key building block: the GitHub Actions API.&lt;/p&gt;
+
+&lt;h3 id=&quot;github-actions-api&quot;&gt;GitHub Actions API&lt;/h3&gt;
+
+&lt;p&gt;GitHub Actions has an &lt;a href=&quot;https://help.github.com/en/actions/automating-your-workflow-with-github-actions/development-tools-for-github-actions&quot;&gt;API for action
+authors&lt;/a&gt;
+which is published as an &lt;a href=&quot;https://github.com/actions/toolkit&quot;&gt;official GitHub Actions SDK for Node.js&lt;/a&gt;. &lt;a href=&quot;https://twitter.com/sethvargo&quot;&gt;Seth
+Vargo&lt;/a&gt; has put together an &lt;a href=&quot;https://github.com/sethvargo/go-githubactions&quot;&gt;unofficial GitHub Actions SDK for
+Go&lt;/a&gt; that “provides a Go-like interface for working with GitHub Actions.”
+Thank you, Seth!&lt;/p&gt;
+
+&lt;p&gt;Briefly skimming the &lt;a href=&quot;https://pkg.go.dev/github.com/sethvargo/go-githubactions?tab=doc&quot;&gt;SDK documentation&lt;/a&gt;, it’s clear
+to see how we will be &lt;a href=&quot;https://pkg.go.dev/github.com/sethvargo/go-githubactions?tab=doc#GetInput&quot;&gt;getting our input&lt;/a&gt;,
+the name of the user:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;// GetInput gets the input by the given name.
+func GetInput(i string) string
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We now have the relevant pieces in place to define our action.&lt;/p&gt;
+
+&lt;h3 id=&quot;the-go-code&quot;&gt;The Go code&lt;/h3&gt;
+
+&lt;p&gt;The Go code is now, therefore, the simplest part of this action’s definition.&lt;/p&gt;
+
+&lt;div class=&quot;language-go highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;err&quot;&gt;$&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;go&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;package&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+	&lt;span class=&quot;s&quot;&gt;&quot;fmt&quot;&lt;/span&gt;
+
+	&lt;span class=&quot;s&quot;&gt;&quot;github.com/sethvargo/go-githubactions&quot;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;githubactions&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;GetInput&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;name&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;fmt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Printf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Hello, %v! We are running on %v; Hooray!&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;platform&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The platform-specific bit we will put behind build constrained files to demonstrate that aspects works too:&lt;/p&gt;
+
+&lt;div class=&quot;language-go highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;err&quot;&gt;$&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;platform_linux&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;go&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;package&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;platform&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+	&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;linux&quot;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Hopefully the contents for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;platform_darwin.go&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;platform_windows.go&lt;/code&gt; are obvious.&lt;/p&gt;
+
+&lt;h3 id=&quot;creating-an-action-metadata-file&quot;&gt;Creating an action metadata file&lt;/h3&gt;
+
+&lt;p&gt;The next step is to create an action metadata file:&lt;/p&gt;
+
+&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;s&quot;&gt;$ cat action.yml&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Greeter'&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;description&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Print&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;platform-aware&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;greeting&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;to&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;the&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;user'&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;inputs&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;description&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;The&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;of&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;the&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;user'&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;required&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;true&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;runs&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;using&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;node12'&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;index.js'&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Notice how we are running using NodeJS with an entry point of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;index.js&lt;/code&gt;; we talk about that next.&lt;/p&gt;
+
+&lt;h3 id=&quot;the-indexjs-entry-point&quot;&gt;The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;index.js&lt;/code&gt; entry point&lt;/h3&gt;
+
+&lt;p&gt;Whilst we await native support for pure Go GitHub Actions, the simplest solution to running Go actions is a thin NodeJS
+wrapper around &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cmd/go&lt;/code&gt;. For now this should be copy-pasted for each action you create:&lt;/p&gt;
+
+&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nx&quot;&gt;$&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;js&lt;/span&gt;
+&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;use strict&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;spawn&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;require&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;child_process&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;spawn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;args&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;Array&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;prototype&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;slice&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;call&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;arguments&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+  &lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;cmd&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;spawn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;slice&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;stdio&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;inherit&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;cwd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;__dirname&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+  &lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;exitCode&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;Promise&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;resolve&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;reject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;cmd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;on&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;close&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;resolve&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;exitCode&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;process&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;exit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;exitCode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;path&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;require&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;path&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;go&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;})();&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Clearly copy-pasting this boilerplate, even in the short term, is not ideal. I am looking at ways to simplify and
+automate this step using a Go tool (ideas also welcomed).&lt;/p&gt;
+
+&lt;h3 id=&quot;using-our-action&quot;&gt;Using our action&lt;/h3&gt;
+
+&lt;p&gt;Now let’s switch to creating a project that uses the Greeter action in one of its workflows:&lt;/p&gt;
+
+&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;s&quot;&gt;$ go mod init github.com/myitcv/usingmyfirstgoaction&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;$ cat .github/workflows/test.yml&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;on&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;pi&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;push&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;pull_request&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Test&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;jobs&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;test&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;strategy&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;matrix&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;na&quot;&gt;platform&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;pi&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;ubuntu-latest&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;macos-latest&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;windows-latest&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;runs-on&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;$&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;steps&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;uses&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;actions/setup-go@9fbc767707c286e568c92927bbf57d76b73e0892&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;with&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;na&quot;&gt;go-version&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;1.14.x'&lt;/span&gt;
+    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Display a greeting&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;uses&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;myitcv/myfirstgoaction@d085dddfc01ecb14af3778b49dd8672fcd0e7652&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;with&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Helena&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We specify a matrix of all platforms to demonstrate our action truly is cross-platform.&lt;/p&gt;
+
+&lt;p&gt;Given GitHub Actions don’t natively support Go actions, and as we demonstrated in our &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;index.js&lt;/code&gt; wrapper, we have to use
+the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;go&lt;/code&gt; command. We therefore must have &lt;a href=&quot;https://github.com/actions/setup-go&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;actions/setup-go&lt;/code&gt;&lt;/a&gt; as our first step in
+any workflow that uses a Go action of this sort (until native actions come along).&lt;/p&gt;
+
+&lt;p&gt;Finally, both &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;uses: actions/setup-go&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;uses: myitcv/myfirstgoaction&lt;/code&gt; specify specific commits, per advice earlier
+in this post.&lt;/p&gt;
+
+&lt;p&gt;That’s it! Let’s commit, push and watch the build succeed!&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/2020-02-04-build-success.png&quot; alt=&quot;A successful build&quot; title=&quot;A successful build&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;so-what-would-native-actions-look-like&quot;&gt;So what would native actions look like?&lt;/h3&gt;
+
+&lt;p&gt;There are a few problems with the approach outlined above:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;we need to explicitly install Go&lt;/li&gt;
+  &lt;li&gt;we need to copy-paste our &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;index.js&lt;/code&gt; wrapper for each Go action we create&lt;/li&gt;
+  &lt;li&gt;we are not relying on the Go module proxy when using the action and hence have to specify a commit rather than a
+semver version&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Points 1 and 2 clearly disappear when native support is added.&lt;/p&gt;
+
+&lt;p&gt;Point 3 is particularly brittle because commits themselves can disappear from GitHub (force pushing to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;master&lt;/code&gt;, commit
+no longer referenced by any tags or branches, gets cleaned up).&lt;/p&gt;
+
+&lt;p&gt;Therefore, given point 3 we ideally would use our action in a workflow in the following way:&lt;/p&gt;
+
+&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Display a greeting&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;uses&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;github.com/myitcv/myfirstgoaction@v1.0.0&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;with&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Helena&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;such that when running the action, GitHub’s infrastructure:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;creates a temporary module&lt;/li&gt;
+  &lt;li&gt;resolves the Go package &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;github.com/myitcv/myfirstgoaction&lt;/code&gt; at version &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;v1.0.0&lt;/code&gt; via
+&lt;a href=&quot;https://proxy.golang.org&quot;&gt;proxy.golang.org&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;runs the action via &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;go run github.com/myitcv/myfirstgoaction&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;em&gt;Notice, the package path and module path being equal is just a coincidence of this example&lt;/em&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h3&gt;
+
+&lt;p&gt;Go provides some novel solutions to the problems of software dependencies. In this article I have demonstrated one way
+in which pure Go actions can be written today (whilst we await native support from GitHub), leveraging the benefits and
+protections of the Go Module Mirror, Index, and Checksum Database. Ultimately we all need to review our software
+dependencies, but at least Go makes it easier to know that the world hasn’t changed under our feet from build-to-build.&lt;/p&gt;
+
+&lt;h3 id=&quot;appendix&quot;&gt;Appendix&lt;/h3&gt;
+
+&lt;p&gt;All of the source code used in this blog post is available on GitHub:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/myitcv/myfirstgoaction&quot;&gt;github.com/myitcv/myfirstgoaction&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/myitcv/usingmyfirstgoaction&quot;&gt;github.com/myitcv/usingmyfirstgoaction&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;With thanks to &lt;a href=&quot;https://twitter.com/mvdan_&quot;&gt;Daniel Martí&lt;/a&gt; for reviewing this post.&lt;/p&gt;</content><author><name>paul</name></author><summary type="html">I recently converted the govim project to use GitHub Actions. The move away from TravisCI was largely motivated by more generous concurrency limits (GitHub’s 20 jobs vs TravisCI’s 5), faster job startup times, and solid cross-platform support. But there was also the promise of making it easy to extend workflows with composable third-party actions. This post demonstrates how to write cross-platform, pure Go GitHub actions that you can use in your workflows and share with others. But first we start by motivating the real problem we are trying to solve.</summary></entry><entry><title type="html">govim - a Go development plugin for Vim8</title><link href="https://blog.myitcv.io/2019/04/17/govim.html" rel="alternate" type="text/html" title="govim - a Go development plugin for Vim8" /><published>2019-04-17T00:00:00+01:00</published><updated>2019-04-17T00:00:00+01:00</updated><id>https://blog.myitcv.io/2019/04/17/govim</id><content type="html" xml:base="https://blog.myitcv.io/2019/04/17/govim.html">&lt;p&gt;Command &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;github.com/myitcv/govim/cmd/govim&lt;/code&gt; (referred to simply as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;govim&lt;/code&gt;) is a Go development plugin for Vim8, much
+like &lt;a href=&quot;https://github.com/fatih/vim-go&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vim-go&lt;/code&gt;&lt;/a&gt;. But unlike &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vim-go&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;govim&lt;/code&gt; is written in Go, not VimScript. It has
+features like code completion, format-on-save, hover details and go-to definition, all of which are driven by
+&lt;a href=&quot;https://godoc.org/golang.org/x/tools/cmd/gopls&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;gopls&lt;/code&gt;&lt;/a&gt;, the Language Server Protocol (LSP) server for Go. See &lt;a href=&quot;https://github.com/myitcv/govim/wiki/govim-plugin-API&quot;&gt;the
+wiki&lt;/a&gt; for more feature details. Installation instructions can be
+found in the &lt;a href=&quot;https://github.com/myitcv/govim/blob/master/README.md&quot;&gt;main &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;README&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Package &lt;a href=&quot;https://godoc.org/github.com/myitcv/govim&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;github.com/myitcv/govim&lt;/code&gt;&lt;/a&gt; provides an API for plugin developers to
+interface with Vim8 in Go, i.e. write Vim8 plugins in Go rather than VimScript. More details
+&lt;a href=&quot;https://github.com/myitcv/govim/blob/master/PLUGIN_AUTHORS.md&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;The &lt;a href=&quot;https://github.com/myitcv/govim/wiki/FAQ&quot;&gt;FAQ&lt;/a&gt; covers a number of important questions, including:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Why have you created govim? What is/was wrong with vim-go?&lt;/li&gt;
+  &lt;li&gt;What versions of Vim and Go are supported with govim?&lt;/li&gt;
+  &lt;li&gt;Why should I use govim over vim-go/vim-lsp/…?&lt;/li&gt;
+  &lt;li&gt;…&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;I’ve given two talks on &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;govim&lt;/code&gt;, the first at &lt;a href=&quot;https://gophers.london&quot;&gt;London Gophers&lt;/a&gt;:&lt;/p&gt;
+
+&lt;p&gt;
+&lt;a href=&quot;https://www.youtube.com/watch?v=bNFl7HcyDao&quot;&gt;&lt;img src=&quot;/images/youtube.png&quot; style=&quot;width: 30px&quot; /&gt;&lt;/a&gt;&amp;nbsp;&lt;a href=&quot;https://www.youtube.com/watch?v=bNFl7HcyDao&quot;&gt;London Gophers YouTube recording&lt;/a&gt;
+&lt;/p&gt;
+&lt;p&gt;
+&lt;a href=&quot;https://talks.godoc.org/github.com/myitcv/talks/2019-04-17-govim/main.slide#1&quot;&gt;&lt;img src=&quot;/images/gopher.png&quot; style=&quot;width: 30px&quot; /&gt;&lt;/a&gt;&amp;nbsp;&lt;a href=&quot;https://talks.godoc.org/github.com/myitcv/talks/2019-04-17-govim/main.slide#1&quot;&gt;London Gophers Slides&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;The second at &lt;a href=&quot;https://www.meetup.com/Vim-London/&quot;&gt;Vim London&lt;/a&gt;, in which I go into more details on the Vim side, as well
+as covering how the plugin is tested:&lt;/p&gt;
+
+&lt;p&gt;
+&lt;a href=&quot;https://www.youtube.com/watch?v=qj81tDDqzrQ&quot;&gt;&lt;img src=&quot;/images/youtube.png&quot; style=&quot;width: 30px&quot; /&gt;&lt;/a&gt;&amp;nbsp;&lt;a href=&quot;https://www.youtube.com/watch?v=qj81tDDqzrQ&quot;&gt;Vim London YouTube recording&lt;/a&gt;
+&lt;/p&gt;
+&lt;p&gt;
+&lt;a href=&quot;https://talks.godoc.org/github.com/myitcv/talks/2019-04-25-govim-vim-london/main.slide#1&quot;&gt;&lt;img src=&quot;/images/gopher.png&quot; style=&quot;width: 30px&quot; /&gt;&lt;/a&gt;&amp;nbsp;&lt;a href=&quot;https://talks.godoc.org/github.com/myitcv/talks/2019-04-25-govim-vim-london/main.slide#1&quot;&gt;Vim London Slides&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;As ever, contributions are very much welcome in the form of feedback, issues and PRs.&lt;/p&gt;</content><author><name>paul</name></author><summary type="html">Command github.com/myitcv/govim/cmd/govim (referred to simply as govim) is a Go development plugin for Vim8, much like vim-go. But unlike vim-go, govim is written in Go, not VimScript. It has features like code completion, format-on-save, hover details and go-to definition, all of which are driven by gopls, the Language Server Protocol (LSP) server for Go. See the wiki for more feature details. Installation instructions can be found in the main README.</summary></entry><entry><title type="html">gg - cache-based wrapper around go generate</title><link href="https://blog.myitcv.io/2019/03/29/gg-cached-based-wrapper-around-go-generate.html" rel="alternate" type="text/html" title="gg - cache-based wrapper around go generate" /><published>2019-03-29T00:00:00+00:00</published><updated>2019-03-29T00:00:00+00:00</updated><id>https://blog.myitcv.io/2019/03/29/gg---cached-based-wrapper-around-go-generate</id><content type="html" xml:base="https://blog.myitcv.io/2019/03/29/gg-cached-based-wrapper-around-go-generate.html">&lt;p&gt;&lt;a href=&quot;https://godoc.org/myitcv.io/cmd/gg&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;gg&lt;/code&gt;&lt;/a&gt; is a cache-based wrapper around &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;go generate&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;go generate&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;gg&lt;/code&gt; understands &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;//go:generate&lt;/code&gt; directives. But unlike &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;go generate&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;gg&lt;/code&gt;:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;understands the dependency graph between packages to be generated, including the generators themselves&lt;/li&gt;
+  &lt;li&gt;repeatedly runs &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;//go:generate&lt;/code&gt; directives in a package until a fixed point is reached, allowing generators to chain
+together&lt;/li&gt;
+  &lt;li&gt;caches generated artefacts, making subsequent runs with the same inputs extremely fast (because the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;//go:generate&lt;/code&gt;
+directives do not need to be re-run)&lt;/li&gt;
+  &lt;li&gt;understands generator flags prefixed with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;-infiles:&lt;/code&gt; to declare glob patterns of files the directive will consume&lt;/li&gt;
+  &lt;li&gt;understands generator flags prefixed with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;-outdir:&lt;/code&gt; to mean that the directive will generate files to the named
+directory in addition to the current package’s directory&lt;/li&gt;
+  &lt;li&gt;has a special &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;//go:generate:gg&lt;/code&gt; directive which allows code generation to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;break&lt;/code&gt; under certain conditions&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;More details &lt;a href=&quot;https://godoc.org/myitcv.io/cmd/gg&quot;&gt;in the docs&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;I also gave a talk at &lt;a href=&quot;https://www.meetup.com/GoSheffield/&quot;&gt;GoSheffield&lt;/a&gt;:&lt;/p&gt;
+
+&lt;p&gt;
+&lt;a href=&quot;https://talks.godoc.org/github.com/myitcv/talks/2019-02-07-code-generation/main.slide#1&quot;&gt;&lt;img src=&quot;/images/gopher.png&quot; style=&quot;width: 30px&quot; /&gt;&lt;/a&gt;&amp;nbsp;&lt;a href=&quot;https://talks.godoc.org/github.com/myitcv/talks/2019-02-07-code-generation/main.slide#1&quot;&gt;GoSheffield Slides&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;As ever, contributions are very much welcome in the form of feedback, issues and PRs &lt;a href=&quot;https://github.com/myitcv/x&quot;&gt;over in the GitHub
+repo&lt;/a&gt;.&lt;/p&gt;</content><author><name>paul</name></author><summary type="html">gg is a cache-based wrapper around go generate.</summary></entry><entry><title type="html">London Gophers - 2018 in review</title><link href="https://blog.myitcv.io/2018/12/01/london-gophers-2018-in-review.html" rel="alternate" type="text/html" title="London Gophers - 2018 in review" /><published>2018-12-01T00:00:00+00:00</published><updated>2018-12-01T00:00:00+00:00</updated><id>https://blog.myitcv.io/2018/12/01/london-gophers---2018-in-review</id><content type="html" xml:base="https://blog.myitcv.io/2018/12/01/london-gophers-2018-in-review.html">&lt;p&gt;As one of the co-organisers of &lt;a href=&quot;https://gophers.london&quot;&gt;London Gophers&lt;/a&gt;, along with &lt;a href=&quot;https://twitter.com/domgreen&quot;&gt;Dominic
+Green&lt;/a&gt;, &lt;a href=&quot;https://twitter.com/londongopher_&quot;&gt;Antonio Troina&lt;/a&gt; and &lt;a href=&quot;https://twitter.com/kasiazien&quot;&gt;Kat
+Zień&lt;/a&gt;, I thought I would jot down a few highlights from 2018:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;we’ve seen the community grow from 1,727 to a fantastic 2,652 members&lt;/li&gt;
+  &lt;li&gt;by the end of the year will will have held 12 monthly Meetups at various awesome locations in London&lt;/li&gt;
+  &lt;li&gt;enjoyed first-time talks from no fewer than ten Gophers&lt;/li&gt;
+  &lt;li&gt;welcomed back regular speakers &lt;a href=&quot;https://twitter.com/mvdan_?lang=en&quot;&gt;Daniel Martí&lt;/a&gt;, &lt;a href=&quot;https://twitter.com/lizrice&quot;&gt;Liz
+Rice&lt;/a&gt; and &lt;a href=&quot;https://twitter.com/JohanBrandhorst&quot;&gt;Johan Brandhorst&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;helped to run two Go Contributor workshops (organised by &lt;a href=&quot;https://twitter.com/mvdan_?lang=en&quot;&gt;Daniel Martí&lt;/a&gt;)&lt;/li&gt;
+  &lt;li&gt;welcomed &lt;a href=&quot;https://twitter.com/kasiazien&quot;&gt;Kat Zień&lt;/a&gt; to the organising team&lt;/li&gt;
+  &lt;li&gt;seen the growth of our &lt;a href=&quot;https://www.youtube.com/c/LondonGophers&quot;&gt;YouTube channel&lt;/a&gt; and viewer figures thanks to the
+technical wizardry of &lt;a href=&quot;https://twitter.com/londongopher_&quot;&gt;Antonio Troina&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;enjoyed some hilarious tweets/gifs on our &lt;a href=&quot;https://twitter.com/LondonGophers&quot;&gt;Twitter feed&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;… the list goes on&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;We’ve also started publishing details of how we run London Gophers in our &lt;a href=&quot;https://github.com/go-london-user-group&quot;&gt;GitHub
+repo&lt;/a&gt;. The main aim being to share our learnings with other Meetup organisers
+(principally in the UK, on the basis legal/financial structures will be most similar), but also to be fully transparent
+with our members and sponsors on how things are run.&lt;/p&gt;
+
+&lt;p&gt;In summary: 2018 was an exciting year, plenty to look forward to in 2019!&lt;/p&gt;
+
+&lt;p&gt;A huge thanks to everyone who attended any of our events, to our speakers, to our sponsors, and of course to my fellow
+organisers.&lt;/p&gt;
+
+&lt;p&gt;As ever, we greatly appreciate, welcome and encourage feedback. Please contact the organisers via
+&lt;a href=&quot;mailto:glug-organisers@googlegroups.com&quot;&gt;glug-organisers@googlegroups.com&lt;/a&gt;.&lt;/p&gt;</content><author><name>paul</name></author><summary type="html">As one of the co-organisers of London Gophers, along with Dominic Green, Antonio Troina and Kat Zień, I thought I would jot down a few highlights from 2018:</summary></entry><entry><title type="html">github.com/myitcv/gobin</title><link href="https://blog.myitcv.io/2018/10/24/github.com-myitcv-gobin.html" rel="alternate" type="text/html" title="github.com/myitcv/gobin" /><published>2018-10-24T00:00:00+01:00</published><updated>2018-10-24T00:00:00+01:00</updated><id>https://blog.myitcv.io/2018/10/24/github.com-myitcv-gobin</id><content type="html" xml:base="https://blog.myitcv.io/2018/10/24/github.com-myitcv-gobin.html">&lt;p&gt;&lt;a href=&quot;https://github.com/myitcv/gobin&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;github.com/myitcv/gobin&lt;/code&gt;&lt;/a&gt; is an experimental, module-aware command to install/run main packages.&lt;/p&gt;
+
+&lt;p&gt;Compared to the Go 1.11 series &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cmd/go&lt;/code&gt;, with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;gobin&lt;/code&gt; you:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;get some of the behaviour of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;go get&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;go install&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;go run&lt;/code&gt; combined&lt;/li&gt;
+  &lt;li&gt;can have multiple versions of a tool available without needing to worry about setting &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;PATH&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;have the equivalent of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;go get&lt;/code&gt; whilst in module-aware mode but this does not modify your &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;go.mod&lt;/code&gt;; indeed you can
+choose whether you want to run in global mode (the default) or main-module mode for the install/run operation&lt;/li&gt;
+  &lt;li&gt;can run a main package without the overhead of the linking phase, e.g. within code generation&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;More detailed on the rationale etc are covered in &lt;a href=&quot;https://github.com/myitcv/gobin/blob/master/README.md&quot;&gt;the main
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;README&lt;/code&gt;&lt;/a&gt; and &lt;a href=&quot;https://github.com/myitcv/gobin/wiki/FAQ&quot;&gt;the
+FAQ&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;gobin&lt;/code&gt; is an experiment, as such there are no expectations over its future.&lt;/p&gt;
+
+&lt;p&gt;There are a number of potential outcomes, not limited to the following list:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;it dies; the hypothesis being tested by &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;gobin&lt;/code&gt; proves incorrect, unworkable etc&lt;/li&gt;
+  &lt;li&gt;it lives on as a separate tool outside of the Go distribution&lt;/li&gt;
+  &lt;li&gt;parts of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;gobin&lt;/code&gt; are absorbed into the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cmd/go&lt;/code&gt; tool&lt;/li&gt;
+  &lt;li&gt;a variant of gobin is vendored and distributed alongside the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cmd/go&lt;/code&gt; tool, much like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;godoc&lt;/code&gt; was in in Go 1.11 and earlier&lt;/li&gt;
+  &lt;li&gt;…&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;As ever, contributions in the form of feedback, issues and PRs, greatly appreciated.&lt;/p&gt;</content><author><name>paul</name></author><summary type="html">github.com/myitcv/gobin is an experimental, module-aware command to install/run main packages.</summary></entry><entry><title type="html">github.com/rogpeppe/go-internal</title><link href="https://blog.myitcv.io/2018/10/23/github.com-rogpeppe-go-internal.html" rel="alternate" type="text/html" title="github.com/rogpeppe/go-internal" /><published>2018-10-23T00:00:00+01:00</published><updated>2018-10-23T00:00:00+01:00</updated><id>https://blog.myitcv.io/2018/10/23/github.com-rogpeppe-go-internal</id><content type="html" xml:base="https://blog.myitcv.io/2018/10/23/github.com-rogpeppe-go-internal.html">&lt;p&gt;Packages &lt;a href=&quot;https://godoc.org/github.com/rogpeppe/go-internal&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;github.com/rogpeppe/go-internal/...&lt;/code&gt;&lt;/a&gt; represent an
+opinionated selection of internal packages and functionality factored out from the Go standard library and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cmd/go&lt;/code&gt;.
+This work was started by &lt;a href=&quot;https://twitter.com/rogpeppe?lang=en&quot;&gt;Roger Peppe&lt;/a&gt;, with contributions from &lt;a href=&quot;https://twitter.com/mvdan_?lang=en&quot;&gt;Daniel
+Martí&lt;/a&gt; and myself.&lt;/p&gt;
+
+&lt;p&gt;It includes:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cache&lt;/code&gt;: Package cache implements a build artifact cache.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cmd/testscript&lt;/code&gt;: Package testscript provides support for defining filesystem-based tests by creating scripts in a
+directory.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;lockedfile&lt;/code&gt;: Package lockedfile creates and manipulates files whose contents should only change atomically.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;modfile&lt;/code&gt;: Package modfile implements parsing and formatting for go.mod files.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;module&lt;/code&gt;: Package module defines the module.Version type along with support code.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;par&lt;/code&gt;: Package par implements parallel execution helpers.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;renameio&lt;/code&gt;: Package renameio writes files atomically by renaming temporary files.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;semver&lt;/code&gt;: Package semver implements comparison of semantic version strings.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;testscript&lt;/code&gt;: Package testscript provides support for defining filesystem-based tests by creating scripts in a
+directory.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;txtar&lt;/code&gt;: Package txtar implements a trivial text-based file archive format.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;See the &lt;a href=&quot;https://godoc.org/github.com/rogpeppe/go-internal&quot;&gt;docs for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;github.com/rogpeppe/go-internal&lt;/code&gt;&lt;/a&gt; for a more
+current and complete list.&lt;/p&gt;
+
+&lt;p&gt;Issues &lt;a href=&quot;https://github.com/golang/go/issues/28101&quot;&gt;#28101&lt;/a&gt; and &lt;a href=&quot;https://github.com/golang/go/issues/31761&quot;&gt;#31761&lt;/a&gt; track
+the more official exporting of these packages.&lt;/p&gt;</content><author><name>paul</name></author><summary type="html">Packages github.com/rogpeppe/go-internal/... represent an opinionated selection of internal packages and functionality factored out from the Go standard library and cmd/go. This work was started by Roger Peppe, with contributions from Daniel Martí and myself.</summary></entry><entry><title type="html">golang-tools</title><link href="https://blog.myitcv.io/2018/09/18/golang-tools.html" rel="alternate" type="text/html" title="golang-tools" /><published>2018-09-18T00:00:00+01:00</published><updated>2018-09-18T00:00:00+01:00</updated><id>https://blog.myitcv.io/2018/09/18/golang-tools</id><content type="html" xml:base="https://blog.myitcv.io/2018/09/18/golang-tools.html">&lt;blockquote&gt;
+  &lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;golang-tools&lt;/code&gt; is a development list for the Go Programming Language. The list is for discussion of the development of
+tools that analyze and manipulate Go source code, including editor/IDE plugins.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;At &lt;a href=&quot;https://www.gophercon.com&quot;&gt;GopherCon 2018&lt;/a&gt;, I attended the Go Contributor Summit with the hope of participating in a
+session where we could discuss &lt;a href=&quot;https://golang.org/cmd/go/#hdr-Modules__module_versions__and_more&quot;&gt;Go Modules&lt;/a&gt;, tooling,
+editor/IDE support and the like. Then Marcel, Ian and Robert rained on my parade with the &lt;a href=&quot;https://go.googlesource.com/proposal/+/master/design/go2draft.md&quot;&gt;Go 2 Design
+Drafts&lt;/a&gt;!&lt;/p&gt;
+
+&lt;p&gt;But I got chatting to Ian Cottrell about &lt;a href=&quot;https://godoc.org/golang.org/x/tools/go/packages&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;go/packages&lt;/code&gt;&lt;/a&gt;, tooling,
+editor/IDE support for Go amongst other things, and thought it would be useful to gather interested parties at GopherCon
+to talk about all of these topics in the context of Go modules, but also generally where things are heading.&lt;/p&gt;
+
+&lt;p&gt;We did a best-efforts job of gathering a list of folks at GopherCon we thought would be interested in such a session. I
+also augmented that list with folks I knew would also be interested but were unfortunately not at GopherCon.&lt;/p&gt;
+
+&lt;p&gt;And so at GopherCon 2018 we held the first &lt;a href=&quot;https://github.com/golang/go/wiki/golang-tools&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;golang-tools&lt;/code&gt;&lt;/a&gt; session.
+What started as a kick-off meeting is now:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;a &lt;a href=&quot;https://groups.google.com/forum/#!forum/golang-tools&quot;&gt;mailing list&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;an active &lt;a href=&quot;https://gophers.slack.com/&quot;&gt;Gophers Slack&lt;/a&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#tools&lt;/code&gt; channel (&lt;a href=&quot;https://invite.slack.golangbridge.org&quot;&gt;sign
+up&lt;/a&gt;)&lt;/li&gt;
+  &lt;li&gt;monthly Google Hangout &lt;a href=&quot;https://github.com/golang/go/wiki/golang-tools#catch-up-calls&quot;&gt;catch-up calls&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Each of the catch up sessions is recorded and published on YouTube, along with notes summarising discussion (&lt;a href=&quot;https://github.com/golang/go/wiki/golang-tools#catch-up-calls&quot;&gt;link to
+published notes/recordings&lt;/a&gt;).&lt;/p&gt;
+
+&lt;p&gt;The group is open to everyone, especially those with an interest in build tools to work with the Go programming
+language.&lt;/p&gt;</content><author><name>paul</name></author><summary type="html">golang-tools is a development list for the Go Programming Language. The list is for discussion of the development of tools that analyze and manipulate Go source code, including editor/IDE plugins.</summary></entry><entry><title type="html">Go Modules support for GopherJS</title><link href="https://blog.myitcv.io/2018/08/10/go-modules-support-for-gopherjs.html" rel="alternate" type="text/html" title="Go Modules support for GopherJS" /><published>2018-08-10T00:00:00+01:00</published><updated>2018-08-10T00:00:00+01:00</updated><id>https://blog.myitcv.io/2018/08/10/go-modules-support-for-gopherjs</id><content type="html" xml:base="https://blog.myitcv.io/2018/08/10/go-modules-support-for-gopherjs.html">&lt;p&gt;Introducing &lt;a href=&quot;https://github.com/myitcv/gopherjs&quot;&gt;https://github.com/myitcv/gopherjs&lt;/a&gt;, a fork of
+&lt;a href=&quot;https://github.com/gopherjs/gopherjs&quot;&gt;https://github.com/gopherjs/gopherjs&lt;/a&gt; that includes almost complete &lt;a href=&quot;https://golang.org/cmd/go/#hdr-Modules__module_versions__and_more&quot;&gt;Go
+Modules&lt;/a&gt; support, as well as some other bug fixes and
+goodies. The medium to long term plan is to have these changes be merged back into the main repo, but for now they will
+be maintained in this fork.&lt;/p&gt;
+
+&lt;p&gt;When in module mode, this fork should be used via a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;replace&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;module mod.com
+
+replace github.com/gopherjs/gopherjs =&amp;gt; github.com/myitcv/gopherjs latest
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The current list of changes found in the https://github.com/myitcv/gopherjs fork includes:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Almost complete Go Modules support&lt;/li&gt;
+  &lt;li&gt;Significantly improved test coverage of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;gopherjs&lt;/code&gt; via
+&lt;a href=&quot;https://godoc.org/github.com/rogpeppe/go-internal/testscript&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;testscript&lt;/code&gt;&lt;/a&gt; test scripts&lt;/li&gt;
+  &lt;li&gt;Quicker and more accurate &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;gopherjs&lt;/code&gt; builds/installs thanks to a &lt;a href=&quot;https://godoc.org/github.com/rogpeppe/go-internal/cache&quot;&gt;build artefact
+cache&lt;/a&gt; (similar to that used by &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cmd/go&lt;/code&gt;)&lt;/li&gt;
+  &lt;li&gt;Experimental addition of &lt;a href=&quot;https://godoc.org/github.com/myitcv/gopherjs/js#MakeFullWrapper&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;MakeFullWrapper&lt;/code&gt;&lt;/a&gt; to
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;github.com/gopherjs/gopherjs/js&lt;/code&gt; (note this should still be imported as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;github.com/gopherjs/gopherjs/js&lt;/code&gt;)&lt;/li&gt;
+  &lt;li&gt;Improved contributor experience:
+    &lt;ul&gt;
+      &lt;li&gt;JavaScript shims maintained in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.js&lt;/code&gt; files&lt;/li&gt;
+      &lt;li&gt;Node-based tooling to help format/manage the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.js&lt;/code&gt; files&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Various bug fixes&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;See the &lt;a href=&quot;https://github.com/myitcv/gopherjs/commits/master&quot;&gt;commit log&lt;/a&gt; for full details.&lt;/p&gt;</content><author><name>paul</name></author><summary type="html">Introducing https://github.com/myitcv/gopherjs, a fork of https://github.com/gopherjs/gopherjs that includes almost complete Go Modules support, as well as some other bug fixes and goodies. The medium to long term plan is to have these changes be merged back into the main repo, but for now they will be maintained in this fork.</summary></entry><entry><title type="html">Go Modules By Example</title><link href="https://blog.myitcv.io/2018/07/30/go-modules-by-example.html" rel="alternate" type="text/html" title="Go Modules By Example" /><published>2018-07-30T00:00:00+01:00</published><updated>2018-07-30T00:00:00+01:00</updated><id>https://blog.myitcv.io/2018/07/30/go-modules-by-example</id><content type="html" xml:base="https://blog.myitcv.io/2018/07/30/go-modules-by-example.html">&lt;p&gt;&lt;a href=&quot;https://github.com/go-modules-by-example/index/blob/master/README.md&quot;&gt;&lt;em&gt;Go modules by example&lt;/em&gt;&lt;/a&gt; is a series of
+work-along guides that look to help explain how &lt;a href=&quot;https://golang.org/cmd/go/#hdr-Modules__module_versions__and_more&quot;&gt;Go
+modules&lt;/a&gt; work and how to get things done. They are
+designed to complement the official Go documentation and the &lt;a href=&quot;https://github.com/golang/go/wiki/Modules&quot;&gt;Go modules
+wiki&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;The guides are being released in no particular order and will instead be curated into a more cogent order/structure (in
+conjunction with the modules wiki) at a later date.&lt;/p&gt;
+
+&lt;p&gt;See the &lt;a href=&quot;https://github.com/go-modules-by-example/index/blob/master/README.md&quot;&gt;main &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;README&lt;/code&gt;&lt;/a&gt; for a list of full list of
+guides including:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/go-modules-by-example/index/blob/master/009_submodules/README.md&quot;&gt;How to use submodules&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/go-modules-by-example/index/blob/master/008_vendor_example/README.md&quot;&gt;Using modules to manage vendor&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/go-modules-by-example/index/blob/master/012_modvendor/README.md&quot;&gt;Creating a module download cache “vendor”&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/go-modules-by-example/index/blob/master/011_using_gohack/README.md&quot;&gt;Using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;gohack&lt;/code&gt; to “hack” on dependencies&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/go-modules-by-example/index/blob/master/003_migrate_buffalo/README.md&quot;&gt;Migrating Buffalo from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dep&lt;/code&gt; to go modules&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/go-modules-by-example/index/blob/master/010_tools/README.md&quot;&gt;Tools as dependencies&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/go-modules-by-example/index/blob/master/013_cyclic/README.md&quot;&gt;Cyclic module dependencies&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/go-modules-by-example/index/blob/master/014_mod_graph/README.md&quot;&gt;Visually analysing module dependencies&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/go-modules-by-example/index/blob/master/015_semantic_import_versioning/README.md&quot;&gt;Semantic import versioning by example&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;.. and more.&lt;/p&gt;
+
+&lt;p&gt;Any help greatly appreciated! Be it in the form of feedback, issues or PRs.&lt;/p&gt;</content><author><name>paul</name></author><summary type="html">Go modules by example is a series of work-along guides that look to help explain how Go modules work and how to get things done. They are designed to complement the official Go documentation and the Go modules wiki.</summary></entry><entry><title type="html">myitcv.io/react upgraded to React 16</title><link href="https://blog.myitcv.io/2017/12/08/myitcv.io_react-upgraded-to-react-16.html" rel="alternate" type="text/html" title="myitcv.io/react upgraded to React 16" /><published>2017-12-08T00:00:00+00:00</published><updated>2017-12-08T00:00:00+00:00</updated><id>https://blog.myitcv.io/2017/12/08/myitcv.io_react-upgraded-to-react-16</id><content type="html" xml:base="https://blog.myitcv.io/2017/12/08/myitcv.io_react-upgraded-to-react-16.html">&lt;p&gt;Following the &lt;a href=&quot;https://reactjs.org/blog/2017/11/28/react-v16.2.0-fragment-support.html&quot;&gt;release of React &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;16.2.0&lt;/code&gt;&lt;/a&gt;,
+&lt;a href=&quot;https://myitcv.io/react&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;myitcv.io/react&lt;/code&gt;&lt;/a&gt; has been upgraded to bundle React 16 by default. Per &lt;a href=&quot;https://github.com/myitcv/x/blob/master/react/_doc/README.md&quot;&gt;the
+README&lt;/a&gt;, React 15 support is being maintained on &lt;a href=&quot;https://github.com/myitcv/react/tree/react_15&quot;&gt;a
+branch&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Support is also included for &lt;a href=&quot;https://reactjs.org/docs/fragments.html&quot;&gt;Fragments&lt;/a&gt;:&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;“A common pattern in React is for a
+component to return multiple elements. Fragments let you group a list of children without adding extra nodes to the
+DOM.”&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Here is an example of a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;react.Fragment&lt;/code&gt; being used:&lt;/p&gt;
+
+&lt;div class=&quot;language-go highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;AppDef&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Render&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;react&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Element&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;react&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Fragment&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;react&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;H1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;react&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;S&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Hello World&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;react&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;P&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;nil&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;react&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;S&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;This is my first GopherJS React App.&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Please &lt;a href=&quot;https://github.com/myitcv/x/issues/new?title=react:&quot;&gt;raise any issues on Github&lt;/a&gt;.&lt;/p&gt;</content><author><name>paul</name></author><summary type="html">Following the release of React 16.2.0, myitcv.io/react has been upgraded to bundle React 16 by default. Per the README, React 15 support is being maintained on a branch.</summary></entry></feed>

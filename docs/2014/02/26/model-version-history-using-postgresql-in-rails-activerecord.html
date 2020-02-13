@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Model version history using PostgreSQL in Rails ActiveRecord | blog.myitcv.io</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="Model version history using PostgreSQL in Rails ActiveRecord" />
+<meta name="author" content="paul" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Building on an earlier post about row-level version control with PostgreSQL, this article looks to show how to use version history within Rails models or, more generically, any Ruby application that uses ActiveRecord models." />
+<meta property="og:description" content="Building on an earlier post about row-level version control with PostgreSQL, this article looks to show how to use version history within Rails models or, more generically, any Ruby application that uses ActiveRecord models." />
+<link rel="canonical" href="https://blog.myitcv.io/2014/02/26/model-version-history-using-postgresql-in-rails-activerecord.html" />
+<meta property="og:url" content="https://blog.myitcv.io/2014/02/26/model-version-history-using-postgresql-in-rails-activerecord.html" />
+<meta property="og:site_name" content="blog.myitcv.io" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2014-02-26T00:00:00+00:00" />
+<script type="application/ld+json">
+{"description":"Building on an earlier post about row-level version control with PostgreSQL, this article looks to show how to use version history within Rails models or, more generically, any Ruby application that uses ActiveRecord models.","headline":"Model version history using PostgreSQL in Rails ActiveRecord","dateModified":"2014-02-26T00:00:00+00:00","datePublished":"2014-02-26T00:00:00+00:00","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://blog.myitcv.io/2014/02/26/model-version-history-using-postgresql-in-rails-activerecord.html"},"url":"https://blog.myitcv.io/2014/02/26/model-version-history-using-postgresql-in-rails-activerecord.html","author":{"@type":"Person","name":"paul"},"@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://blog.myitcv.io/feed.xml" title="blog.myitcv.io" /></head>
+
+
+  <body>
+
+    <header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">blog.myitcv.io</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"></div>
+      </nav></div>
+</header>
+
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Model version history using PostgreSQL in Rails ActiveRecord</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2014-02-26T00:00:00+00:00" itemprop="datePublished">Feb 26, 2014
+      </time>• <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span class="p-author h-card" itemprop="name">paul</span></span></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>Building on <a href="/2014/02/25/row-level-version-control-with-postgresql.html">an earlier post about row-level version control with
+PostgreSQL</a>, this article looks to show how to use
+version history within <a href="http://rubyonrails.org/">Rails</a> models or, more generically, any Ruby application that uses <a href="https://rubygems.org/gems/activerecord">ActiveRecord</a> models.</p>
+
+<p>For the sake of ease, the steps below outline how to create a basic Rails application, with a single model (the old
+fruit example again) that supports version history. This basic model will also support:</p>
+
+<ul>
+  <li>UUID id column - this is a fairly common requirement for web apps</li>
+  <li>Correct primary key constraints - ActiveRecord doesn’t do a great job of getting these right for more custom models</li>
+  <li><a href="http://api.rubyonrails.org/classes/ActiveRecord/Locking/Optimistic.html">Optimistic locking</a> - because we want our
+users to be sure their updates are applied to the versions they were editing</li>
+</ul>
+
+<p>What follows has been tested against the following software and corresponding versions:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Package</th>
+      <th>Version</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Ruby</td>
+      <td><code class="language-plaintext highlighter-rouge">ruby 2.1.1p76 (2014-02-24 revision 45161) [x86_64-linux]</code></td>
+    </tr>
+    <tr>
+      <td>Rails</td>
+      <td><code class="language-plaintext highlighter-rouge">Rails 4.0.3</code></td>
+    </tr>
+    <tr>
+      <td>PostgreSQL on AWS RDS</td>
+      <td><code class="language-plaintext highlighter-rouge">PostgreSQL 9.3.2</code></td>
+    </tr>
+    <tr>
+      <td>PostgreSQL CLI</td>
+      <td><code class="language-plaintext highlighter-rouge">psql (PostgreSQL) 9.3.3</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>What follows also assumes you have a usable <a href="http://aws.amazon.com/rds/postgresql/">AWS PostgreSQL RDS</a> instance.</p>
+
+<h2 id="preparation">Preparation</h2>
+
+<p>Let’s create ourselves a basic Rails app:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>rails new <span class="nt">--no-rc</span> version_history_test <span class="o">&amp;&amp;</span> <span class="nb">cd</span> <span class="nv">$_</span>
+</code></pre></div></div>
+
+<p>We will need to add the <code class="language-plaintext highlighter-rouge">pg</code> gem to our <code class="language-plaintext highlighter-rouge">Gemfile</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Gemfile</span>
+
+<span class="n">source</span> <span class="s1">'https://rubygems.org'</span>
+<span class="n">gem</span> <span class="s1">'rails'</span><span class="p">,</span> <span class="s1">'4.0.3'</span>
+<span class="n">gem</span> <span class="s1">'sqlite3'</span>
+<span class="n">gem</span> <span class="s1">'sass-rails'</span><span class="p">,</span> <span class="s1">'~&gt; 4.0.0'</span>
+<span class="n">gem</span> <span class="s1">'uglifier'</span><span class="p">,</span> <span class="s1">'&gt;= 1.3.0'</span>
+<span class="n">gem</span> <span class="s1">'coffee-rails'</span><span class="p">,</span> <span class="s1">'~&gt; 4.0.0'</span>
+<span class="n">gem</span> <span class="s1">'jquery-rails'</span>
+<span class="n">gem</span> <span class="s1">'turbolinks'</span>
+<span class="n">gem</span> <span class="s1">'jbuilder'</span><span class="p">,</span> <span class="s1">'~&gt; 1.2'</span>
+<span class="n">group</span> <span class="ss">:doc</span> <span class="k">do</span>
+  <span class="n">gem</span> <span class="s1">'sdoc'</span><span class="p">,</span> <span class="ss">require: </span><span class="kp">false</span>
+<span class="k">end</span>
+
+<span class="c1"># add pg gem</span>
+<span class="n">gem</span> <span class="s1">'pg'</span>
+</code></pre></div></div>
+
+<p>A quick run of <code class="language-plaintext highlighter-rouge">bundle install</code> will ensure this is in place.</p>
+
+<p>Before we go any further, let’s reconfigure our development database to point to our AWS PostgreSQL instance (substitute
+your details where appropriate):</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># config/database.yml</span>
+
+<span class="na">development</span><span class="pi">:</span>
+  <span class="na">adapter</span><span class="pi">:</span> <span class="s">postgresql</span>
+  <span class="na">database</span><span class="pi">:</span> <span class="s">mydb</span>
+  <span class="na">username</span><span class="pi">:</span> <span class="s">master</span>
+  <span class="na">password</span><span class="pi">:</span> <span class="s">XXXXXXXXXXXXX</span>
+  <span class="na">host</span><span class="pi">:</span> <span class="s">mypostgresql.YYYYYYYYYYY.eu-west-1.rds.amazonaws.com</span>
+  <span class="na">pool</span><span class="pi">:</span> <span class="m">5</span>
+  <span class="na">timeout</span><span class="pi">:</span> <span class="m">5000</span>
+
+<span class="c1"># test and production sections omitted</span>
+</code></pre></div></div>
+
+<p>We now need to ensure that the
+<a href="https://gist.github.com/myitcv/9212407#file-time_travel_trigger-sql"><code class="language-plaintext highlighter-rouge">time_travel_trigger</code></a> is correctly installed on
+our new PostgreSQL instance. We will do this by means of a migration. First create an empty migration:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>rails g migration install_time_travel_function
+      invoke  active_record
+      create    db/migrate/20140226220507_install_time_travel_function.rb
+</code></pre></div></div>
+
+<p>Now to edit the migration (which is <code class="language-plaintext highlighter-rouge">db/migrate/20140226220507_install_time_travel_function.rb</code> in my case):</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">InstallTimeTravelFunction</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
+  <span class="k">def</span> <span class="nf">change</span>
+
+    <span class="c1"># we need both extensions enabled</span>
+    <span class="n">enable_extension</span> <span class="s2">"plpgsql"</span>
+    <span class="n">enable_extension</span> <span class="s2">"uuid-ossp"</span>
+
+    <span class="n">execute</span> <span class="o">&lt;&lt;-</span><span class="no">EOD</span><span class="sh">
+
+    -- ** INSERT LATEST VERSION OF TIME_TRAVEL_TRIGGER.SQL HERE FROM:
+    --    https://gist.github.com/myitcv/9212407
+
+</span><span class="no">    EOD</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>The contents of <code class="language-plaintext highlighter-rouge">time_travel_trigger</code> have been omitted to save space; simply drop in where indicated. Then run <code class="language-plaintext highlighter-rouge">rake
+db:migrate</code> to execute the migration (some lines of output omitted):</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>rake db:migrate
+<span class="o">==</span>  InstallTimeTravelFunction: migrating <span class="o">======================================</span>
+<span class="nt">--</span> enable_extension<span class="o">(</span><span class="s2">"plpgsql"</span><span class="o">)</span>
+   -&gt; 0.1064s
+<span class="nt">--</span> enable_extension<span class="o">(</span><span class="s2">"uuid-ossp"</span><span class="o">)</span>
+   -&gt; 0.1338s <span class="nt">--</span> execute<span class="o">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">CREATE OR REPLACE FUNCTION ...
+
+==  InstallTimeTravelFunction: migrated (0.3313s) =============================
+</span></code></pre></div></div>
+
+<p>We are now in a position to be able to create our model.</p>
+
+<h2 id="creating-our-fruit-model">Creating our fruit model</h2>
+
+<p>To kick start the model creation we use <code class="language-plaintext highlighter-rouge">rails generate</code> (again the output from the command is shown for clarity’s
+sake):</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>rails g model fruit <span class="nb">id</span>:uuid name:string valid_from:datetime valid_to:datetime lock_version:integer
+      invoke  active_record
+      create    db/migrate/20140226220508_create_fruits.rb
+      create    app/models/fruit.rb
+      invoke    test_unit
+      create      <span class="nb">test</span>/models/fruit_test.rb
+      create      <span class="nb">test</span>/fixtures/fruits.yml
+</code></pre></div></div>
+
+<p>There are various aspects of what we are doing that are not supported by ActiveRecord (Arel). So we need to make some
+changes to the migration file that has been created (which is <code class="language-plaintext highlighter-rouge">db/migrate/20140226220508_create_fruits.rb</code> in my case).
+It should look like this:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># db/migrate/20140226220508_create_fruits.rb</span>
+
+<span class="k">class</span> <span class="nc">CreateFruits</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span>
+  <span class="k">def</span> <span class="nf">change</span>
+
+    <span class="c1"># don't create default id; we want to create id:uuid</span>
+    <span class="n">create_table</span> <span class="ss">:fruits</span><span class="p">,</span> <span class="ss">id: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">force: </span><span class="kp">true</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+
+      <span class="c1"># use uuid_generate_v4 for random uuids</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">uuid</span>     <span class="ss">:id</span><span class="p">,</span> <span class="ss">default: </span><span class="s2">"uuid_generate_v4()"</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">text</span>     <span class="ss">:name</span>
+
+      <span class="c1"># our time travel columns</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">datetime</span> <span class="ss">:valid_from</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">datetime</span> <span class="ss">:valid_to</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+
+      <span class="c1"># lock_version as defined by http://api.rubyonrails.org/classes/ActiveRecord/Locking/Optimistic.html</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">integer</span>  <span class="ss">:lock_version</span><span class="p">,</span> <span class="ss">default: </span><span class="mi">0</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+
+      <span class="c1">#</span>
+      <span class="c1"># ** NO TIMESTAMPS **</span>
+      <span class="c1">#</span>
+    <span class="k">end</span>
+
+    <span class="c1"># for some reason create_table doesn't get this right....</span>
+    <span class="n">change_column</span>  <span class="ss">:fruits</span><span class="p">,</span> <span class="ss">:id</span><span class="p">,</span> <span class="ss">:uuid</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+
+    <span class="c1"># create the primary key constraint</span>
+    <span class="n">execute</span> <span class="s2">"alter table fruits add primary key (id, lock_version)"</span>
+
+    <span class="c1"># create the triggers to call the timetravel-esque functions</span>
+    <span class="n">execute</span> <span class="o">&lt;&lt;-</span><span class="no">EOD</span><span class="sh">
+      CREATE TRIGGER fruits_before
+      BEFORE INSERT OR UPDATE OR DELETE ON fruits
+          FOR EACH ROW EXECUTE PROCEDURE process_timetravel_before();
+
+      CREATE TRIGGER fruits_after
+      AFTER UPDATE OR DELETE ON fruits
+          FOR EACH ROW EXECUTE PROCEDURE process_timetravel_after();
+</span><span class="no">    EOD</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Again, <code class="language-plaintext highlighter-rouge">rake db:migrate</code> should run without errors:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>rake db:migrate
+<span class="o">==</span>  CreateFruits: migrating <span class="o">===================================================</span>
+<span class="nt">--</span> create_table<span class="o">(</span>:fruits, <span class="o">{</span>:id<span class="o">=&gt;</span><span class="nb">false</span>, :force<span class="o">=&gt;</span><span class="nb">true</span><span class="o">})</span>
+   -&gt; 0.0852s
+<span class="nt">--</span> change_column<span class="o">(</span>:fruits, :id, :uuid, <span class="o">{</span>:null<span class="o">=&gt;</span><span class="nb">false</span><span class="o">})</span>
+   -&gt; 0.0636s
+<span class="nt">--</span> execute<span class="o">(</span><span class="s2">"alter table fruits add primary key (id, lock_version)"</span><span class="o">)</span>
+   -&gt; 0.0475s
+<span class="nt">--</span> execute<span class="o">(</span><span class="s2">"      CREATE TRIGGER fruits_before...
+
+==  CreateFruits: migrated (0.2351s) ==========================================
+</span></code></pre></div></div>
+
+<p>We are almost done. Having overridden the default primary key, we need to tell ActiveRecord what the new primary key is
+by editing the model class:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/models/fruit.rb</span>
+
+<span class="k">class</span> <span class="nc">Fruit</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+
+  <span class="c1"># we have overridden the default primary_key</span>
+  <span class="c1"># even though lock_version is strictly part of the</span>
+  <span class="c1"># primary key, its use happens behind the scenes</span>
+  <span class="nb">self</span><span class="p">.</span><span class="nf">primary_key</span> <span class="o">=</span> <span class="ss">:id</span>
+
+  <span class="c1"># by default, when searching and finding bits of fruit</span>
+  <span class="c1"># we want the latest version</span>
+  <span class="n">default_scope</span> <span class="p">{</span> <span class="n">where</span><span class="p">(</span><span class="ss">valid_to: </span><span class="s1">'infinity'</span><span class="p">).</span><span class="nf">reorder</span><span class="p">(</span><span class="s1">''</span><span class="p">)</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>And that’s our model created. Relatively painless. Let’s see it in action.</p>
+
+<h2 id="creating-some-fruit">Creating some fruit</h2>
+
+<p>The simplest way to test out our model is via the Rails console which is started via:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>rails console
+Loading development environment <span class="o">(</span>Rails 4.0.3<span class="o">)</span>
+irb<span class="o">(</span>main<span class="o">)</span>:001:0&gt;
+</code></pre></div></div>
+
+<p>Let us first create an apple:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">irb</span><span class="p">(</span><span class="n">main</span><span class="p">):</span><span class="mo">001</span><span class="p">:</span><span class="mi">0</span><span class="o">&gt;</span> <span class="n">f</span> <span class="o">=</span> <span class="no">Fruit</span><span class="p">.</span><span class="nf">create</span> <span class="ss">name: </span><span class="s1">'apple'</span>
+   <span class="p">(</span><span class="mf">28.5</span><span class="n">ms</span><span class="p">)</span>  <span class="k">BEGIN</span>
+  <span class="no">SQL</span> <span class="p">(</span><span class="mf">94.0</span><span class="n">ms</span><span class="p">)</span>  <span class="no">INSERT</span> <span class="no">INTO</span> <span class="s2">"fruits"</span> <span class="p">(</span><span class="s2">"name"</span><span class="p">,</span> <span class="s2">"valid_to"</span><span class="p">)</span> <span class="no">VALUES</span> <span class="p">(</span><span class="vg">$1</span><span class="p">,</span> <span class="vg">$2</span><span class="p">)</span> <span class="no">RETURNING</span> <span class="s2">"id"</span>  <span class="p">[[</span><span class="s2">"name"</span><span class="p">,</span> <span class="s2">"apple"</span><span class="p">],</span> <span class="p">[</span><span class="s2">"valid_to"</span><span class="p">,</span> <span class="kp">nil</span><span class="p">]]</span>
+   <span class="p">(</span><span class="mf">33.9</span><span class="n">ms</span><span class="p">)</span>  <span class="no">COMMIT</span>
+<span class="o">=&gt;</span> <span class="c1">#&lt;Fruit id: "2222b79d-d422-4f2b-a23a-9d2148398e17", name: "apple", valid_from: nil, valid_to: nil, lock_version: 0&gt;</span>
+</code></pre></div></div>
+
+<p>A quick look in the database (using the PostgreSQL CLI) will show the corresponding row:</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">mydb</span><span class="o">=&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">fruits</span> <span class="k">order</span> <span class="k">by</span> <span class="n">lock_version</span><span class="p">;</span>
+                  <span class="n">id</span>                  <span class="o">|</span> <span class="n">name</span>  <span class="o">|</span>         <span class="n">valid_from</span>         <span class="o">|</span> <span class="n">valid_to</span> <span class="o">|</span> <span class="n">lock_version</span>
+<span class="c1">--------------------------------------+-------+----------------------------+----------+--------------</span>
+ <span class="mi">2222</span><span class="n">b79d</span><span class="o">-</span><span class="n">d422</span><span class="o">-</span><span class="mi">4</span><span class="n">f2b</span><span class="o">-</span><span class="n">a23a</span><span class="o">-</span><span class="mi">9</span><span class="n">d2148398e17</span> <span class="o">|</span> <span class="n">apple</span> <span class="o">|</span> <span class="mi">2014</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">26</span> <span class="mi">20</span><span class="p">:</span><span class="mi">36</span><span class="p">:</span><span class="mi">48</span><span class="p">.</span><span class="mi">885796</span> <span class="o">|</span> <span class="n">infinity</span> <span class="o">|</span>            <span class="mi">0</span>
+</code></pre></div></div>
+
+<p>Back in the Rails console, let’s change our apple to a pear:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">irb</span><span class="p">(</span><span class="n">main</span><span class="p">):</span><span class="mo">002</span><span class="p">:</span><span class="mi">0</span><span class="o">&gt;</span> <span class="n">f</span><span class="p">.</span><span class="nf">name</span> <span class="o">=</span> <span class="s1">'pear'</span>
+<span class="o">=&gt;</span> <span class="s2">"pear"</span>
+<span class="n">irb</span><span class="p">(</span><span class="n">main</span><span class="p">):</span><span class="mo">003</span><span class="p">:</span><span class="mi">0</span><span class="o">&gt;</span> <span class="n">f</span><span class="p">.</span><span class="nf">save</span>
+   <span class="p">(</span><span class="mf">31.3</span><span class="n">ms</span><span class="p">)</span>  <span class="k">BEGIN</span>
+   <span class="p">(</span><span class="mf">35.0</span><span class="n">ms</span><span class="p">)</span>  <span class="no">UPDATE</span> <span class="s2">"fruits"</span> <span class="no">SET</span> <span class="s2">"name"</span> <span class="o">=</span> <span class="s1">'pear'</span><span class="p">,</span> <span class="s2">"lock_version"</span> <span class="o">=</span> <span class="mi">1</span> <span class="no">WHERE</span> <span class="p">(</span><span class="s2">"fruits"</span><span class="o">.</span><span class="s2">"id"</span> <span class="o">=</span> <span class="s1">'2222b79d-d422-4f2b-a23a-9d2148398e17'</span> <span class="no">AND</span> <span class="s2">"fruits"</span><span class="o">.</span><span class="s2">"lock_version"</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+   <span class="p">(</span><span class="mf">33.1</span><span class="n">ms</span><span class="p">)</span>  <span class="no">COMMIT</span>
+<span class="o">=&gt;</span> <span class="kp">true</span>
+</code></pre></div></div>
+
+<p>See how the use of optimistic locking ensures that the update is applied to the latest version (thereby obviating
+the need for the restriction <code class="language-plaintext highlighter-rouge">valid_to = 'infinity'</code>). Again, let’s check in on the database to see what’s happened:</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">mydb</span><span class="o">=&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">fruits</span> <span class="k">order</span> <span class="k">by</span> <span class="n">lock_version</span><span class="p">;</span>
+                  <span class="n">id</span>                  <span class="o">|</span> <span class="n">name</span>  <span class="o">|</span>         <span class="n">valid_from</span>         <span class="o">|</span>          <span class="n">valid_to</span>          <span class="o">|</span> <span class="n">lock_version</span>
+<span class="c1">--------------------------------------+-------+----------------------------+----------------------------+--------------</span>
+ <span class="mi">2222</span><span class="n">b79d</span><span class="o">-</span><span class="n">d422</span><span class="o">-</span><span class="mi">4</span><span class="n">f2b</span><span class="o">-</span><span class="n">a23a</span><span class="o">-</span><span class="mi">9</span><span class="n">d2148398e17</span> <span class="o">|</span> <span class="n">apple</span> <span class="o">|</span> <span class="mi">2014</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">26</span> <span class="mi">20</span><span class="p">:</span><span class="mi">36</span><span class="p">:</span><span class="mi">48</span><span class="p">.</span><span class="mi">885796</span> <span class="o">|</span> <span class="mi">2014</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">26</span> <span class="mi">20</span><span class="p">:</span><span class="mi">38</span><span class="p">:</span><span class="mi">19</span><span class="p">.</span><span class="mi">228829</span> <span class="o">|</span>            <span class="mi">0</span>
+ <span class="mi">2222</span><span class="n">b79d</span><span class="o">-</span><span class="n">d422</span><span class="o">-</span><span class="mi">4</span><span class="n">f2b</span><span class="o">-</span><span class="n">a23a</span><span class="o">-</span><span class="mi">9</span><span class="n">d2148398e17</span> <span class="o">|</span> <span class="n">pear</span>  <span class="o">|</span> <span class="mi">2014</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">26</span> <span class="mi">20</span><span class="p">:</span><span class="mi">38</span><span class="p">:</span><span class="mi">19</span><span class="p">.</span><span class="mi">228829</span> <span class="o">|</span> <span class="n">infinity</span>                   <span class="o">|</span>            <span class="mi">1</span>
+</code></pre></div></div>
+
+<p>Just as we expected, a new version has been created.</p>
+
+<p>But we’re finished with this pear now. Time to destroy it (again, from the Rails console):</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">irb</span><span class="p">(</span><span class="n">main</span><span class="p">):</span><span class="mo">004</span><span class="p">:</span><span class="mi">0</span><span class="o">&gt;</span> <span class="n">f</span><span class="p">.</span><span class="nf">destroy</span>
+   <span class="p">(</span><span class="mf">57.2</span><span class="n">ms</span><span class="p">)</span>  <span class="k">BEGIN</span>
+  <span class="no">SQL</span> <span class="p">(</span><span class="mf">60.1</span><span class="n">ms</span><span class="p">)</span>  <span class="no">DELETE</span> <span class="no">FROM</span> <span class="s2">"fruits"</span> <span class="no">WHERE</span> <span class="s2">"fruits"</span><span class="o">.</span><span class="s2">"id"</span> <span class="o">=</span> <span class="vg">$1</span> <span class="no">AND</span> <span class="s2">"fruits"</span><span class="o">.</span><span class="s2">"lock_version"</span> <span class="o">=</span> <span class="vg">$2</span>  <span class="p">[[</span><span class="s2">"id"</span><span class="p">,</span> <span class="s2">"2222b79d-d422-4f2b-a23a-9d2148398e17"</span><span class="p">],</span> <span class="p">[</span><span class="s2">"lock_version"</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span>
+   <span class="p">(</span><span class="mf">36.7</span><span class="n">ms</span><span class="p">)</span>  <span class="no">COMMIT</span>
+<span class="o">=&gt;</span> <span class="c1">#&lt;Fruit id: "2222b79d-d422-4f2b-a23a-9d2148398e17", name: "pear", valid_from: nil, valid_to: nil, lock_version: 1&gt;</span>
+</code></pre></div></div>
+
+<p>Again, the optimistic locking support in ActiveRecord is helping ensure we delete only the latest version. If we glance
+in the database, we should expect to see just the <code class="language-plaintext highlighter-rouge">valid_to</code> be updated from <code class="language-plaintext highlighter-rouge">infinity</code> to the time of the delete:</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">mydb</span><span class="o">=&gt;</span> <span class="k">select</span> <span class="o">*</span> <span class="k">from</span> <span class="n">fruits</span> <span class="k">order</span> <span class="k">by</span> <span class="n">lock_version</span><span class="p">;</span>
+                  <span class="n">id</span>                  <span class="o">|</span> <span class="n">name</span>  <span class="o">|</span>         <span class="n">valid_from</span>         <span class="o">|</span>          <span class="n">valid_to</span>          <span class="o">|</span> <span class="n">lock_version</span>
+<span class="c1">--------------------------------------+-------+----------------------------+----------------------------+--------------</span>
+ <span class="mi">2222</span><span class="n">b79d</span><span class="o">-</span><span class="n">d422</span><span class="o">-</span><span class="mi">4</span><span class="n">f2b</span><span class="o">-</span><span class="n">a23a</span><span class="o">-</span><span class="mi">9</span><span class="n">d2148398e17</span> <span class="o">|</span> <span class="n">apple</span> <span class="o">|</span> <span class="mi">2014</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">26</span> <span class="mi">20</span><span class="p">:</span><span class="mi">36</span><span class="p">:</span><span class="mi">48</span><span class="p">.</span><span class="mi">885796</span> <span class="o">|</span> <span class="mi">2014</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">26</span> <span class="mi">20</span><span class="p">:</span><span class="mi">38</span><span class="p">:</span><span class="mi">19</span><span class="p">.</span><span class="mi">228829</span> <span class="o">|</span>            <span class="mi">0</span>
+ <span class="mi">2222</span><span class="n">b79d</span><span class="o">-</span><span class="n">d422</span><span class="o">-</span><span class="mi">4</span><span class="n">f2b</span><span class="o">-</span><span class="n">a23a</span><span class="o">-</span><span class="mi">9</span><span class="n">d2148398e17</span> <span class="o">|</span> <span class="n">pear</span>  <span class="o">|</span> <span class="mi">2014</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">26</span> <span class="mi">20</span><span class="p">:</span><span class="mi">38</span><span class="p">:</span><span class="mi">19</span><span class="p">.</span><span class="mi">228829</span> <span class="o">|</span> <span class="mi">2014</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">26</span> <span class="mi">20</span><span class="p">:</span><span class="mi">40</span><span class="p">:</span><span class="mi">55</span><span class="p">.</span><span class="mi">016373</span> <span class="o">|</span>            <span class="mi">1</span>
+</code></pre></div></div>
+
+<p>Excellent.</p>
+
+<h2 id="version-based-queries">Version-based queries</h2>
+
+<p>Using <code class="language-plaintext highlighter-rouge">lock_version</code> we can clearly find previous versions of a record. Here
+we load version 0 of our piece of fruit, which was an apple at the time:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">irb</span><span class="p">(</span><span class="n">main</span><span class="p">):</span><span class="mo">005</span><span class="p">:</span><span class="mi">0</span><span class="o">&gt;</span> <span class="n">f</span> <span class="o">=</span> <span class="no">Fruit</span><span class="p">.</span><span class="nf">unscoped</span><span class="p">.</span><span class="nf">find_by</span><span class="p">(</span><span class="ss">id: </span><span class="s1">'2222b79d-d422-4f2b-a23a-9d2148398e17'</span><span class="p">,</span> <span class="ss">lock_version: </span><span class="mi">0</span><span class="p">)</span>
+  <span class="no">Fruit</span> <span class="no">Load</span> <span class="p">(</span><span class="mf">37.1</span><span class="n">ms</span><span class="p">)</span>  <span class="no">SELECT</span> <span class="s2">"fruits"</span><span class="p">.</span><span class="nf">*</span> <span class="no">FROM</span> <span class="s2">"fruits"</span> <span class="no">WHERE</span> <span class="s2">"fruits"</span><span class="o">.</span><span class="s2">"id"</span> <span class="o">=</span> <span class="s1">'2222b79d-d422-4f2b-a23a-9d2148398e17'</span> <span class="no">AND</span> <span class="s2">"fruits"</span><span class="o">.</span><span class="s2">"lock_version"</span> <span class="o">=</span> <span class="mi">0</span> <span class="no">LIMIT</span> <span class="mi">1</span>
+<span class="o">=&gt;</span> <span class="c1">#&lt;Fruit id: "2222b79d-d422-4f2b-a23a-9d2148398e17", name: "apple", valid_from: "2014-02-26 20:36:48", valid_to: "2014-02-26 20:38:19", lock_version: 0&gt;</span>
+<span class="n">irb</span><span class="p">(</span><span class="n">main</span><span class="p">):</span><span class="mo">006</span><span class="p">:</span><span class="mi">0</span><span class="o">&gt;</span> <span class="n">f</span><span class="p">.</span><span class="nf">name</span>
+<span class="o">=&gt;</span> <span class="s2">"apple"</span>
+</code></pre></div></div>
+
+<p>Notice the use of <code class="language-plaintext highlighter-rouge">unscoped</code> to remove the default scope.</p>
+
+<h2 id="time-based-queries">Time-based queries</h2>
+
+<p>Because of our primary key constraint and strictly contiguous <code class="language-plaintext highlighter-rouge">valid_from</code> and
+<code class="language-plaintext highlighter-rouge">valid_to</code> time blocks, we can even do sensible looking time-based queries:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">irb</span><span class="p">(</span><span class="n">main</span><span class="p">):</span><span class="mo">007</span><span class="p">:</span><span class="mi">0</span><span class="o">&gt;</span> <span class="n">date</span> <span class="o">=</span> <span class="no">DateTime</span><span class="p">.</span><span class="nf">parse</span> <span class="s1">'2014-02-26 20:37'</span>
+<span class="o">=&gt;</span> <span class="no">Wed</span><span class="p">,</span> <span class="mi">26</span> <span class="no">Feb</span> <span class="mi">2014</span> <span class="mi">20</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mo">00</span> <span class="o">+</span><span class="mo">0000</span>
+<span class="n">irb</span><span class="p">(</span><span class="n">main</span><span class="p">):</span><span class="mo">00</span><span class="mi">8</span><span class="p">:</span><span class="mi">0</span><span class="o">&gt;</span> <span class="no">Fruit</span><span class="p">.</span><span class="nf">unscoped</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s1">'valid_from &lt; ? AND ? &lt; valid_to'</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="n">date</span><span class="p">).</span><span class="nf">find</span><span class="p">(</span><span class="s1">'2222b79d-d422-4f2b-a23a-9d2148398e17'</span><span class="p">)</span>
+  <span class="no">Fruit</span> <span class="no">Load</span> <span class="p">(</span><span class="mf">62.5</span><span class="n">ms</span><span class="p">)</span>  <span class="no">SELECT</span> <span class="s2">"fruits"</span><span class="p">.</span><span class="nf">*</span> <span class="no">FROM</span> <span class="s2">"fruits"</span> <span class="no">WHERE</span> <span class="p">(</span><span class="n">valid_from</span> <span class="o">&lt;</span> <span class="s1">'2014-02-26 20:37:00.000000'</span> <span class="no">AND</span> <span class="s1">'2014-02-26 20:37:00.000000'</span> <span class="o">&lt;</span> <span class="n">valid_to</span><span class="p">)</span> <span class="no">AND</span> <span class="s2">"fruits"</span><span class="o">.</span><span class="s2">"id"</span> <span class="o">=</span> <span class="vg">$1</span> <span class="no">LIMIT</span> <span class="mi">1</span>  <span class="p">[[</span><span class="s2">"id"</span><span class="p">,</span> <span class="s2">"2222b79d-d422-4f2b-a23a-9d2148398e17"</span><span class="p">]]</span>
+<span class="o">=&gt;</span> <span class="c1">#&lt;Fruit id: "2222b79d-d422-4f2b-a23a-9d2148398e17", name: "apple", valid_from: "2014-02-26 20:36:48", valid_to: "2014-02-26 20:38:19", lock_version: 0&gt;</span>
+<span class="n">irb</span><span class="p">(</span><span class="n">main</span><span class="p">):</span><span class="mo">00</span><span class="mi">9</span><span class="p">:</span><span class="mi">0</span><span class="o">&gt;</span> <span class="n">f</span><span class="p">.</span><span class="nf">name</span>
+<span class="o">=&gt;</span> <span class="s2">"apple"</span>
+</code></pre></div></div>
+
+<p>Again, note the use of <code class="language-plaintext highlighter-rouge">unscoped</code>. But also the use of <code class="language-plaintext highlighter-rouge">find</code> which works by virtue of the preceding <code class="language-plaintext highlighter-rouge">where</code> clauses.</p>
+
+<h2 id="a-note-on-optimistic-locking">A note on optimistic locking</h2>
+
+<p>Earlier we set out optimistic locking as one of the additional goals of this exercise. But there are some important
+benefits that ActiveRecord’s optimistic locking brings to our version control implementation.</p>
+
+<p>Firstly, it makes the definition of our primary key very clean. The pair <code class="language-plaintext highlighter-rouge">[id, lock_version]</code> is much more
+understandable than a primary key that involves <code class="language-plaintext highlighter-rouge">valid_from</code> and/or <code class="language-plaintext highlighter-rouge">valid_to</code>.</p>
+
+<p>The second benefit, as we have seen, is that it ensures ActiveRecord only updates/deletes the latest version (the
+<a href="https://gist.github.com/myitcv/9212407#file-time_travel_trigger-sql">function behind the trigger</a> also ensures this,
+but using <code class="language-plaintext highlighter-rouge">lock_version</code> is much cleaner), thereby obviating the need for us to restrict by <code class="language-plaintext highlighter-rouge">valid_to = 'infinity'</code> on
+all updates (the default scope helps on reads, but not writes).</p>
+
+<h2 id="source-code">Source code</h2>
+
+<p>The complete source code (minus passwords) is available <a href="https://github.com/myitcv/postgres_version_history_demo">on
+GitHub</a> as usual.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>This is a simple(ish) method of achieving version history on Rails (ActiveRecord) models with PostgreSQL. There are
+alternative methods out there, but this time-based approach allows for huge power when querying (not least because it
+works with joins too).</p>
+
+<p>But it is a first cut. So any feedback greatly appreciated.</p>
+
+
+  </div><div id="disqus_thread"></div>
+  <script>
+    var disqus_config = function () {
+      this.page.url = 'https://blog.myitcv.io/2014/02/26/model-version-history-using-postgresql-in-rails-activerecord.html';
+      this.page.identifier = 'https://blog.myitcv.io/2014/02/26/model-version-history-using-postgresql-in-rails-activerecord.html';
+    };
+
+    (function() {
+      var d = document, s = d.createElement('script');
+
+      s.src = 'https://myitcv.disqus.com/embed.js';
+
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript><a class="u-url" href="/2014/02/26/model-version-history-using-postgresql-in-rails-activerecord.html" hidden></a>
+</article>
+
+      </div>
+    </main>
+
+    
+<footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">blog.myitcv.io</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>
+            
+              Paul Jolly
+            
+            </li>
+          <li>
+            <a href="https://myitcv.io">https://myitcv.io</a>
+          </li>
+            
+            <li><a href="mailto:paul@myitcv.io">paul@myitcv.io</a></li>
+            
+        </ul>
+
+        <p class="rss-subscribe"><a href="/feed.xml"><img style="width: 20px; height: 20px" src="/assets/rss.svg"/>&nbsp;RSS</a></p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+            <a href="https://github.com/myitcv"><span class="icon icon--github"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">myitcv</span></a>
+
+          </li>
+          
+
+          
+          <li>
+            <a href="https://twitter.com/_myitcv"><span class="icon icon--twitter"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M15.969,3.058c-0.586,0.26-1.217,0.436-1.878,0.515c0.675-0.405,1.194-1.045,1.438-1.809c-0.632,0.375-1.332,0.647-2.076,0.793c-0.596-0.636-1.446-1.033-2.387-1.033c-1.806,0-3.27,1.464-3.27,3.27 c0,0.256,0.029,0.506,0.085,0.745C5.163,5.404,2.753,4.102,1.14,2.124C0.859,2.607,0.698,3.168,0.698,3.767 c0,1.134,0.577,2.135,1.455,2.722C1.616,6.472,1.112,6.325,0.671,6.08c0,0.014,0,0.027,0,0.041c0,1.584,1.127,2.906,2.623,3.206 C3.02,9.402,2.731,9.442,2.433,9.442c-0.211,0-0.416-0.021-0.615-0.059c0.416,1.299,1.624,2.245,3.055,2.271 c-1.119,0.877-2.529,1.4-4.061,1.4c-0.264,0-0.524-0.015-0.78-0.046c1.447,0.928,3.166,1.469,5.013,1.469 c6.015,0,9.304-4.983,9.304-9.304c0-0.142-0.003-0.283-0.009-0.423C14.976,4.29,15.531,3.714,15.969,3.058z"/></svg>
+</span><span class="username">_myitcv</span></a>
+
+          </li>
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>A largely Go-based blog
+</p>
+
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+    <script>
+  var anchorForHeader = function(heading) {
+    var anchor = document.createElement("a");
+    anchor.className = "header-link";
+    anchor.href      = "#" + heading.id;
+    anchor.innerHTML = "<svg class=\"octicon octicon-link\" height=\"16\" version=\"1.1\" viewBox=\"0 0 16 16\" width=\"16\"><path fill-rule=\"evenodd\" d=\"M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z\"></path></svg>";
+    anchor.title = "Permalink";
+    anchor.style = "float: left; margin-left: -20px; padding-right: 4px;";
+    return anchor;
+  };
+  var linkifyAnchors = function (level, containingElement) {
+    var headers = containingElement.getElementsByTagName("h" + level);
+    var work = [];
+    for (var h = 0; h < headers.length; h++) {
+      var header = headers[h];
+      if (typeof header.id !== "undefined" && header.id !== "") {
+        header.insertBefore(anchorForHeader(header), header.firstChild);
+      }
+    }
+  };
+  document.onreadystatechange = function () {
+    if (this.readyState === "complete") {
+      var contentBlock = document.getElementsByClassName("post-content")[0] || document.getElementsByClassName("news")[0];
+      if (!contentBlock) {
+        return;
+      }
+      for (var level = 1; level <= 6; level++) {
+        linkifyAnchors(level, contentBlock);
+      }
+    }
+  };
+</script>
+
+
+  </body>
+
+</html>

@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Programming with Go in Vim | blog.myitcv.io</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="Programming with Go in Vim" />
+<meta name="author" content="paul" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Update 2016-02-16: anyone reading this post should stop reading and instead use vim-go&lt;/br&gt;" />
+<meta property="og:description" content="Update 2016-02-16: anyone reading this post should stop reading and instead use vim-go&lt;/br&gt;" />
+<link rel="canonical" href="https://blog.myitcv.io/2014/03/03/programming-with-go-in-vim.html" />
+<meta property="og:url" content="https://blog.myitcv.io/2014/03/03/programming-with-go-in-vim.html" />
+<meta property="og:site_name" content="blog.myitcv.io" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2014-03-03T00:00:00+00:00" />
+<script type="application/ld+json">
+{"description":"Update 2016-02-16: anyone reading this post should stop reading and instead use vim-go&lt;/br&gt;","headline":"Programming with Go in Vim","dateModified":"2014-03-03T00:00:00+00:00","datePublished":"2014-03-03T00:00:00+00:00","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://blog.myitcv.io/2014/03/03/programming-with-go-in-vim.html"},"url":"https://blog.myitcv.io/2014/03/03/programming-with-go-in-vim.html","author":{"@type":"Person","name":"paul"},"@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://blog.myitcv.io/feed.xml" title="blog.myitcv.io" /></head>
+
+
+  <body>
+
+    <header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">blog.myitcv.io</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"></div>
+      </nav></div>
+</header>
+
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Programming with Go in Vim</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2014-03-03T00:00:00+00:00" itemprop="datePublished">Mar 3, 2014
+      </time>• <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span class="p-author h-card" itemprop="name">paul</span></span></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p><strong>Update 2016-02-16:</strong> anyone reading this post should stop reading and instead use <a href="https://github.com/fatih/vim-go"><code class="language-plaintext highlighter-rouge">vim-go</code></a>&lt;/br&gt;</p>
+
+<p>Having decided to give <a href="http://golang.org/">Go</a> a proper, well, go, it was time to get setup in <a href="http://www.vim.org/">Vim</a>. The good news is the support is
+really rather, well, good. This article aims to cover the main steps required to kick start your development.</p>
+
+<p>Firstly some assumptions on setup: my system is <a href="http://www.ubuntu.com/">Ubuntu Linux</a> running
+<a href="https://www.gnu.org/software/bash/"><code class="language-plaintext highlighter-rouge">bash</code></a>. Although all of the steps can be adapted for other platforms/shells, I
+will not include details in this article.</p>
+
+<h3 id="step-1-ensure-you-have-a-recent-vim-version">Step 1. Ensure you have a recent Vim version</h3>
+
+<p>Must be a recent version of Vim (more a demand of the plugins we will use later)</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>vim <span class="nt">--version</span>
+VIM - Vi IMproved 7.4 <span class="o">(</span>2013 Aug 10, compiled Feb 25 2014 10:54:46<span class="o">)</span>
+Included patches: 1-192
+...
+</code></pre></div></div>
+
+<p>The full output of the features enabled in my custom build of Vim can be <a href="https://github.com/myitcv/.vim/blob/master/vim.version">found
+here</a></p>
+
+<h3 id="step-2-ensure-you-have-a-working-go-installation">Step 2. Ensure you have a working Go installation</h3>
+
+<p>I strayed from the <a href="http://golang.org/doc/install">offical docs</a> at this point and went down the route of <a href="https://github.com/moovweb/gvm"><code class="language-plaintext highlighter-rouge">gvm</code></a>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>bash &lt; &lt;<span class="o">(</span>curl <span class="nt">-s</span> https://raw.github.com/moovweb/gvm/master/binscripts/gvm-installer<span class="o">)</span>
+<span class="nv">$ </span><span class="nb">exec </span>bash
+<span class="nv">$ </span>gvm <span class="nb">install </span>go1.2.1
+<span class="nv">$ </span><span class="nb">mkdir</span> <span class="nv">$HOME</span>/gostuff <span class="c"># my Go workspace</span>
+</code></pre></div></div>
+
+<p>Add the following to the very bottom of your <code class="language-plaintext highlighter-rouge">.bashrc</code>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># .bashrc</span>
+
+...
+
+gvm use go1.2.1 <span class="o">&gt;</span> /dev/null 2&gt;&amp;1
+<span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span><span class="s2">"</span><span class="k">${</span><span class="nv">GOPATH</span><span class="p">//</span>://bin:<span class="k">}</span><span class="s2">/bin:</span><span class="nv">$PATH</span><span class="s2">"</span>
+</code></pre></div></div>
+
+<p>Now run <code class="language-plaintext highlighter-rouge">gvm pkgenv</code> and edit the setting of <code class="language-plaintext highlighter-rouge">GOPATH</code> to include your workspace (as required):</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>...
+<span class="nb">export </span>GOPATH<span class="p">;</span> <span class="nv">GOPATH</span><span class="o">=</span><span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/gostuff:</span><span class="nv">$GVM_ROOT</span><span class="s2">/pkgsets/go1.2.1/global"</span>
+...
+</code></pre></div></div>
+
+<p>Now restart your terminal or simply <code class="language-plaintext highlighter-rouge">exec bash</code>. The following commands should now work:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">echo</span> <span class="nv">$GOROOT</span>
+/home/myitcv/.gvm/gos/go1.2.1
+<span class="nv">$ </span><span class="nb">echo</span> <span class="nv">$GOPATH</span>
+/home/myitcv/gostuff:/home/myitcv/.gvm/pkgsets/go1.2.1/global
+<span class="nv">$ </span>go version
+go version go1.2.1 linux/amd64
+
+</code></pre></div></div>
+
+<h3 id="step-3-ensure-you-know-how-to-add-vim-plugins">Step 3. Ensure you know how to add Vim plugins</h3>
+
+<p>I would strongly recommend using <a href="https://github.com/tpope/vim-pathogen"><code class="language-plaintext highlighter-rouge">pathogen.vim</code></a> to manage plugins. <code class="language-plaintext highlighter-rouge">pathogen.vim</code> <em>“makes it super easy to install
+plugins and runtime files in their own private directories.”</em> Additionally I manage <a href="https://github.com/myitcv/.vim">my setup</a> via
+<a href="http://git-scm.com/docs/git-submodule">git submodules</a>. All of the plugins we install later have instructions on how to
+install via <code class="language-plaintext highlighter-rouge">pathogen.vim</code>.</p>
+
+<h3 id="step-4-install-go-tools">Step 4. Install Go tools</h3>
+
+<p>These tools will help with omnicomplete (code completion), syntax checking, ‘go to definition’ support and
+<a href="http://ctags.sourceforge.net/">ctags</a> for Go:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>go get <span class="nt">-u</span> github.com/nsf/gocode
+<span class="nv">$ </span>go get <span class="nt">-u</span> code.google.com/p/rog-go/exp/cmd/godef
+<span class="nv">$ </span>go get <span class="nt">-u</span> github.com/jstemmer/gotags
+</code></pre></div></div>
+
+<p>These three commands will fetch, build and install three tools:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>which godef
+/home/myitcv/gostuff/bin/godef
+<span class="nv">$ </span>which gocode
+/home/myitcv/gostuff/bin/gocode
+<span class="nv">$ </span>which gotags
+/home/myitcv/gostuff/bin/gotags
+<span class="nv">$ </span>which gofmt
+/home/myitcv/.gvm/gos/go1.2.1/bin/gofmt
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">gofmt</code> is, as you can see, distributed as part of the main Go package.</p>
+
+<h3 id="step-5-install-missing-vim-packages">Step 5. Install missing Vim packages</h3>
+
+<p>It is quite possible you already have some/all of these packages already installed. Therefore adapt the following
+list to suit your requirements:</p>
+
+<ul>
+  <li><a href="https://github.com/scrooloose/syntastic"><code class="language-plaintext highlighter-rouge">scrooloose/syntastic</code></a></li>
+  <li><a href="https://github.com/dgryski/vim-godef"><code class="language-plaintext highlighter-rouge">dgryski/vim-godef</code></a></li>
+  <li><a href="https://github.com/Blackrush/vim-gocode"><code class="language-plaintext highlighter-rouge">Blackrush/vim-gocode</code></a></li>
+  <li><a href="https://github.com/majutsushi/tagbar"><code class="language-plaintext highlighter-rouge">majutsushi/tagbar</code></a></li>
+  <li><a href="https://github.com/bling/vim-airline"><code class="language-plaintext highlighter-rouge">bling/vim-airline</code></a></li>
+</ul>
+
+<p><em>Note:</em> you will also need to follow the <a href="https://github.com/jstemmer/gotags#vim-tagbar-configuration">instructions for <code class="language-plaintext highlighter-rouge">gotags</code>’ <code class="language-plaintext highlighter-rouge">tagbar</code>
+support</a></p>
+
+<p>Once installed, generate help tags by opening Vim and running the command <code class="language-plaintext highlighter-rouge">:Helptags</code> (note capitalisation).</p>
+
+<h3 id="step-6-optionally-configure-these-plugins">Step 6. Optionally configure these plugins</h3>
+
+<p>I will not explicity list my configuration options but instead refer the interested reader to <a href="https://github.com/myitcv/.vim/blob/master/vimrc">my
+<code class="language-plaintext highlighter-rouge">.vimrc</code></a></p>
+
+<h2 id="try-it-out">Try it out!</h2>
+
+<p>If all has gone to plan, the following run through should work. First create a basic test:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">mkdir</span> <span class="nt">-p</span> ~/gostuff/src/github.com/myitcv/vimtest <span class="o">&amp;&amp;</span> <span class="nb">cd</span> <span class="nv">$_</span>
+</code></pre></div></div>
+
+<p>For this test we will use an external libray to demonstrate jumping to a definition. Let’s install that library now:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>go get github.com/lib/pq
+</code></pre></div></div>
+
+<p>Create a simple file on which we can try out Vim’s new Go capabilities:</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">// main.go</span>
+
+<span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="p">(</span>
+  <span class="s">"fmt"</span>
+<span class="p">)</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"This is a test"</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="syntax-highlighting">Syntax highlighting</h3>
+
+<p>The first thing you should notice editing the file is syntax highlighting. Indeed running the command <code class="language-plaintext highlighter-rouge">:set ft</code> you
+should see the result <code class="language-plaintext highlighter-rouge">filetype=go</code></p>
+
+<p><img src="/images/2014-03-03-vim-syntax-highlighting.png" alt="Vim syntax highlighting" title="Vim syntax highlighting" /></p>
+
+<h3 id="omnicompletion">Omnicompletion</h3>
+
+<p>Now let’s try omnicompletion. Start adding a new line as follows (the underscore represents the cursor position):</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">// main.go</span>
+
+<span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="p">(</span>
+  <span class="s">"fmt"</span>
+<span class="p">)</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"This is a test"</span><span class="p">)</span>
+  <span class="n">fmt</span><span class="o">.</span><span class="n">print_</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>In insert-mode type <code class="language-plaintext highlighter-rouge">&lt;Ctrl-x&gt;&lt;Ctrl-o&gt;</code> which is translated as: hold down <code class="language-plaintext highlighter-rouge">Ctrl</code> then hit <code class="language-plaintext highlighter-rouge">x</code> and then <code class="language-plaintext highlighter-rouge">o</code>. You should be presented
+with a ‘menu’ of options:</p>
+
+<p><img src="/images/2014-03-03-vim-omnicomplete.png" alt="Vim omnicomplete screenshot" title="Vim omnicomplete screenshot" /></p>
+
+<p>See <code class="language-plaintext highlighter-rouge">:help i_CTRL-X_CTRL-O</code> for more details.</p>
+
+<h3 id="go-to-definition">‘Go to definition’</h3>
+
+<p>Ensure your example code matches the following, with the cursor as shown after the <code class="language-plaintext highlighter-rouge">t</code> of <code class="language-plaintext highlighter-rouge">Println</code>:</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">// main.go</span>
+
+<span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="p">(</span>
+  <span class="s">"fmt"</span>
+<span class="p">)</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">fmt</span><span class="o">.</span><span class="n">Print_ln</span><span class="p">(</span><span class="s">"This is a test"</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>In command-mode, type <code class="language-plaintext highlighter-rouge">gd</code>. This should cause a new split to open:</p>
+
+<p><img src="/images/2014-03-03-vim-godef.png" alt="Vim godef screenshot" title="Vim godef screenshot" /></p>
+
+<h3 id="tagbar">Tagbar</h3>
+
+<p>Close the split so that you are left with just <code class="language-plaintext highlighter-rouge">main.go</code> open. In command-mode type <code class="language-plaintext highlighter-rouge">:TagbarOpen&lt;CR&gt;</code> (the <code class="language-plaintext highlighter-rouge">&lt;CR&gt;</code> indicates
+to hit ‘return’). You should see <code class="language-plaintext highlighter-rouge">tagbar</code> outline appear on the right hand side:</p>
+
+<p><img src="/images/2014-03-03-vim-tagbar.png" alt="Vim tagbar screenshot" title="Vim tagbar screenshot" /></p>
+
+<h3 id="syntax-checking">Syntax checking</h3>
+
+<p>Now let’s deliberately introduce an error into our source file:</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">// main.go</span>
+
+<span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="p">(</span>
+  <span class="s">"fmt"</span>
+<span class="p">)</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"This is a test"</span><span class="p">)</span>
+  <span class="n">a</span> <span class="o">=</span> <span class="n">b</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Save <code class="language-plaintext highlighter-rouge">main.go</code> and observe the <code class="language-plaintext highlighter-rouge">vim-airline</code> status bar updates to show a syntax error:</p>
+
+<p><img src="/images/2014-03-03-vim-syntax.png" alt="Vim syntax screenshot" title="Vim syntax screenshot" /></p>
+
+<p>Furthermore, in command-mode if you type <code class="language-plaintext highlighter-rouge">:Errors&lt;CR&gt;</code> a quick fix window will open listing the errors.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>And that’s the basics done!</p>
+
+<p>Support for Go in Vim is made pretty good with the addition of a few simple plugins and Go tools. There are a huge
+number of options that can be tweaked to customise the various plugins we have installed (again, checkout my
+<a href="https://github.com/myitcv/.vim/blob/master/vimrc"><code class="language-plaintext highlighter-rouge">.vimrc</code></a> for some ideas) and keyboard shortcuts setup to cut down on
+typing. But even this basic start point will have you up and running and go-ing nuts.</p>
+
+
+  </div><div id="disqus_thread"></div>
+  <script>
+    var disqus_config = function () {
+      this.page.url = 'https://blog.myitcv.io/2014/03/03/programming-with-go-in-vim.html';
+      this.page.identifier = 'https://blog.myitcv.io/2014/03/03/programming-with-go-in-vim.html';
+    };
+
+    (function() {
+      var d = document, s = d.createElement('script');
+
+      s.src = 'https://myitcv.disqus.com/embed.js';
+
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript><a class="u-url" href="/2014/03/03/programming-with-go-in-vim.html" hidden></a>
+</article>
+
+      </div>
+    </main>
+
+    
+<footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">blog.myitcv.io</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>
+            
+              Paul Jolly
+            
+            </li>
+          <li>
+            <a href="https://myitcv.io">https://myitcv.io</a>
+          </li>
+            
+            <li><a href="mailto:paul@myitcv.io">paul@myitcv.io</a></li>
+            
+        </ul>
+
+        <p class="rss-subscribe"><a href="/feed.xml"><img style="width: 20px; height: 20px" src="/assets/rss.svg"/>&nbsp;RSS</a></p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+            <a href="https://github.com/myitcv"><span class="icon icon--github"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">myitcv</span></a>
+
+          </li>
+          
+
+          
+          <li>
+            <a href="https://twitter.com/_myitcv"><span class="icon icon--twitter"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M15.969,3.058c-0.586,0.26-1.217,0.436-1.878,0.515c0.675-0.405,1.194-1.045,1.438-1.809c-0.632,0.375-1.332,0.647-2.076,0.793c-0.596-0.636-1.446-1.033-2.387-1.033c-1.806,0-3.27,1.464-3.27,3.27 c0,0.256,0.029,0.506,0.085,0.745C5.163,5.404,2.753,4.102,1.14,2.124C0.859,2.607,0.698,3.168,0.698,3.767 c0,1.134,0.577,2.135,1.455,2.722C1.616,6.472,1.112,6.325,0.671,6.08c0,0.014,0,0.027,0,0.041c0,1.584,1.127,2.906,2.623,3.206 C3.02,9.402,2.731,9.442,2.433,9.442c-0.211,0-0.416-0.021-0.615-0.059c0.416,1.299,1.624,2.245,3.055,2.271 c-1.119,0.877-2.529,1.4-4.061,1.4c-0.264,0-0.524-0.015-0.78-0.046c1.447,0.928,3.166,1.469,5.013,1.469 c6.015,0,9.304-4.983,9.304-9.304c0-0.142-0.003-0.283-0.009-0.423C14.976,4.29,15.531,3.714,15.969,3.058z"/></svg>
+</span><span class="username">_myitcv</span></a>
+
+          </li>
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>A largely Go-based blog
+</p>
+
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+    <script>
+  var anchorForHeader = function(heading) {
+    var anchor = document.createElement("a");
+    anchor.className = "header-link";
+    anchor.href      = "#" + heading.id;
+    anchor.innerHTML = "<svg class=\"octicon octicon-link\" height=\"16\" version=\"1.1\" viewBox=\"0 0 16 16\" width=\"16\"><path fill-rule=\"evenodd\" d=\"M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z\"></path></svg>";
+    anchor.title = "Permalink";
+    anchor.style = "float: left; margin-left: -20px; padding-right: 4px;";
+    return anchor;
+  };
+  var linkifyAnchors = function (level, containingElement) {
+    var headers = containingElement.getElementsByTagName("h" + level);
+    var work = [];
+    for (var h = 0; h < headers.length; h++) {
+      var header = headers[h];
+      if (typeof header.id !== "undefined" && header.id !== "") {
+        header.insertBefore(anchorForHeader(header), header.firstChild);
+      }
+    }
+  };
+  document.onreadystatechange = function () {
+    if (this.readyState === "complete") {
+      var contentBlock = document.getElementsByClassName("post-content")[0] || document.getElementsByClassName("news")[0];
+      if (!contentBlock) {
+        return;
+      }
+      for (var level = 1; level <= 6; level++) {
+        linkifyAnchors(level, contentBlock);
+      }
+    }
+  };
+</script>
+
+
+  </body>
+
+</html>

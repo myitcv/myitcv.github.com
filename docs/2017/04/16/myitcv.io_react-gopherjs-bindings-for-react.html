@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>myitcv.io/react - GopherJS bindings for React | blog.myitcv.io</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="myitcv.io/react - GopherJS bindings for React" />
+<meta name="author" content="paul" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="myitcv.io/react is a set of GopherJS bindings for Facebook’s React, a Javascript library for building interactive user interfaces." />
+<meta property="og:description" content="myitcv.io/react is a set of GopherJS bindings for Facebook’s React, a Javascript library for building interactive user interfaces." />
+<link rel="canonical" href="https://blog.myitcv.io/2017/04/16/myitcv.io_react-gopherjs-bindings-for-react.html" />
+<meta property="og:url" content="https://blog.myitcv.io/2017/04/16/myitcv.io_react-gopherjs-bindings-for-react.html" />
+<meta property="og:site_name" content="blog.myitcv.io" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2017-04-16T00:00:00+01:00" />
+<script type="application/ld+json">
+{"description":"myitcv.io/react is a set of GopherJS bindings for Facebook’s React, a Javascript library for building interactive user interfaces.","headline":"myitcv.io/react - GopherJS bindings for React","dateModified":"2017-04-16T00:00:00+01:00","datePublished":"2017-04-16T00:00:00+01:00","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://blog.myitcv.io/2017/04/16/myitcv.io_react-gopherjs-bindings-for-react.html"},"url":"https://blog.myitcv.io/2017/04/16/myitcv.io_react-gopherjs-bindings-for-react.html","author":{"@type":"Person","name":"paul"},"@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://blog.myitcv.io/feed.xml" title="blog.myitcv.io" /></head>
+
+
+  <body>
+
+    <header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">blog.myitcv.io</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"></div>
+      </nav></div>
+</header>
+
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">myitcv.io/react - GopherJS bindings for React</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2017-04-16T00:00:00+01:00" itemprop="datePublished">Apr 16, 2017
+      </time>• <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span class="p-author h-card" itemprop="name">paul</span></span></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p><a href="https://myitcv.io/react"><code class="language-plaintext highlighter-rouge">myitcv.io/react</code></a> is a set of <a href="https://github.com/gopherjs/gopherjs">GopherJS</a> bindings for
+Facebook’s <a href="https://facebook.github.io/react/">React</a>, a Javascript library for building interactive user interfaces.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>go get <span class="nt">-u</span> myitcv.io/react
+</code></pre></div></div>
+
+<p>This is not the first attempt at creating bindings for React:</p>
+
+<ul>
+  <li><a href="https://github.com/bep/gr"><code class="language-plaintext highlighter-rouge">github.com/bep/gr</code></a> and
+<a href="https://github.com/leeola/go-react"><code class="language-plaintext highlighter-rouge">github.com/leeola/go-react</code></a> are two currently active alternatives</li>
+  <li><a href="https://github.com/gopherjs/vecty"><code class="language-plaintext highlighter-rouge">github.com/gopherjs/vecty</code></a> is a React-like frontend tool-kit from the makers of
+GopherJS</li>
+</ul>
+
+<p><code class="language-plaintext highlighter-rouge">myitcv.io/react</code> takes a slightly different approach to all the above, making extensive use of code generation so that
+the writing of components in Go code is as lightweight, simple and idiomatic as possible.</p>
+
+<p>This blog post walks you through creating your first GopherJS React web application.</p>
+
+<h2 id="background">Background</h2>
+
+<p>GopherJS is a <a href="https://en.wikipedia.org/wiki/Source-to-source_compiler">transpiler</a>, that re-writes Go source code into
+Javascript code. GopherJS’s principal target is Javascript that will be loaded within the browser (as opposed to
+<a href="https://nodejs.org/en/">NodeJS</a> which is more server or CLI-based) and so is ideally suited to web applications
+that need an interactive user interface.</p>
+
+<p>React is a Javascript library for building user interfaces. Components are the fundamental building block of a React
+application. Components have their own state and can easily be composed to make more complex user interfaces.</p>
+
+<p><code class="language-plaintext highlighter-rouge">myitcv.io/react</code> is a Go package that allows you to build React components and web applications. Components are
+declared in Go code that is then transpiled using GopherJS into Javascript code that is loaded within the browser via an
+HTML page like any other web app.</p>
+
+<p><a href="https://blog.myitcv.io/gopherjs_examples_sites/helloworld/">Hello World</a> is an example GopherJS React application.</p>
+
+<h2 id="writing-your-own-gopherjs-react-web-app">Writing your own GopherJS React web app</h2>
+
+<p>The simplest way to start a new web app is via <code class="language-plaintext highlighter-rouge">reactGen</code>. <code class="language-plaintext highlighter-rouge">reactGen</code> can initialise a new web app but it is
+also acts as the code generator that generates helper methods and functions as we write our React components (more of
+that later).</p>
+
+<p>Let’s first create a directory for our new web app<sup><a href="#footnote1">†</a></sup>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">mkdir</span> <span class="nt">-p</span> <span class="nv">$GOPATH</span>/src/example.com/helloworld
+
+<span class="c"># change into the directory we just created</span>
+<span class="nb">cd</span> <span class="nv">$_</span>
+</code></pre></div></div>
+
+<p>Now let’s ensure we have the relevant packages available and that our <code class="language-plaintext highlighter-rouge">PATH</code> environment variable is set correctly:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+go get <span class="nt">-u</span> github.com/gopherjs/gopherjs
+go get <span class="nt">-u</span> myitcv.io/react myitcv.io/react/cmd/reactGen
+
+<span class="c"># amend PATH to include target for gopherjs and reactGen</span>
+<span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span><span class="s2">"</span><span class="si">$(</span><span class="nb">dirname</span> <span class="si">$(</span>go list <span class="nt">-f</span> <span class="s1">'{{.Target}}'</span> myitcv.io/react/cmd/reactGen<span class="si">))</span><span class="s2">:</span><span class="nv">$PATH</span><span class="s2">"</span>
+
+</code></pre></div></div>
+
+<p>At this point you should be able to run <code class="language-plaintext highlighter-rouge">reactGen -help</code> to check it outputs something like:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Usage:
+        reactGen [-init &lt;template&gt;]
+        reactGen [-gglog &lt;log_level&gt;] [-licenseFile &lt;filepath&gt;] [-core]
+
+  -core
+        indicates we are generating for a core component (only do props expansion)
+  -gglog string
+        log level; one of info, warning, error, fatal (default "fatal")
+  -init value
+        create a GopherJS React application using the specified template (see below)
+  -licenseFile string
+        file that contains a license header to be inserted at the top of each generated file
+
+The flag -init is very basic and only understands two value for now: minimal or
+bootstrap. Both give you a minimal Gopher React application, the latter applies
+a basic Bootstrap (http://getbootstrap.com/) template.
+
+...
+</code></pre></div></div>
+
+<p>Let’s now create a template GopherJS web app:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># our current directory is $GOPATH/src/example.com/helloworld</span>
+reactGen <span class="nt">-init</span> bootstrap
+</code></pre></div></div>
+
+<p>We can now tell GopherJS to serve our web application to see the fruits of our labour:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>gopherjs serve
+</code></pre></div></div>
+
+<p>If you navigate to <a href="http://localhost:8080/example.com/helloworld">http://localhost:8080/example.com/helloworld</a> the
+resulting web app should look something like this:</p>
+
+<p><img src="https://blog.myitcv.io/images/2017-04-16-react-helloworld.png" alt="Hello World" /></p>
+
+<p>The following list roughly summarises the sequence of events:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">reactGen -init bootstrap</code> creates our basic web app: <code class="language-plaintext highlighter-rouge">app.go</code>, <code class="language-plaintext highlighter-rouge">gen_App_reactGen.go</code>, <code class="language-plaintext highlighter-rouge">index.html</code> and <code class="language-plaintext highlighter-rouge">main.go</code>. This
+is essentially a Go <code class="language-plaintext highlighter-rouge">main</code> package (with the import path <code class="language-plaintext highlighter-rouge">example.com/helloworld</code> given the directory in which we
+created it)</li>
+  <li><code class="language-plaintext highlighter-rouge">main.go</code> declares the <code class="language-plaintext highlighter-rouge">main()</code> function; <code class="language-plaintext highlighter-rouge">app.go</code> declares a basic React component,
+<a href="https://github.com/myitcv/x/blob/417a20305c2c589585bb3986781fa9f321828c11/react/examples/sites/helloworld/app.go#L9-L26"><code class="language-plaintext highlighter-rouge">App</code></a>,
+which renders the simple <code class="language-plaintext highlighter-rouge">&lt;div&gt;</code>, <code class="language-plaintext highlighter-rouge">&lt;h1&gt;</code> and <code class="language-plaintext highlighter-rouge">&lt;p&gt;</code> elements that make up our web app</li>
+  <li><code class="language-plaintext highlighter-rouge">gopherjs serve</code> effectively does two things: transpiles the <code class="language-plaintext highlighter-rouge">.go</code> files into <code class="language-plaintext highlighter-rouge">helloworld.js</code> and then serves
+<code class="language-plaintext highlighter-rouge">index.html</code> and <code class="language-plaintext highlighter-rouge">helloworld.js</code> from <code class="language-plaintext highlighter-rouge">http://localhost:8080/example.com/helloworld</code><sup><a href="#footnote2">&amp;ddagger;</a></sup></li>
+  <li>The browser loads <code class="language-plaintext highlighter-rouge">index.html</code> and in the process loads <code class="language-plaintext highlighter-rouge">helloworld.js</code> via the <a href="https://github.com/myitcv/x/blob/417a20305c2c589585bb3986781fa9f321828c11/react/examples/sites/helloworld/index.html#L19"><code class="language-plaintext highlighter-rouge">&lt;script&gt;</code>
+directive</a>:</li>
+</ul>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"helloworld.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+</code></pre></div></div>
+
+<ul>
+  <li>Because our <code class="language-plaintext highlighter-rouge">helloworld</code> package is a <code class="language-plaintext highlighter-rouge">main</code> package, a side effect of loading <code class="language-plaintext highlighter-rouge">helloworld.js</code> is to run the <a href="https://github.com/myitcv/x/blob/417a20305c2c589585bb3986781fa9f321828c11/react/examples/sites/helloworld/main.go#L15-L19"><code class="language-plaintext highlighter-rouge">main()</code>
+function</a>
+the package declares. This is therefore the entry point for our web application:</li>
+</ul>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">domTarget</span> <span class="o">:=</span> <span class="n">document</span><span class="o">.</span><span class="n">GetElementByID</span><span class="p">(</span><span class="s">"app"</span><span class="p">)</span>
+	<span class="n">react</span><span class="o">.</span><span class="n">Render</span><span class="p">(</span><span class="n">App</span><span class="p">(),</span> <span class="n">domTarget</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<ul>
+  <li>React renders the <code class="language-plaintext highlighter-rouge">App</code> component within the <code class="language-plaintext highlighter-rouge">&lt;div&gt;</code> with ID <code class="language-plaintext highlighter-rouge">"app"</code> which we see declared in <code class="language-plaintext highlighter-rouge">index.html</code></li>
+</ul>
+
+<p>Once <code class="language-plaintext highlighter-rouge">react.Render</code> is called, we effectively hand-off into the React world and the <a href="https://facebook.github.io/react/docs/react-component.html">React Component
+Lifecycle</a> takes over.</p>
+
+<h2 id="creating-a-new-component">Creating a new component</h2>
+
+<p>The <code class="language-plaintext highlighter-rouge">App</code> component created as part of the skeleton web app is very basic. Let’s look at creating our own component,
+<code class="language-plaintext highlighter-rouge">FooBar</code>, within the <code class="language-plaintext highlighter-rouge">example.com/helloworld</code> package and amending the <code class="language-plaintext highlighter-rouge">App</code> component to use <code class="language-plaintext highlighter-rouge">FooBar</code>. <code class="language-plaintext highlighter-rouge">FooBar</code> will
+define some simple props and maintain some basic state to demonstrate the two key aspects of React components. The code
+that follows defines the component and the code comments describe important aspects of the code:</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">// foo_bar.go</span>
+
+<span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="p">(</span>
+	<span class="s">"fmt"</span>
+
+	<span class="s">"myitcv.io/react"</span>
+<span class="p">)</span>
+
+<span class="c">//go:generate reactGen</span>
+
+<span class="c">// FooBarDef is the definition of the FooBar component. All components are</span>
+<span class="c">// declared with a *Def suffix and an embedded myitcv.io/react.ComponentDef</span>
+<span class="c">// field</span>
+<span class="c">//</span>
+<span class="k">type</span> <span class="n">FooBarDef</span> <span class="k">struct</span> <span class="p">{</span>
+	<span class="n">react</span><span class="o">.</span><span class="n">ComponentDef</span>
+<span class="p">}</span>
+
+<span class="c">// FooBarProps is the props type for the FooBar component. All props types are</span>
+<span class="c">// declared as a struct type with a *Props suffix</span>
+<span class="c">//</span>
+<span class="k">type</span> <span class="n">FooBarProps</span> <span class="k">struct</span> <span class="p">{</span>
+	<span class="n">Name</span> <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="c">// FooBarState is the state type for the FooBar component. All state types are</span>
+<span class="c">// declared as a struct type with a *State suffix</span>
+<span class="c">//</span>
+<span class="k">type</span> <span class="n">FooBarState</span> <span class="k">struct</span> <span class="p">{</span>
+	<span class="n">Age</span> <span class="kt">int</span>
+<span class="p">}</span>
+
+<span class="c">// FooBar is the constructor for a FooBar component. Given that this component</span>
+<span class="c">// can take props (can, not must), we add a parameter of type FooBarProps</span>
+<span class="c">//</span>
+<span class="k">func</span> <span class="n">FooBar</span><span class="p">(</span><span class="n">p</span> <span class="n">FooBarProps</span><span class="p">)</span> <span class="o">*</span><span class="n">FooBarElem</span> <span class="p">{</span>
+	<span class="c">// every component constructor must call this function</span>
+	<span class="k">return</span> <span class="n">buildFooBarElem</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c">// Render is a required method on all React components. Notice that the method</span>
+<span class="c">// is declared on the type FooBarDef.</span>
+<span class="c">//</span>
+<span class="k">func</span> <span class="p">(</span><span class="n">f</span> <span class="n">FooBarDef</span><span class="p">)</span> <span class="n">Render</span><span class="p">()</span> <span class="n">react</span><span class="o">.</span><span class="n">Element</span> <span class="p">{</span>
+
+	<span class="n">name</span> <span class="o">:=</span> <span class="n">f</span><span class="o">.</span><span class="n">Props</span><span class="p">()</span><span class="o">.</span><span class="n">Name</span>
+	<span class="n">age</span> <span class="o">:=</span> <span class="n">f</span><span class="o">.</span><span class="n">State</span><span class="p">()</span><span class="o">.</span><span class="n">Age</span>
+
+	<span class="n">details</span> <span class="o">:=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"My name is %v. My age is %v"</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">age</span><span class="p">)</span>
+
+	<span class="c">// all React components must render under a single root. This is typically</span>
+	<span class="c">// achieved by rendering everything within a &lt;div&gt; elememt</span>
+	<span class="c">//</span>
+	<span class="k">return</span> <span class="n">react</span><span class="o">.</span><span class="n">Div</span><span class="p">(</span><span class="no">nil</span><span class="p">,</span>
+		<span class="n">react</span><span class="o">.</span><span class="n">P</span><span class="p">(</span><span class="no">nil</span><span class="p">,</span>
+			<span class="n">react</span><span class="o">.</span><span class="n">S</span><span class="p">(</span><span class="n">details</span><span class="p">),</span>
+		<span class="p">),</span>
+		<span class="n">react</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span>
+			<span class="o">&amp;</span><span class="n">react</span><span class="o">.</span><span class="n">ButtonProps</span><span class="p">{</span>
+				<span class="n">OnClick</span><span class="o">:</span> <span class="n">ageClick</span><span class="p">{</span><span class="n">f</span><span class="p">},</span>
+			<span class="p">},</span>
+			<span class="n">react</span><span class="o">.</span><span class="n">S</span><span class="p">(</span><span class="s">"Bump age"</span><span class="p">),</span>
+		<span class="p">),</span>
+	<span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c">// ageClick implements the react.OnClick interface to handle when the "Bump</span>
+<span class="c">// age" button is clicked</span>
+<span class="c">//</span>
+<span class="k">type</span> <span class="n">ageClick</span> <span class="k">struct</span><span class="p">{</span> <span class="n">FooBarDef</span> <span class="p">}</span>
+
+<span class="c">// OnClick is the ageClick implementation of the react.OnClick interface</span>
+<span class="c">//</span>
+<span class="k">func</span> <span class="p">(</span><span class="n">a</span> <span class="n">ageClick</span><span class="p">)</span> <span class="n">OnClick</span><span class="p">(</span><span class="n">e</span> <span class="o">*</span><span class="n">react</span><span class="o">.</span><span class="n">SyntheticMouseEvent</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">s</span> <span class="o">:=</span> <span class="n">a</span><span class="o">.</span><span class="n">State</span><span class="p">()</span>
+	<span class="n">s</span><span class="o">.</span><span class="n">Age</span><span class="o">++</span>
+	<span class="n">a</span><span class="o">.</span><span class="n">SetState</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>At this point we need to run <a href="https://blog.golang.org/generate"><code class="language-plaintext highlighter-rouge">go generate</code></a> within the directory
+<code class="language-plaintext highlighter-rouge">$GOPATH/src/example.com/helloworld</code> to generate the helper methods and functions that complete our definition of the
+<code class="language-plaintext highlighter-rouge">FooBar</code> component. Once you have run <code class="language-plaintext highlighter-rouge">go generate</code> you will see that the file <code class="language-plaintext highlighter-rouge">gen_FooBar_reactGen.go</code> has been
+created.</p>
+
+<p>So what did <code class="language-plaintext highlighter-rouge">reactGen</code> do?</p>
+
+<ul>
+  <li>it detects components you’ve declared, based on the <code class="language-plaintext highlighter-rouge">*Def</code> name suffix of a struct type and the embedded
+<code class="language-plaintext highlighter-rouge">myitcv.io/react.ComponentDef</code> field</li>
+  <li>it detects a component’s corresponding props and state types based on struct types named <code class="language-plaintext highlighter-rouge">*Props</code> and <code class="language-plaintext highlighter-rouge">*State</code></li>
+  <li>it generates some helper methods on your component definition type and the props and state types, e.g. <code class="language-plaintext highlighter-rouge">func (f
+FooBarDef) State() FooBarState</code></li>
+  <li>writes the generated code to a file named <code class="language-plaintext highlighter-rouge">gen_COMPONENT_reactGen.go</code>, e.g. <code class="language-plaintext highlighter-rouge">gen_FooBar_reactGen.go</code></li>
+</ul>
+
+<p>So now our new component is ready to use. Let’s update the <code class="language-plaintext highlighter-rouge">App</code> component’s <code class="language-plaintext highlighter-rouge">Render()</code> method to use it:</p>
+
+<div class="language-go highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">// app.go</span>
+
+<span class="c">// ...</span>
+
+<span class="k">func</span> <span class="p">(</span><span class="n">a</span> <span class="n">AppDef</span><span class="p">)</span> <span class="n">Render</span><span class="p">()</span> <span class="n">react</span><span class="o">.</span><span class="n">Element</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="n">react</span><span class="o">.</span><span class="n">Div</span><span class="p">(</span><span class="no">nil</span><span class="p">,</span>
+		<span class="n">react</span><span class="o">.</span><span class="n">H1</span><span class="p">(</span><span class="no">nil</span><span class="p">,</span> <span class="n">react</span><span class="o">.</span><span class="n">S</span><span class="p">(</span><span class="s">"Hello World"</span><span class="p">)),</span>
+		<span class="n">react</span><span class="o">.</span><span class="n">P</span><span class="p">(</span><span class="no">nil</span><span class="p">,</span> <span class="n">react</span><span class="o">.</span><span class="n">S</span><span class="p">(</span><span class="s">"This is my first GopherJS React App."</span><span class="p">)),</span>
+
+		<span class="n">FooBar</span><span class="p">(</span>
+			<span class="n">FooBarProps</span><span class="p">{</span>
+				<span class="n">Name</span><span class="o">:</span> <span class="s">"Peter"</span><span class="p">,</span>
+			<span class="p">},</span>
+		<span class="p">),</span>
+	<span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Now refresh the page in your browser and the we should see something like:</p>
+
+<p><img src="https://blog.myitcv.io/images/2017-04-16-react-helloworld2.png" alt="Hello World 2" /></p>
+
+<p>Clicking the button bumps Peter’s age as expected.</p>
+
+<p>At this point it’s left to the reader to examine the definition of <code class="language-plaintext highlighter-rouge">FooBar</code> above and understand how the props and state
+are used within the <code class="language-plaintext highlighter-rouge">Render()</code> method.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>In this blog post we have:</p>
+
+<ul>
+  <li>presented a basic introduction to creating GopherJS React components and web applications using <code class="language-plaintext highlighter-rouge">myitcv.io/react</code></li>
+  <li>seen how <code class="language-plaintext highlighter-rouge">reactGen</code> is used to initialise skeleton web apps but also as a code generator when creating components</li>
+  <li>gotten a flavour for component props and state and how components can be composed to create larger web applications.</li>
+</ul>
+
+<p>For more details see the <a href="https://godoc.org/myitcv.io/react">godocs</a> and the
+<a href="https://github.com/myitcv/x/blob/master/react/_doc/README.md">README</a> and please feel free to <a href="https://github.com/myitcv/x/issues/new?title=react:">raise issues with any
+problems/questions</a>.</p>
+
+<p><br /></p>
+
+<p><a name="footnote1"></a>† - <em>for the purposes of this walkthrough we assume a simple, single element <code class="language-plaintext highlighter-rouge">$GOPATH</code>.
+If you have a multi-element <code class="language-plaintext highlighter-rouge">$GOPATH</code> please adjust as required</em><br />
+<a name="footnote2"></a>&amp;ddagger; - <em>see also <code class="language-plaintext highlighter-rouge">gopherjs -help</code> for more details. You can of of course use <code class="language-plaintext highlighter-rouge">gopherjs
+-build</code> to transpile to Javascript and then serve yourself.</em></p>
+
+<hr />
+
+<p><strong>Update 2017-04-17:</strong> improve wording in a couple of places.<br />
+<strong>Update 2017-05-23:</strong> fix up example post interface-based event changes.<br />
+<strong>Update 2017-07-26:</strong> updates following breaking changes introduced in https://github.com/myitcv/react/pull/73.<br />
+<strong>Update 2017-08-15:</strong> move away from named imports for simplicity.<br /></p>
+
+  </div><div id="disqus_thread"></div>
+  <script>
+    var disqus_config = function () {
+      this.page.url = 'https://blog.myitcv.io/2017/04/16/myitcv.io_react-gopherjs-bindings-for-react.html';
+      this.page.identifier = 'https://blog.myitcv.io/2017/04/16/myitcv.io_react-gopherjs-bindings-for-react.html';
+    };
+
+    (function() {
+      var d = document, s = d.createElement('script');
+
+      s.src = 'https://myitcv.disqus.com/embed.js';
+
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript><a class="u-url" href="/2017/04/16/myitcv.io_react-gopherjs-bindings-for-react.html" hidden></a>
+</article>
+
+      </div>
+    </main>
+
+    
+<footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">blog.myitcv.io</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>
+            
+              Paul Jolly
+            
+            </li>
+          <li>
+            <a href="https://myitcv.io">https://myitcv.io</a>
+          </li>
+            
+            <li><a href="mailto:paul@myitcv.io">paul@myitcv.io</a></li>
+            
+        </ul>
+
+        <p class="rss-subscribe"><a href="/feed.xml"><img style="width: 20px; height: 20px" src="/assets/rss.svg"/>&nbsp;RSS</a></p>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+            <a href="https://github.com/myitcv"><span class="icon icon--github"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">myitcv</span></a>
+
+          </li>
+          
+
+          
+          <li>
+            <a href="https://twitter.com/_myitcv"><span class="icon icon--twitter"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M15.969,3.058c-0.586,0.26-1.217,0.436-1.878,0.515c0.675-0.405,1.194-1.045,1.438-1.809c-0.632,0.375-1.332,0.647-2.076,0.793c-0.596-0.636-1.446-1.033-2.387-1.033c-1.806,0-3.27,1.464-3.27,3.27 c0,0.256,0.029,0.506,0.085,0.745C5.163,5.404,2.753,4.102,1.14,2.124C0.859,2.607,0.698,3.168,0.698,3.767 c0,1.134,0.577,2.135,1.455,2.722C1.616,6.472,1.112,6.325,0.671,6.08c0,0.014,0,0.027,0,0.041c0,1.584,1.127,2.906,2.623,3.206 C3.02,9.402,2.731,9.442,2.433,9.442c-0.211,0-0.416-0.021-0.615-0.059c0.416,1.299,1.624,2.245,3.055,2.271 c-1.119,0.877-2.529,1.4-4.061,1.4c-0.264,0-0.524-0.015-0.78-0.046c1.447,0.928,3.166,1.469,5.013,1.469 c6.015,0,9.304-4.983,9.304-9.304c0-0.142-0.003-0.283-0.009-0.423C14.976,4.29,15.531,3.714,15.969,3.058z"/></svg>
+</span><span class="username">_myitcv</span></a>
+
+          </li>
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>A largely Go-based blog
+</p>
+
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+    <script>
+  var anchorForHeader = function(heading) {
+    var anchor = document.createElement("a");
+    anchor.className = "header-link";
+    anchor.href      = "#" + heading.id;
+    anchor.innerHTML = "<svg class=\"octicon octicon-link\" height=\"16\" version=\"1.1\" viewBox=\"0 0 16 16\" width=\"16\"><path fill-rule=\"evenodd\" d=\"M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z\"></path></svg>";
+    anchor.title = "Permalink";
+    anchor.style = "float: left; margin-left: -20px; padding-right: 4px;";
+    return anchor;
+  };
+  var linkifyAnchors = function (level, containingElement) {
+    var headers = containingElement.getElementsByTagName("h" + level);
+    var work = [];
+    for (var h = 0; h < headers.length; h++) {
+      var header = headers[h];
+      if (typeof header.id !== "undefined" && header.id !== "") {
+        header.insertBefore(anchorForHeader(header), header.firstChild);
+      }
+    }
+  };
+  document.onreadystatechange = function () {
+    if (this.readyState === "complete") {
+      var contentBlock = document.getElementsByClassName("post-content")[0] || document.getElementsByClassName("news")[0];
+      if (!contentBlock) {
+        return;
+      }
+      for (var level = 1; level <= 6; level++) {
+        linkifyAnchors(level, contentBlock);
+      }
+    }
+  };
+</script>
+
+
+  </body>
+
+</html>
