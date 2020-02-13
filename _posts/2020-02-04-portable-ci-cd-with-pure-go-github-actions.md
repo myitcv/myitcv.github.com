@@ -549,4 +549,5 @@ With thanks to [Daniel Martí](https://twitter.com/mvdan_) for reviewing this po
 {% endraw %}
 
 <br/>
-*Edit 2020-02-13: move to using `github.com/myitcvblog` as the home for these examples*
+*Edit 2020-02-13: move to using `github.com/myitcvblog` as the home for these examples*<br/>
+*Edit 2020-02-13: I've now [raised an issue](https://github.com/actions/runner/issues/333) to request native support for pure Go actions*
