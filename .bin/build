@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -eu
+
+JEKYLL_ENV=production bundle exec jekyll build -d /home/myitcv/dev/myitcv/blog/docs
+
+root=$(git rev-parse --show-toplevel)
+ruby --version > $root/versions.txt
+bundle --version >> $root/versions.txt
