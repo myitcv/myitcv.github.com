@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+set -e
+set -u
+
+shopt -s globstar
+shopt -s extglob
+
+usage() {
+	echo "Incorrect usage"
+	exit 1
+}
+
+serial=false
+
+while test $# != 0
+do
+	case "$1" in
+		-serial)
+			serial=true
+			;;
+		-prod)
+			read -p "Enter \"prod\" to continue: " -r
+			if [ "$REPLY" != "prod" ]
+			then
+				echo "Ok, not doing anything"
+				exit 1
+			fi
+			export GITHUB_ORG=myitcvblog
+			export GITHUB_ORG_ARCHIVE=myitcvblog-archive
+			;;
+		--) shift; break;;
+		[^-]*) break;;
+		*)  usage ;;
+	esac
+	shift
+done
+
+dir=$(git rev-parse --show-toplevel)
+
+if [ "$#" == "0" ]
+then
+	echo "need to provide at least one file to regen"
+	exit 1
+fi
+
+mdreplace='gobin -m -run myitcv.io/cmd/mdreplace -w -long -online'
+
+if [ "$serial" == "true" ]
+then
+	for i in "$*"
+	do
+		echo Regen $i
+		$mdreplace $i
+	done
+else
+	$mdreplace "$*"
+fi
+

@@ -8,6 +8,7 @@ url: "https://blog.myitcv.io"
 twitter_username: _myitcv
 github_username:  myitcv
 github: [metadata]
+exclude:
 
 theme: minima
 
@@ -20,4 +21,9 @@ plugins:
 exclude:
   - Gemfile
   - Gemfile.lock
+  - go.sum
+  - go.mod
+  - versions.txt
+  - README.md
+  - Rakefile
 

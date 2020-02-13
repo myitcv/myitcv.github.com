@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="https://blog.myitcv.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://blog.myitcv.io/" rel="alternate" type="text/html" /><updated>2020-02-13T13:58:41+00:00</updated><id>https://blog.myitcv.io/feed.xml</id><title type="html">blog.myitcv.io</title><subtitle>A largely Go-based blog
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="https://blog.myitcv.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://blog.myitcv.io/" rel="alternate" type="text/html" /><updated>2020-02-13T16:18:46+00:00</updated><id>https://blog.myitcv.io/feed.xml</id><title type="html">blog.myitcv.io</title><subtitle>A largely Go-based blog
 </subtitle><author><name>Paul Jolly</name></author><entry><title type="html">Portable CI/CD with pure Go GitHub Actions</title><link href="https://blog.myitcv.io/2020/02/04/portable-ci-cd-with-pure-go-github-actions.html" rel="alternate" type="text/html" title="Portable CI/CD with pure Go GitHub Actions" /><published>2020-02-04T00:00:00+00:00</published><updated>2020-02-04T00:00:00+00:00</updated><id>https://blog.myitcv.io/2020/02/04/portable-ci-cd-with-pure-go-github-actions</id><content type="html" xml:base="https://blog.myitcv.io/2020/02/04/portable-ci-cd-with-pure-go-github-actions.html">&lt;p&gt;I recently converted the &lt;a href=&quot;https://github.com/govim/govim&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;govim&lt;/code&gt;&lt;/a&gt; project to use &lt;a href=&quot;https://github.com/features/actions&quot;&gt;GitHub
 Actions&lt;/a&gt;. The move away from &lt;a href=&quot;https://travis-ci.org/&quot;&gt;TravisCI&lt;/a&gt; was largely
 motivated by more generous concurrency limits (&lt;a href=&quot;https://help.github.com/en/actions/automating-your-workflow-with-github-actions/about-github-actions#usage-limits&quot;&gt;GitHub’s
@@ -8,9 +8,240 @@ making it easy to extend workflows with composable third-party actions. This pos
 cross-platform, pure Go GitHub actions that you can  use in your workflows and share with others. But first we start by
 motivating the real problem we are trying to solve.&lt;/p&gt;
 
+&lt;!-- __JSON: gobin -m -run myitcv.io/cmd/egrunner -uid -gid ../_scripts/2020-02-04-portable-ci-cd-with-pure-go-github-actions/Dockerfile ../_scripts/2020-02-04-portable-ci-cd-with-pure-go-github-actions/script.sh # LONG ONLINE
+
+### Wait, there's a problem with GitHub Actions?
+
+&lt;blockquote class=&quot;twitter-tweet tw-align-center&quot;&gt;&lt;p lang=&quot;en&quot; dir=&quot;ltr&quot;&gt;Did you know that malicious code can be inserted into any GitHub action, even those which are tagged ?&lt;br&gt;I wrote a blog post about it:&lt;a href=&quot;https://t.co/PNq2MwaMUN&quot;&gt;https://t.co/PNq2MwaMUN&lt;/a&gt; cc &lt;a href=&quot;https://twitter.com/github?ref_src=twsrc%5Etfw&quot;&gt;@github&lt;/a&gt; &lt;a href=&quot;https://t.co/gUevMJOS6n&quot;&gt;pic.twitter.com/gUevMJOS6n&lt;/a&gt;&lt;/p&gt;&amp;mdash; Julien Renaux (@julienrenaux) &lt;a href=&quot;https://twitter.com/julienrenaux/status/1208046853780062210?ref_src=twsrc%5Etfw&quot;&gt;December 20, 2019&lt;/a&gt;&lt;/blockquote&gt; &lt;script async src=&quot;https://platform.twitter.com/widgets.js&quot; charset=&quot;utf-8&quot;&gt;&lt;/script&gt;
+
+[Julien Renaux's](https://twitter.com/julienrenaux) blog post linked from that tweet does a good job of laying out one
+of the core problems with GitHub Actions. The story goes roughly like this:
+
+* someone writes and open-sources an action that requires secret credentials, e.g. DockerHub access token
+* lots of people start using the action via directives like `uses: good/action@v1` because it's well written and useful
+* original author welcomes a new maintainer on board
+* somehow existing action version tags get moved, pointing to malicious code that steals secrets (any maintainer can
+  update a branch or a tag)
+
+Hence the specific advice is to use a commit hash to partially mitigate this risk:
+
+&lt;blockquote class=&quot;twitter-tweet tw-align-center&quot;&gt;&lt;p lang=&quot;en&quot; dir=&quot;ltr&quot;&gt;That’s why you need to specify the exact version (action@sha1) you want to use, so further changes won’t impact you.&lt;/p&gt;&amp;mdash; Alain Hélaïli (@AlainHelaili) &lt;a href=&quot;https://twitter.com/AlainHelaili/status/1205238489056501761?ref_src=twsrc%5Etfw&quot;&gt;December 12, 2019&lt;/a&gt;&lt;/blockquote&gt; &lt;script async src=&quot;https://platform.twitter.com/widgets.js&quot; charset=&quot;utf-8&quot;&gt;&lt;/script&gt;
+
+_It is somewhat unfortunate at best that this isn't the default advice in the official documentation; worth noting it
+doesn't defend against the commit disappearing._
+
+The problems don't stop there, because there is also the risk that transitive dependencies can do malicious things too:
+
+&lt;blockquote class=&quot;twitter-tweet tw-align-center&quot;&gt;&lt;p lang=&quot;en&quot; dir=&quot;ltr&quot;&gt;There is also a risk that the transitive dependencies can do malicious things.&lt;a href=&quot;https://t.co/juffjxwxIr&quot;&gt;https://t.co/juffjxwxIr&lt;/a&gt;&lt;/p&gt;&amp;mdash; DrSensor👹 (@dr\_sensor) &lt;a href=&quot;https://twitter.com/dr_sensor/status/1208098900747284480?ref_src=twsrc%5Etfw&quot;&gt;December 20, 2019&lt;/a&gt;&lt;/blockquote&gt; &lt;script async src=&quot;https://platform.twitter.com/widgets.js&quot; charset=&quot;utf-8&quot;&gt;&lt;/script&gt;
+
+On top of this, it's not made particularly clear to users that every action they use in their workflow is given implicit
+access to an access token that has fairly [wide-ranging read-write access to the host
+repository](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/authenticating-with-the-github_token#permissions-for-the-github_token).
+
+So we clearly have a software dependency problem here.
+
+### Why Go?
+
+[Russ Cox](https://twitter.com/_rsc) has [repeatedly](https://research.swtch.com/deps)
+[written](https://twitter.com/_rsc/status/1088109141409837063) about &quot;Our Software Dependency Problem.&quot; The basic
+premise of those articles is that &quot;software dependencies carry with them serious risks that are too often overlooked.&quot;
+Whilst Russ' articles raise awareness of the risks and encourage more investigation of solutions (and I strongly
+encourage you to read the article in full), the bottom line is that Go has a comprehensive solution to the major
+problems outlined, via the [Go Module Mirror](https://proxy.golang.org/), [Index](https://index.golang.org/), and
+[Checksum Database](https://sum.golang.org/), that ultimately results in the `go` command referencing an auditable
+checksum database to authenticate modules. Coupled with the [minimum version
+selection](https://research.swtch.com/vgo-mvs) property of Go modules, we have ourselves a verifiable way to run exactly
+the (third party) action code we  previously audited (you all audit your dependencies, right?)
+
+### The slight wrinkle
+
+At the time of writing (2020/02/04), GitHub does not natively support writing actions in Go:
+
+&lt;blockquote class=&quot;twitter-tweet tw-align-center&quot;&gt;&lt;p lang=&quot;en&quot; dir=&quot;ltr&quot;&gt;Hi &lt;a href=&quot;https://twitter.com/github?ref_src=twsrc%5Etfw&quot;&gt;@github&lt;/a&gt; - please can you provide a native way to write/use actions written in Go, that would allow me to do something like:&lt;br&gt;&lt;br&gt; uses: $package@$version&lt;br&gt;&lt;br&gt;which would then use &lt;a href=&quot;https://t.co/fGOHqwoWSA&quot;&gt;https://t.co/fGOHqwoWSA&lt;/a&gt; for resolution, and &lt;a href=&quot;https://t.co/hqG8e8gGf6&quot;&gt;https://t.co/hqG8e8gGf6&lt;/a&gt; for verification. Thanks &lt;a href=&quot;https://twitter.com/hashtag/golang?src=hash&amp;amp;ref_src=twsrc%5Etfw&quot;&gt;#golang&lt;/a&gt;&lt;/p&gt;&amp;mdash; Paul Jolly (@\_myitcv) &lt;a href=&quot;https://twitter.com/_myitcv/status/1224288510053691393?ref_src=twsrc%5Etfw&quot;&gt;February 3, 2020&lt;/a&gt;&lt;/blockquote&gt; &lt;script async src=&quot;https://platform.twitter.com/widgets.js&quot; charset=&quot;utf-8&quot;&gt;&lt;/script&gt;
+
+Instead, you have [the
+choice](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/about-actions) of writing
+either:
+
+* Docker container-based actions (Linux only; Docker also works on Windows but the official GitHub Actions docs don't
+  yet list that as &quot;supported&quot;)
+* JavaScript-based actions (Linux, macOS, Windows)
+
+With the goal of being fully cross-platform in mind, Docker actions are therefore ruled out.
+
+I fell out of love with JavaScript a long time ago, a process that was accelerated by my working on
+[GopherJS](https://github.com/gopherjs/gopherjs) (a compiler from Go to JavaScript). Having to return to its &quot;unique&quot;
+approach didn't exactly fill me with glee, but given the current state of affairs there was, seemingly, no other option.
+Indeed, the first couple of iterations of writing pure Go GitHub actions  used GopherJS and the [Go's WebAssembly
+port](https://github.com/golang/go/wiki/WebAssembly). However, both fell a long way short because neither support
+fork/exec syscalls.
+
+### The solution
+
+With half a mind to GitHub eventually shipping native support for Go actions, I instead landed on a solution that uses a
+light JavaScript wrapper around the `go` command. Let's explore that approach by writing an action.
+
+But first, let's start by defining what our toy action will do. Incorporated into a workflow, this toy action will take
+a single input, the user's name, and will output a line like:
+
+```
+{{PrintBlockOut &quot;main out&quot; -}}
+```
+
+(obviously adapted to the name of the user and the platform on which our workflow is running).
+
+### Creating a module for our action
+
+The documentation for [`cmd/go`](https://golang.org/cmd/go/#hdr-Modules__module_versions__and_more) says of modules:
+
+&gt; A module is a collection of related Go packages. Modules are the unit of source code interchange and versioning.
+
+The is precisely the definition we are after when it comes to GitHub Actions: we want users of the action to express
+their dependency on semver versions of our action.
+
+We start therefore by creating a module:
+
+```
+{{PrintBlock &quot;define action repo root module&quot; -}}
+```
+
+Before we define the action itself, we briefly discuss a key building block: the GitHub Actions API.
+
+### GitHub Actions API
+
+GitHub Actions has an [API for action
+authors](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/development-tools-for-github-actions)
+which is published as an [official GitHub Actions SDK for Node.js](https://github.com/actions/toolkit). [Seth
+Vargo](https://twitter.com/sethvargo) has put together an [unofficial GitHub Actions SDK for
+Go](https://github.com/sethvargo/go-githubactions) that &quot;provides a Go-like interface for working with GitHub Actions.&quot;
+Thank you, Seth!
+
+Briefly skimming the [SDK documentation](https://pkg.go.dev/github.com/sethvargo/go-githubactions?tab=doc), it's clear
+to see how we will be [getting our input](https://pkg.go.dev/github.com/sethvargo/go-githubactions?tab=doc#GetInput),
+the name of the user:
+
+```
+// GetInput gets the input by the given name.
+func GetInput(i string) string
+```
+
+We now have the relevant pieces in place to define our action.
+
+### The Go code
+
+The Go code is now, therefore, the simplest part of this action's definition.
+
+```go
+{{PrintBlock &quot;action main&quot; -}}
+```
+
+The platform-specific bit we will put behind build constrained files to demonstrate that aspects works too:
+
+```go
+{{PrintBlock &quot;platform linux&quot; -}}
+```
+
+Hopefully the contents for `platform_darwin.go` and `platform_windows.go` are obvious.
+
+### Creating an action metadata file
+
+The next step is to create an action metadata file:
+
+```yaml
+{{PrintBlock &quot;action yml&quot; -}}
+```
+
+Notice how we are running using NodeJS with an entry point of `index.js`; we talk about that next.
+
+### The `index.js` entry point
+
+Whilst we await native support for pure Go GitHub Actions, the simplest solution to running Go actions is a thin NodeJS
+wrapper around `cmd/go`. For now this should be copy-pasted for each action you create:
+
+```javascript
+{{PrintBlock &quot;action indexjs&quot; -}}
+```
+
+Clearly copy-pasting this boilerplate, even in the short term, is not ideal. I am looking at ways to simplify and
+automate this step using a Go tool (ideas also welcomed).
+
+### Using our action
+
+Now let's switch to creating a project that uses the Greeter action in one of its workflows:
+
+```
+{{PrintBlock &quot;define usingaction repo root module&quot; -}}
+```
+
+```yaml
+{{PrintBlock &quot;usingaction workflow&quot; -}}
+```
+
+We specify a matrix of all platforms to demonstrate our action truly is cross-platform.
+
+Given GitHub Actions don't natively support Go actions, and as we demonstrated in our `index.js` wrapper, we have to use
+the `go` command. We therefore must have [`actions/setup-go`](https://github.com/actions/setup-go) as our first step in
+any workflow that uses a Go action of this sort (until native actions come along).
+
+Finally, both `uses: actions/setup-go` and `uses: myitcv/myfirstgoaction` specify specific commits, per advice earlier
+in this post.
+
+That's it! Let's commit, push and watch the build succeed!
+
+![A successful build](/images/2020-02-04-build-success.png &quot;A successful build&quot;)
+
+### So what would native actions look like?
+
+There are a few problems with the approach outlined above:
+
+1. we need to explicitly install Go
+2. we need to copy-paste our `index.js` wrapper for each Go action we create
+3. we are not relying on the Go module proxy when using the action and hence have to specify a commit rather than a
+   semver version
+
+Points 1 and 2 clearly disappear when native support is added.
+
+Point 3 is particularly brittle because commits themselves can disappear from GitHub (force pushing to `master`, commit
+no longer referenced by any tags or branches, gets cleaned up).
+
+Therefore, given point 3 we ideally would use our action in a workflow in the following way:
+
+```yaml
+    - name: Display a greeting
+      uses: github.com/myitcv/myfirstgoaction@v1.0.0
+      with:
+        name: Helena
+```
+
+such that when running the action, GitHub's infrastructure:
+
+* creates a temporary module
+* resolves the Go package `github.com/myitcv/myfirstgoaction` at version `v1.0.0` via
+  [proxy.golang.org](https://proxy.golang.org)
+* runs the action via `go run github.com/myitcv/myfirstgoaction`
+
+_Notice, the package path and module path being equal is just a coincidence of this example_
+
+### Conclusion
+
+Go provides some novel solutions to the problems of software dependencies. In this article I have demonstrated one way
+in which pure Go actions can be written today (whilst we await native support from GitHub), leveraging the benefits and
+protections of the Go Module Mirror, Index, and Checksum Database. Ultimately we all need to review our software
+dependencies, but at least Go makes it easier to know that the world hasn't changed under our feet from build-to-build.
+
+### Appendix
+
+All of the source code used in this blog post is available on GitHub:
+
+* [{{- PrintBlockOut &quot;action repo&quot; -}}]({{- PrintBlockOut &quot;action repo url&quot; -}})
+* [{{- PrintBlockOut &quot;usingaction repo&quot; -}}]({{- PrintBlockOut &quot;usingaction repo url&quot; -}})
+
+With thanks to [Daniel Martí](https://twitter.com/mvdan_) for reviewing this post.
+--&gt;
+
 &lt;h3 id=&quot;wait-theres-a-problem-with-github-actions&quot;&gt;Wait, there’s a problem with GitHub Actions?&lt;/h3&gt;
 
-&lt;blockquote class=&quot;twitter-tweet&quot;&gt;&lt;p lang=&quot;en&quot; dir=&quot;ltr&quot;&gt;Did you know that malicious code can be inserted into any GitHub action, even those which are tagged ?&lt;br /&gt;I wrote a blog post about it:&lt;a href=&quot;https://t.co/PNq2MwaMUN&quot;&gt;https://t.co/PNq2MwaMUN&lt;/a&gt; cc &lt;a href=&quot;https://twitter.com/github?ref_src=twsrc%5Etfw&quot;&gt;@github&lt;/a&gt; &lt;a href=&quot;https://t.co/gUevMJOS6n&quot;&gt;pic.twitter.com/gUevMJOS6n&lt;/a&gt;&lt;/p&gt;&amp;mdash; Julien Renaux (@julienrenaux) &lt;a href=&quot;https://twitter.com/julienrenaux/status/1208046853780062210?ref_src=twsrc%5Etfw&quot;&gt;December 20, 2019&lt;/a&gt;&lt;/blockquote&gt;
+&lt;blockquote class=&quot;twitter-tweet tw-align-center&quot;&gt;&lt;p lang=&quot;en&quot; dir=&quot;ltr&quot;&gt;Did you know that malicious code can be inserted into any GitHub action, even those which are tagged ?&lt;br /&gt;I wrote a blog post about it:&lt;a href=&quot;https://t.co/PNq2MwaMUN&quot;&gt;https://t.co/PNq2MwaMUN&lt;/a&gt; cc &lt;a href=&quot;https://twitter.com/github?ref_src=twsrc%5Etfw&quot;&gt;@github&lt;/a&gt; &lt;a href=&quot;https://t.co/gUevMJOS6n&quot;&gt;pic.twitter.com/gUevMJOS6n&lt;/a&gt;&lt;/p&gt;&amp;mdash; Julien Renaux (@julienrenaux) &lt;a href=&quot;https://twitter.com/julienrenaux/status/1208046853780062210?ref_src=twsrc%5Etfw&quot;&gt;December 20, 2019&lt;/a&gt;&lt;/blockquote&gt;
 &lt;script async=&quot;&quot; src=&quot;https://platform.twitter.com/widgets.js&quot; charset=&quot;utf-8&quot;&gt;&lt;/script&gt;
 
 &lt;p&gt;&lt;a href=&quot;https://twitter.com/julienrenaux&quot;&gt;Julien Renaux’s&lt;/a&gt; blog post linked from that tweet does a good job of laying out one
@@ -26,7 +257,7 @@ update a branch or a tag)&lt;/li&gt;
 
 &lt;p&gt;Hence the specific advice is to use a commit hash to partially mitigate this risk:&lt;/p&gt;
 
-&lt;blockquote class=&quot;twitter-tweet&quot;&gt;&lt;p lang=&quot;en&quot; dir=&quot;ltr&quot;&gt;That’s why you need to specify the exact version (action@sha1) you want to use, so further changes won’t impact you.&lt;/p&gt;&amp;mdash; Alain Hélaïli (@AlainHelaili) &lt;a href=&quot;https://twitter.com/AlainHelaili/status/1205238489056501761?ref_src=twsrc%5Etfw&quot;&gt;December 12, 2019&lt;/a&gt;&lt;/blockquote&gt;
+&lt;blockquote class=&quot;twitter-tweet tw-align-center&quot;&gt;&lt;p lang=&quot;en&quot; dir=&quot;ltr&quot;&gt;That’s why you need to specify the exact version (action@sha1) you want to use, so further changes won’t impact you.&lt;/p&gt;&amp;mdash; Alain Hélaïli (@AlainHelaili) &lt;a href=&quot;https://twitter.com/AlainHelaili/status/1205238489056501761?ref_src=twsrc%5Etfw&quot;&gt;December 12, 2019&lt;/a&gt;&lt;/blockquote&gt;
 &lt;script async=&quot;&quot; src=&quot;https://platform.twitter.com/widgets.js&quot; charset=&quot;utf-8&quot;&gt;&lt;/script&gt;
 
 &lt;p&gt;&lt;em&gt;It is somewhat unfortunate at best that this isn’t the default advice in the official documentation; worth noting it
@@ -34,7 +265,7 @@ doesn’t defend against the commit disappearing.&lt;/em&gt;&lt;/p&gt;
 
 &lt;p&gt;The problems don’t stop there, because there is also the risk that transitive dependencies can do malicious things too:&lt;/p&gt;
 
-&lt;blockquote class=&quot;twitter-tweet&quot;&gt;&lt;p lang=&quot;en&quot; dir=&quot;ltr&quot;&gt;There is also a risk that the transitive dependencies can do malicious things.&lt;a href=&quot;https://t.co/juffjxwxIr&quot;&gt;https://t.co/juffjxwxIr&lt;/a&gt;&lt;/p&gt;&amp;mdash; DrSensor👹 (@dr\_sensor) &lt;a href=&quot;https://twitter.com/dr_sensor/status/1208098900747284480?ref_src=twsrc%5Etfw&quot;&gt;December 20, 2019&lt;/a&gt;&lt;/blockquote&gt;
+&lt;blockquote class=&quot;twitter-tweet tw-align-center&quot;&gt;&lt;p lang=&quot;en&quot; dir=&quot;ltr&quot;&gt;There is also a risk that the transitive dependencies can do malicious things.&lt;a href=&quot;https://t.co/juffjxwxIr&quot;&gt;https://t.co/juffjxwxIr&lt;/a&gt;&lt;/p&gt;&amp;mdash; DrSensor👹 (@dr\_sensor) &lt;a href=&quot;https://twitter.com/dr_sensor/status/1208098900747284480?ref_src=twsrc%5Etfw&quot;&gt;December 20, 2019&lt;/a&gt;&lt;/blockquote&gt;
 &lt;script async=&quot;&quot; src=&quot;https://platform.twitter.com/widgets.js&quot; charset=&quot;utf-8&quot;&gt;&lt;/script&gt;
 
 &lt;p&gt;On top of this, it’s not made particularly clear to users that every action they use in their workflow is given implicit
@@ -45,13 +276,22 @@ repository&lt;/a&gt;.&lt;/p&gt;
 
 &lt;h3 id=&quot;why-go&quot;&gt;Why Go?&lt;/h3&gt;
 
-&lt;p&gt;&lt;a href=&quot;https://twitter.com/_rsc&quot;&gt;Russ Cox&lt;/a&gt; has &lt;a href=&quot;https://research.swtch.com/deps&quot;&gt;repeatedly&lt;/a&gt; &lt;a href=&quot;https://twitter.com/_rsc/status/1088109141409837063&quot;&gt;written&lt;/a&gt; about “Our Software Dependency Problem.” The basic premise of those articles is that “software dependencies carry with them serious risks that are too often overlooked.” Whilst Russ’ articles raise awareness of the risks and encourage more investigation of solutions (and I strongly encourage you to read the article in full), the bottom line is that Go has a comprehensive solution to the major problems outlined, via the &lt;a href=&quot;https://proxy.golang.org/&quot;&gt;Go Module Mirror&lt;/a&gt;, &lt;a href=&quot;https://index.golang.org/&quot;&gt;Index&lt;/a&gt;, and &lt;a href=&quot;https://sum.golang.org/&quot;&gt;Checksum Database&lt;/a&gt;, that ultimately results in the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;go&lt;/code&gt; command referencing an auditable checksum database to authenticate modules. Coupled with the &lt;a href=&quot;https://research.swtch.com/vgo-mvs&quot;&gt;minimum version selection&lt;/a&gt; property of Go modules, we have ourselves a verifiable way to run exactly the (third party) action code we  previously audited (you all audit your dependencies, right?)&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://twitter.com/_rsc&quot;&gt;Russ Cox&lt;/a&gt; has &lt;a href=&quot;https://research.swtch.com/deps&quot;&gt;repeatedly&lt;/a&gt;
+&lt;a href=&quot;https://twitter.com/_rsc/status/1088109141409837063&quot;&gt;written&lt;/a&gt; about “Our Software Dependency Problem.” The basic
+premise of those articles is that “software dependencies carry with them serious risks that are too often overlooked.”
+Whilst Russ’ articles raise awareness of the risks and encourage more investigation of solutions (and I strongly
+encourage you to read the article in full), the bottom line is that Go has a comprehensive solution to the major
+problems outlined, via the &lt;a href=&quot;https://proxy.golang.org/&quot;&gt;Go Module Mirror&lt;/a&gt;, &lt;a href=&quot;https://index.golang.org/&quot;&gt;Index&lt;/a&gt;, and
+&lt;a href=&quot;https://sum.golang.org/&quot;&gt;Checksum Database&lt;/a&gt;, that ultimately results in the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;go&lt;/code&gt; command referencing an auditable
+checksum database to authenticate modules. Coupled with the &lt;a href=&quot;https://research.swtch.com/vgo-mvs&quot;&gt;minimum version
+selection&lt;/a&gt; property of Go modules, we have ourselves a verifiable way to run exactly
+the (third party) action code we  previously audited (you all audit your dependencies, right?)&lt;/p&gt;
 
 &lt;h3 id=&quot;the-slight-wrinkle&quot;&gt;The slight wrinkle&lt;/h3&gt;
 
 &lt;p&gt;At the time of writing (2020/02/04), GitHub does not natively support writing actions in Go:&lt;/p&gt;
 
-&lt;blockquote class=&quot;twitter-tweet&quot;&gt;&lt;p lang=&quot;en&quot; dir=&quot;ltr&quot;&gt;Hi &lt;a href=&quot;https://twitter.com/github?ref_src=twsrc%5Etfw&quot;&gt;@github&lt;/a&gt; - please can you provide a native way to write/use actions written in Go, that would allow me to do something like:&lt;br /&gt;&lt;br /&gt; uses: $package@$version&lt;br /&gt;&lt;br /&gt;which would then use &lt;a href=&quot;https://t.co/fGOHqwoWSA&quot;&gt;https://t.co/fGOHqwoWSA&lt;/a&gt; for resolution, and &lt;a href=&quot;https://t.co/hqG8e8gGf6&quot;&gt;https://t.co/hqG8e8gGf6&lt;/a&gt; for verification. Thanks &lt;a href=&quot;https://twitter.com/hashtag/golang?src=hash&amp;amp;ref_src=twsrc%5Etfw&quot;&gt;#golang&lt;/a&gt;&lt;/p&gt;&amp;mdash; Paul Jolly (@\_myitcv) &lt;a href=&quot;https://twitter.com/_myitcv/status/1224288510053691393?ref_src=twsrc%5Etfw&quot;&gt;February 3, 2020&lt;/a&gt;&lt;/blockquote&gt;
+&lt;blockquote class=&quot;twitter-tweet tw-align-center&quot;&gt;&lt;p lang=&quot;en&quot; dir=&quot;ltr&quot;&gt;Hi &lt;a href=&quot;https://twitter.com/github?ref_src=twsrc%5Etfw&quot;&gt;@github&lt;/a&gt; - please can you provide a native way to write/use actions written in Go, that would allow me to do something like:&lt;br /&gt;&lt;br /&gt; uses: $package@$version&lt;br /&gt;&lt;br /&gt;which would then use &lt;a href=&quot;https://t.co/fGOHqwoWSA&quot;&gt;https://t.co/fGOHqwoWSA&lt;/a&gt; for resolution, and &lt;a href=&quot;https://t.co/hqG8e8gGf6&quot;&gt;https://t.co/hqG8e8gGf6&lt;/a&gt; for verification. Thanks &lt;a href=&quot;https://twitter.com/hashtag/golang?src=hash&amp;amp;ref_src=twsrc%5Etfw&quot;&gt;#golang&lt;/a&gt;&lt;/p&gt;&amp;mdash; Paul Jolly (@\_myitcv) &lt;a href=&quot;https://twitter.com/_myitcv/status/1224288510053691393?ref_src=twsrc%5Etfw&quot;&gt;February 3, 2020&lt;/a&gt;&lt;/blockquote&gt;
 &lt;script async=&quot;&quot; src=&quot;https://platform.twitter.com/widgets.js&quot; charset=&quot;utf-8&quot;&gt;&lt;/script&gt;
 
 &lt;p&gt;Instead, you have &lt;a href=&quot;https://help.github.com/en/actions/automating-your-workflow-with-github-actions/about-actions&quot;&gt;the
@@ -99,7 +339,8 @@ their dependency on semver versions of our action.&lt;/p&gt;
 
 &lt;p&gt;We start therefore by creating a module:&lt;/p&gt;
 
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ go mod init github.com/myitcv/myfirstgoaction
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ go mod init github.com/myitcvblog/myfirstgoaction
+go: creating new go.mod: module github.com/myitcvblog/myfirstgoaction
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Before we define the action itself, we briefly discuss a key building block: the GitHub Actions API.&lt;/p&gt;
@@ -209,8 +450,11 @@ automate this step using a Go tool (ideas also welcomed).&lt;/p&gt;
 
 &lt;p&gt;Now let’s switch to creating a project that uses the Greeter action in one of its workflows:&lt;/p&gt;
 
-&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;s&quot;&gt;$ go mod init github.com/myitcv/usingmyfirstgoaction&lt;/span&gt;
-&lt;span class=&quot;s&quot;&gt;$ cat .github/workflows/test.yml&lt;/span&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ go mod init github.com/myitcvblog/usingmyfirstgoaction
+go: creating new go.mod: module github.com/myitcvblog/usingmyfirstgoaction
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;s&quot;&gt;$ cat .github/workflows/test.yml&lt;/span&gt;
 &lt;span class=&quot;na&quot;&gt;on&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;pi&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;push&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;pull_request&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;]&lt;/span&gt;
 &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Test&lt;/span&gt;
 &lt;span class=&quot;na&quot;&gt;jobs&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
@@ -218,13 +462,13 @@ automate this step using a Go tool (ideas also welcomed).&lt;/p&gt;
     &lt;span class=&quot;na&quot;&gt;strategy&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
       &lt;span class=&quot;na&quot;&gt;matrix&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
         &lt;span class=&quot;na&quot;&gt;platform&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;pi&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;ubuntu-latest&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;macos-latest&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;windows-latest&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;na&quot;&gt;runs-on&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;$&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;runs-on&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;${{ matrix.platform }}&lt;/span&gt;
     &lt;span class=&quot;na&quot;&gt;steps&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
     &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;uses&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;actions/setup-go@9fbc767707c286e568c92927bbf57d76b73e0892&lt;/span&gt;
       &lt;span class=&quot;na&quot;&gt;with&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
         &lt;span class=&quot;na&quot;&gt;go-version&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;1.14.x'&lt;/span&gt;
     &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Display a greeting&lt;/span&gt;
-      &lt;span class=&quot;na&quot;&gt;uses&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;myitcv/myfirstgoaction@d085dddfc01ecb14af3778b49dd8672fcd0e7652&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;uses&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;myitcvblog/myfirstgoaction@f6f5906d9e4870a92c6fcc48aa6c416a1e88e98a&lt;/span&gt;
       &lt;span class=&quot;na&quot;&gt;with&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
         &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Helena&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
@@ -289,11 +533,17 @@ dependencies, but at least Go makes it easier to know that the world hasn’t ch
 &lt;p&gt;All of the source code used in this blog post is available on GitHub:&lt;/p&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/myitcv/myfirstgoaction&quot;&gt;github.com/myitcv/myfirstgoaction&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/myitcv/usingmyfirstgoaction&quot;&gt;github.com/myitcv/usingmyfirstgoaction&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/myitcvblog/myfirstgoaction&quot;&gt;github.com/myitcvblog/myfirstgoaction
+&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/myitcvblog/usingmyfirstgoaction&quot;&gt;github.com/myitcvblog/usingmyfirstgoaction
+&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;With thanks to &lt;a href=&quot;https://twitter.com/mvdan_&quot;&gt;Daniel Martí&lt;/a&gt; for reviewing this post.&lt;/p&gt;</content><author><name>paul</name></author><summary type="html">I recently converted the govim project to use GitHub Actions. The move away from TravisCI was largely motivated by more generous concurrency limits (GitHub’s 20 jobs vs TravisCI’s 5), faster job startup times, and solid cross-platform support. But there was also the promise of making it easy to extend workflows with composable third-party actions. This post demonstrates how to write cross-platform, pure Go GitHub actions that you can use in your workflows and share with others. But first we start by motivating the real problem we are trying to solve.</summary></entry><entry><title type="html">govim - a Go development plugin for Vim8</title><link href="https://blog.myitcv.io/2019/04/17/govim.html" rel="alternate" type="text/html" title="govim - a Go development plugin for Vim8" /><published>2019-04-17T00:00:00+01:00</published><updated>2019-04-17T00:00:00+01:00</updated><id>https://blog.myitcv.io/2019/04/17/govim</id><content type="html" xml:base="https://blog.myitcv.io/2019/04/17/govim.html">&lt;p&gt;Command &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;github.com/myitcv/govim/cmd/govim&lt;/code&gt; (referred to simply as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;govim&lt;/code&gt;) is a Go development plugin for Vim8, much
+&lt;p&gt;With thanks to &lt;a href=&quot;https://twitter.com/mvdan_&quot;&gt;Daniel Martí&lt;/a&gt; for reviewing this post.
+&lt;!-- END --&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;
+&lt;em&gt;Edit 2020-02-13: move to using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;github.com/myitcvblog&lt;/code&gt; as the home for these examples&lt;/em&gt;&lt;/p&gt;</content><author><name>paul</name></author><summary type="html">I recently converted the govim project to use GitHub Actions. The move away from TravisCI was largely motivated by more generous concurrency limits (GitHub’s 20 jobs vs TravisCI’s 5), faster job startup times, and solid cross-platform support. But there was also the promise of making it easy to extend workflows with composable third-party actions. This post demonstrates how to write cross-platform, pure Go GitHub actions that you can use in your workflows and share with others. But first we start by motivating the real problem we are trying to solve.</summary></entry><entry><title type="html">govim - a Go development plugin for Vim8</title><link href="https://blog.myitcv.io/2019/04/17/govim.html" rel="alternate" type="text/html" title="govim - a Go development plugin for Vim8" /><published>2019-04-17T00:00:00+01:00</published><updated>2019-04-17T00:00:00+01:00</updated><id>https://blog.myitcv.io/2019/04/17/govim</id><content type="html" xml:base="https://blog.myitcv.io/2019/04/17/govim.html">&lt;p&gt;Command &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;github.com/myitcv/govim/cmd/govim&lt;/code&gt; (referred to simply as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;govim&lt;/code&gt;) is a Go development plugin for Vim8, much
 like &lt;a href=&quot;https://github.com/fatih/vim-go&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vim-go&lt;/code&gt;&lt;/a&gt;. But unlike &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vim-go&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;govim&lt;/code&gt; is written in Go, not VimScript. It has
 features like code completion, format-on-save, hover details and go-to definition, all of which are driven by
 &lt;a href=&quot;https://godoc.org/golang.org/x/tools/cmd/gopls&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;gopls&lt;/code&gt;&lt;/a&gt;, the Language Server Protocol (LSP) server for Go. See &lt;a href=&quot;https://github.com/myitcv/govim/wiki/govim-plugin-API&quot;&gt;the
