@@ -9,9 +9,6 @@ twitter_username: _myitcv
 github_username:  myitcv
 github: [metadata]
 
-disqus:
-  shortname: myitcv
-
 theme: minima
 
 markdown: redcarpet
