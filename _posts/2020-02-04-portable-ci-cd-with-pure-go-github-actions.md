@@ -21,10 +21,8 @@ motivating the real problem we are trying to solve.
 
 ### Wait, there's a problem with GitHub Actions?
 
-<blockquote class="twitter-tweet tw-align-center"><p lang="en" dir="ltr">Did you know that malicious code can be inserted into any GitHub action, even those which are tagged ?<br>I wrote a blog post about it:<a href="https://t.co/PNq2MwaMUN">https://t.co/PNq2MwaMUN</a> cc <a href="https://twitter.com/github?ref_src=twsrc%5Etfw">@github</a> <a href="https://t.co/gUevMJOS6n">pic.twitter.com/gUevMJOS6n</a></p>&mdash; Julien Renaux (@julienrenaux) <a href="https://twitter.com/julienrenaux/status/1208046853780062210?ref_src=twsrc%5Etfw">December 20, 2019</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-
-[Julien Renaux's](https://twitter.com/julienrenaux) blog post linked from that tweet does a good job of laying out one
-of the core problems with GitHub Actions. The story goes roughly like this:
+Julien Renaux wrote a [blog post](https://julienrenaux.fr/2019/12/20/github-actions-security-risk/) that does a good job
+of laying out one of the core problems with GitHub Actions. The story goes roughly like this:
 
 * someone writes and open-sources an action that requires secret credentials, e.g. DockerHub access token
 * lots of people start using the action via directives like `uses: good/action@v1` because it's well written and useful
@@ -250,10 +248,8 @@ With thanks to [Daniel Martí](https://twitter.com/mvdan_) for reviewing this po
 
 ### Wait, there's a problem with GitHub Actions?
 
-<blockquote class="twitter-tweet tw-align-center"><p lang="en" dir="ltr">Did you know that malicious code can be inserted into any GitHub action, even those which are tagged ?<br>I wrote a blog post about it:<a href="https://t.co/PNq2MwaMUN">https://t.co/PNq2MwaMUN</a> cc <a href="https://twitter.com/github?ref_src=twsrc%5Etfw">@github</a> <a href="https://t.co/gUevMJOS6n">pic.twitter.com/gUevMJOS6n</a></p>&mdash; Julien Renaux (@julienrenaux) <a href="https://twitter.com/julienrenaux/status/1208046853780062210?ref_src=twsrc%5Etfw">December 20, 2019</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-
-[Julien Renaux's](https://twitter.com/julienrenaux) blog post linked from that tweet does a good job of laying out one
-of the core problems with GitHub Actions. The story goes roughly like this:
+Julien Renaux wrote a [blog post](https://julienrenaux.fr/2019/12/20/github-actions-security-risk/) that does a good job
+of laying out one of the core problems with GitHub Actions. The story goes roughly like this:
 
 * someone writes and open-sources an action that requires secret credentials, e.g. DockerHub access token
 * lots of people start using the action via directives like `uses: good/action@v1` because it's well written and useful
@@ -476,7 +472,7 @@ jobs:
       with:
         go-version: '1.14.x'
     - name: Display a greeting
-      uses: myitcvblog/myfirstgoaction@f6f5906d9e4870a92c6fcc48aa6c416a1e88e98a
+      uses: myitcvblog/myfirstgoaction@7096ad461380fef1c02fb53935bd26153465906b
       with:
         name: Helena
 ```
@@ -550,4 +546,5 @@ With thanks to [Daniel Martí](https://twitter.com/mvdan_) for reviewing this po
 
 <br/>
 *Edit 2020-02-13: move to using `github.com/myitcvblog` as the home for these examples*<br/>
-*Edit 2020-02-13: I've now [raised an issue](https://github.com/actions/runner/issues/333) to request native support for pure Go actions*
+*Edit 2020-02-13: I've now [raised an issue](https://github.com/actions/runner/issues/333) to request native support for pure Go actions*<br/>
+*Edit 2020-03-04: Updated link to Julien Renaux's blog post now that original tweet is no longer availabe*<br/>
