@@ -67,10 +67,8 @@ motivating the real problem we are trying to solve.</p>
 
 ### Wait, there's a problem with GitHub Actions?
 
-<blockquote class="twitter-tweet tw-align-center"><p lang="en" dir="ltr">Did you know that malicious code can be inserted into any GitHub action, even those which are tagged ?<br>I wrote a blog post about it:<a href="https://t.co/PNq2MwaMUN">https://t.co/PNq2MwaMUN</a> cc <a href="https://twitter.com/github?ref_src=twsrc%5Etfw">@github</a> <a href="https://t.co/gUevMJOS6n">pic.twitter.com/gUevMJOS6n</a></p>&mdash; Julien Renaux (@julienrenaux) <a href="https://twitter.com/julienrenaux/status/1208046853780062210?ref_src=twsrc%5Etfw">December 20, 2019</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-
-[Julien Renaux's](https://twitter.com/julienrenaux) blog post linked from that tweet does a good job of laying out one
-of the core problems with GitHub Actions. The story goes roughly like this:
+Julien Renaux wrote a [blog post](https://julienrenaux.fr/2019/12/20/github-actions-security-risk/) that does a good job
+of laying out one of the core problems with GitHub Actions. The story goes roughly like this:
 
 * someone writes and open-sources an action that requires secret credentials, e.g. DockerHub access token
 * lots of people start using the action via directives like `uses: good/action@v1` because it's well written and useful
@@ -296,11 +294,8 @@ With thanks to [Daniel Martí](https://twitter.com/mvdan_) for reviewing this po
 
 <h3 id="wait-theres-a-problem-with-github-actions">Wait, there’s a problem with GitHub Actions?</h3>
 
-<blockquote class="twitter-tweet tw-align-center"><p lang="en" dir="ltr">Did you know that malicious code can be inserted into any GitHub action, even those which are tagged ?<br />I wrote a blog post about it:<a href="https://t.co/PNq2MwaMUN">https://t.co/PNq2MwaMUN</a> cc <a href="https://twitter.com/github?ref_src=twsrc%5Etfw">@github</a> <a href="https://t.co/gUevMJOS6n">pic.twitter.com/gUevMJOS6n</a></p>&mdash; Julien Renaux (@julienrenaux) <a href="https://twitter.com/julienrenaux/status/1208046853780062210?ref_src=twsrc%5Etfw">December 20, 2019</a></blockquote>
-<script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-
-<p><a href="https://twitter.com/julienrenaux">Julien Renaux’s</a> blog post linked from that tweet does a good job of laying out one
-of the core problems with GitHub Actions. The story goes roughly like this:</p>
+<p>Julien Renaux wrote a <a href="https://julienrenaux.fr/2019/12/20/github-actions-security-risk/">blog post</a> that does a good job
+of laying out one of the core problems with GitHub Actions. The story goes roughly like this:</p>
 
 <ul>
   <li>someone writes and open-sources an action that requires secret credentials, e.g. DockerHub access token</li>
@@ -523,7 +518,7 @@ go: creating new go.mod: module github.com/myitcvblog/usingmyfirstgoaction
       <span class="na">with</span><span class="pi">:</span>
         <span class="na">go-version</span><span class="pi">:</span> <span class="s1">'</span><span class="s">1.14.x'</span>
     <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Display a greeting</span>
-      <span class="na">uses</span><span class="pi">:</span> <span class="s">myitcvblog/myfirstgoaction@f6f5906d9e4870a92c6fcc48aa6c416a1e88e98a</span>
+      <span class="na">uses</span><span class="pi">:</span> <span class="s">myitcvblog/myfirstgoaction@7096ad461380fef1c02fb53935bd26153465906b</span>
       <span class="na">with</span><span class="pi">:</span>
         <span class="na">name</span><span class="pi">:</span> <span class="s">Helena</span>
 </code></pre></div></div>
@@ -599,7 +594,8 @@ dependencies, but at least Go makes it easier to know that the world hasn’t ch
 
 <p><br />
 <em>Edit 2020-02-13: move to using <code class="language-plaintext highlighter-rouge">github.com/myitcvblog</code> as the home for these examples</em><br />
-<em>Edit 2020-02-13: I’ve now <a href="https://github.com/actions/runner/issues/333">raised an issue</a> to request native support for pure Go actions</em></p>
+<em>Edit 2020-02-13: I’ve now <a href="https://github.com/actions/runner/issues/333">raised an issue</a> to request native support for pure Go actions</em><br />
+<em>Edit 2020-03-04: Updated link to Julien Renaux’s blog post now that original tweet is no longer availabe</em><br /></p>
 
   </div><a class="u-url" href="/2020/02/04/portable-ci-cd-with-pure-go-github-actions.html" hidden></a>
 </article>
